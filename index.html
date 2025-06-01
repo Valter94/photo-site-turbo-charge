@@ -1,24 +1,225 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>photo-site-turbo-charge</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
-
-    <meta property="og:title" content="photo-site-turbo-charge" />
-    <meta property="og:description" content="Lovable Generated Project" />
+    
+    <!-- SEO Meta Tags -->
+    <title>Фотограф Ирина - Свадебная и портретная фотосъемка в Москве</title>
+    <meta name="description" content="Профессиональная свадебная, портретная и романтическая фотосъемка в Москве. Love Story, семейные фотосессии. Бронирование онлайн. ✨ Более 500 счастливых пар" />
+    <meta name="keywords" content="фотограф Москва, свадебная фотосъемка, портретная фотография, Love Story, фотосессия Москва, свадебный фотограф, семейная фотосъемка" />
+    <meta name="author" content="Ирина" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://irina-photographer.ru/" />
+    
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta property="og:url" content="https://irina-photographer.ru/" />
+    <meta property="og:title" content="Фотограф Ирина - Свадебная и портретная фотосъемка в Москве" />
+    <meta property="og:description" content="Профессиональная свадебная, портретная и романтическая фотосъемка в Москве. Love Story, семейные фотосессии. Более 500 счастливых пар" />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=1200&h=630&fit=crop" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="ru_RU" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://irina-photographer.ru/" />
+    <meta property="twitter:title" content="Фотограф Ирина - Свадебная и портретная фотосъемка в Москве" />
+    <meta property="twitter:description" content="Профессиональная свадебная, портретная и романтическая фотосъемка в Москве" />
+    <meta property="twitter:image" content="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=1200&h=630&fit=crop" />
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#fb7185" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Ирина Фото" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=32&h=32&fit=crop&crop=face" />
+    <link rel="icon" type="image/png" sizes="16x16" href="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=16&h=16&fit=crop&crop=face" />
+    <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=180&h=180&fit=crop&crop=face" />
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://images.unsplash.com" />
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- Critical CSS для быстрой загрузки -->
+    <style>
+      /* Critical CSS for fast loading */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+        line-height: 1.6;
+        color: #111827;
+        background-color: #ffffff;
+      }
+      
+      .loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #fdf2f8 0%, #fcf2f7 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease-out;
+      }
+      
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #f3f4f6;
+        border-top: 4px solid #fb7185;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .fade-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+    </style>
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "Фотограф Ирина",
+      "description": "Профессиональная свадебная, портретная и романтическая фотосъемка в Москве",
+      "image": "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&h=600&fit=crop",
+      "telephone": "+7-926-256-35-50",
+      "email": "irina@photo.ru",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Москва",
+        "addressCountry": "RU"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "55.7558",
+        "longitude": "37.6176"
+      },
+      "url": "https://irina-photographer.ru",
+      "sameAs": [
+        "https://instagram.com/irina_photographer",
+        "https://wa.me/+79262563550"
+      ],
+      "priceRange": "8000-100000 RUB",
+      "serviceArea": {
+        "@type": "GeoCircle",
+        "geoMidpoint": {
+          "@type": "GeoCoordinates",
+          "latitude": "55.7558",
+          "longitude": "37.6176"
+        },
+        "geoRadius": "50000"
+      },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Фотосессии",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Свадебная фотосъемка",
+              "description": "Полное сопровождение свадебного дня"
+            },
+            "price": "30000-100000",
+            "priceCurrency": "RUB"
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Love Story",
+              "description": "Романтическая фотосессия для пар"
+            },
+            "price": "10000-25000",
+            "priceCurrency": "RUB"
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Портретная фотосъемка",
+              "description": "Индивидуальная или семейная портретная съемка"
+            },
+            "price": "8000-15000",
+            "priceCurrency": "RUB"
+          }
+        ]
+      }
+    }
+    </script>
   </head>
 
   <body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+      <div class="loading-spinner"></div>
+    </div>
+    
     <div id="root"></div>
+    
+    <!-- Scripts -->
+    <script>
+      // Register Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+              console.log('SW registered: ', registration);
+            })
+            .catch(registrationError => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+      
+      // Hide loading screen when page is loaded
+      window.addEventListener('load', () => {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+          setTimeout(() => {
+            loadingScreen.classList.add('fade-out');
+            setTimeout(() => {
+              loadingScreen.style.display = 'none';
+            }, 500);
+          }, 1000);
+        }
+      });
+      
+      // Performance monitoring
+      window.addEventListener('load', () => {
+        if ('performance' in window) {
+          const perfData = performance.getEntriesByType('navigation')[0];
+          console.log('Page load time:', perfData.loadEventEnd - perfData.loadEventStart, 'ms');
+        }
+      });
+    </script>
+    
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>

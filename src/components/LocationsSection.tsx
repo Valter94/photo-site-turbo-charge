@@ -4,72 +4,36 @@ import { MapPin, Star, Camera, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import OptimizedImage from './OptimizedImage';
+import { useLocations, useLocationCategories } from '@/hooks/useLocations';
 
 const LocationsSection = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const { data: locations, isLoading: locationsLoading } = useLocations();
+  const { data: categories, isLoading: categoriesLoading } = useLocationCategories();
 
-  const locations = [
-    {
-      id: 1,
-      name: 'Парк Горького',
-      category: 'park',
-      description: 'Красивый парк с живописными аллеями и фонтанами. Идеально подходит для романтических съемок.',
-      image: 'https://images.unsplash.com/photo-1441829266145-6d4bbc4ed8fb?w=800&h=600&fit=crop',
-      rating: 4.8,
-      reviewsCount: 156,
-      priceFrom: 5000,
-      duration: '1-3 часа',
-      features: ['Фонтаны', 'Аллеи', 'Цветники', 'Мостики']
-    },
-    {
-      id: 2,
-      name: 'Красная площадь',
-      category: 'historic',
-      description: 'Историческое сердце Москвы. Идеально для классических и торжественных фотосессий.',
-      image: 'https://images.unsplash.com/photo-1513326738677-b964603b136d?w=800&h=600&fit=crop',
-      rating: 4.9,
-      reviewsCount: 203,
-      priceFrom: 8000,
-      duration: '2-4 часа',
-      features: ['Собор', 'Кремль', 'Брусчатка', 'Архитектура']
-    },
-    {
-      id: 3,
-      name: 'Воробьевы горы',
-      category: 'nature',
-      description: 'Потрясающий вид на город и живописная природа. Лучшее место для съемок на закате.',
-      image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=600&fit=crop',
-      rating: 4.7,
-      reviewsCount: 89,
-      priceFrom: 4000,
-      duration: '1-2 часа',
-      features: ['Панорама', 'Природа', 'Закат', 'Смотровая']
-    },
-    {
-      id: 4,
-      name: 'Арбат',
-      category: 'street',
-      description: 'Старинная пешеходная улица с уникальной атмосферой и интересной архитектурой.',
-      image: 'https://images.unsplash.com/photo-1520637836862-4d197d17c0a4?w=800&h=600&fit=crop',
-      rating: 4.6,
-      reviewsCount: 124,
-      priceFrom: 6000,
-      duration: '2-3 часа',
-      features: ['Уличные музыканты', 'Кафе', 'Витрины', 'Булыжник']
-    }
-  ];
+  if (locationsLoading || categoriesLoading) {
+    return (
+      <section id="locations" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-64 mx-auto mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-96 mx-auto"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
-  const categories = [
+  const allCategories = [
     { id: 'all', name: 'Все локации' },
-    { id: 'park', name: 'Парки' },
-    { id: 'historic', name: 'Исторические' },
-    { id: 'nature', name: 'Природа' },
-    { id: 'street', name: 'Городские' }
+    ...(categories?.map(cat => ({ id: cat.name, name: cat.description })) || [])
   ];
 
   const filteredLocations = selectedCategory === 'all' 
     ? locations 
-    : locations.filter(location => location.category === selectedCategory);
+    : locations?.filter(location => location.location_categories?.name === selectedCategory);
 
   return (
     <section id="locations" className="py-20 bg-white">
@@ -82,7 +46,7 @@ const LocationsSection = () => {
         </div>
 
         <div className="flex flex-wrap justify-center gap-4 mb-12">
-          {categories.map((category) => (
+          {allCategories.map((category) => (
             <button
               key={category.id}
               onClick={() => setSelectedCategory(category.id)}
@@ -98,11 +62,11 @@ const LocationsSection = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-          {filteredLocations.map((location) => (
+          {filteredLocations?.map((location) => (
             <Card key={location.id} className="overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
               <div className="relative h-64">
                 <OptimizedImage
-                  src={location.image}
+                  src={location.image_url || 'https://images.unsplash.com/photo-1441829266145-6d4bbc4ed8fb?w=800&h=600&fit=crop'}
                   alt={location.name}
                   className="w-full h-full object-cover"
                   width={800}
@@ -110,7 +74,7 @@ const LocationsSection = () => {
                 />
                 <div className="absolute top-4 right-4">
                   <Badge className="bg-white/90 text-gray-900">
-                    от {location.priceFrom.toLocaleString()} ₽
+                    {location.indoor ? 'В помещении' : 'На улице'}
                   </Badge>
                 </div>
               </div>
@@ -120,8 +84,8 @@ const LocationsSection = () => {
                   <CardTitle className="text-xl font-bold">{location.name}</CardTitle>
                   <div className="flex items-center space-x-1">
                     <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                    <span className="text-sm font-medium">{location.rating}</span>
-                    <span className="text-sm text-gray-500">({location.reviewsCount})</span>
+                    <span className="text-sm font-medium">4.8</span>
+                    <span className="text-sm text-gray-500">(156)</span>
                   </div>
                 </div>
               </CardHeader>
@@ -132,20 +96,12 @@ const LocationsSection = () => {
                 <div className="flex items-center space-x-4 text-sm text-gray-500">
                   <div className="flex items-center space-x-1">
                     <Clock className="h-4 w-4" />
-                    <span>{location.duration}</span>
+                    <span>{location.best_time || 'Любое время'}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <MapPin className="h-4 w-4" />
-                    <span>Москва</span>
+                    <span>{location.address || 'Москва'}</span>
                   </div>
-                </div>
-                
-                <div className="flex flex-wrap gap-2">
-                  {location.features.map((feature, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
-                      {feature}
-                    </Badge>
-                  ))}
                 </div>
                 
                 <div className="flex space-x-3 pt-4">

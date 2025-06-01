@@ -9,6 +9,137 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      availability: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          is_available: boolean | null
+          price_multiplier: number | null
+          time_slot: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          is_available?: boolean | null
+          price_multiplier?: number | null
+          time_slot: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          is_available?: boolean | null
+          price_multiplier?: number | null
+          time_slot?: string
+        }
+        Relationships: []
+      }
+      blog_posts: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          excerpt: string | null
+          featured_image: string | null
+          id: string
+          is_published: boolean | null
+          published_at: string | null
+          slug: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          is_published?: boolean | null
+          published_at?: string | null
+          slug: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          is_published?: boolean | null
+          published_at?: string | null
+          slug?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      bookings: {
+        Row: {
+          created_at: string
+          date: string
+          email: string
+          id: string
+          location_id: string | null
+          message: string | null
+          name: string
+          phone: string | null
+          service_type: string
+          status: string | null
+          time: string
+          total_price: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          email: string
+          id?: string
+          location_id?: string | null
+          message?: string | null
+          name: string
+          phone?: string | null
+          service_type: string
+          status?: string | null
+          time: string
+          total_price?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          email?: string
+          id?: string
+          location_id?: string | null
+          message?: string | null
+          name?: string
+          phone?: string | null
+          service_type?: string
+          status?: string | null
+          time?: string
+          total_price?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "photoshoot_locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       location_categories: {
         Row: {
           created_at: string
@@ -80,6 +211,87 @@ export type Database = {
           },
         ]
       }
+      portfolio: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string
+          is_featured: boolean | null
+          location: string | null
+          order_index: number | null
+          shoot_date: string | null
+          thumbnail_url: string | null
+          title: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url: string
+          is_featured?: boolean | null
+          location?: string | null
+          order_index?: number | null
+          shoot_date?: string | null
+          thumbnail_url?: string | null
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string
+          is_featured?: boolean | null
+          location?: string | null
+          order_index?: number | null
+          shoot_date?: string | null
+          thumbnail_url?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      pricing: {
+        Row: {
+          created_at: string
+          duration_hours: number
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          locations_count: string | null
+          photos_count: string | null
+          price: number
+          service_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_hours: number
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          locations_count?: string | null
+          photos_count?: string | null
+          price: number
+          service_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_hours?: number
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          locations_count?: string | null
+          photos_count?: string | null
+          price?: number
+          service_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -101,6 +313,45 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
           username?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string
+          created_at: string
+          email: string
+          id: string
+          is_approved: boolean | null
+          name: string
+          photo_url: string | null
+          rating: number
+          service_type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          email: string
+          id?: string
+          is_approved?: boolean | null
+          name: string
+          photo_url?: string | null
+          rating: number
+          service_type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          email?: string
+          id?: string
+          is_approved?: boolean | null
+          name?: string
+          photo_url?: string | null
+          rating?: number
+          service_type?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

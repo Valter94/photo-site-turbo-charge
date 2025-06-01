@@ -1,6 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Camera, Instagram, Phone, Mail, MapPin, Star, ArrowRight, Menu, X, ArrowUp } from 'lucide-react';
+import LocationsSection from '../components/LocationsSection';
+import BookingCalendar from '../components/BookingCalendar';
+import PricingSection from '../components/PricingSection';
+import FAQSection from '../components/FAQSection';
 
 const Index = () => {
   const [activeFilter, setActiveFilter] = useState('all');
@@ -103,8 +106,11 @@ const Index = () => {
             <nav className="hidden md:flex space-x-8">
               <button onClick={() => smoothScroll('home')} className="text-gray-700 hover:text-rose-400 transition-colors">Главная</button>
               <button onClick={() => smoothScroll('portfolio')} className="text-gray-700 hover:text-rose-400 transition-colors">Портфолио</button>
-              <button onClick={() => smoothScroll('services')} className="text-gray-700 hover:text-rose-400 transition-colors">Услуги</button>
+              <button onClick={() => smoothScroll('locations')} className="text-gray-700 hover:text-rose-400 transition-colors">Локации</button>
+              <button onClick={() => smoothScroll('pricing')} className="text-gray-700 hover:text-rose-400 transition-colors">Цены</button>
+              <button onClick={() => smoothScroll('booking')} className="text-gray-700 hover:text-rose-400 transition-colors">Бронирование</button>
               <button onClick={() => smoothScroll('reviews')} className="text-gray-700 hover:text-rose-400 transition-colors">Отзывы</button>
+              <button onClick={() => smoothScroll('faq')} className="text-gray-700 hover:text-rose-400 transition-colors">FAQ</button>
               <button onClick={() => smoothScroll('contacts')} className="text-gray-700 hover:text-rose-400 transition-colors">Контакты</button>
             </nav>
 
@@ -130,8 +136,11 @@ const Index = () => {
             <div className="px-4 py-2 space-y-1">
               <button onClick={() => smoothScroll('home')} className="block w-full text-left px-3 py-2 text-gray-700 hover:text-rose-400">Главная</button>
               <button onClick={() => smoothScroll('portfolio')} className="block w-full text-left px-3 py-2 text-gray-700 hover:text-rose-400">Портфолио</button>
-              <button onClick={() => smoothScroll('services')} className="block w-full text-left px-3 py-2 text-gray-700 hover:text-rose-400">Услуги</button>
+              <button onClick={() => smoothScroll('locations')} className="block w-full text-left px-3 py-2 text-gray-700 hover:text-rose-400">Локации</button>
+              <button onClick={() => smoothScroll('pricing')} className="block w-full text-left px-3 py-2 text-gray-700 hover:text-rose-400">Цены</button>
+              <button onClick={() => smoothScroll('booking')} className="block w-full text-left px-3 py-2 text-gray-700 hover:text-rose-400">Бронирование</button>
               <button onClick={() => smoothScroll('reviews')} className="block w-full text-left px-3 py-2 text-gray-700 hover:text-rose-400">Отзывы</button>
+              <button onClick={() => smoothScroll('faq')} className="block w-full text-left px-3 py-2 text-gray-700 hover:text-rose-400">FAQ</button>
               <button onClick={() => smoothScroll('contacts')} className="block w-full text-left px-3 py-2 text-gray-700 hover:text-rose-400">Контакты</button>
             </div>
           </div>
@@ -163,7 +172,7 @@ const Index = () => {
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </button>
                 <button 
-                  onClick={() => smoothScroll('contacts')}
+                  onClick={() => smoothScroll('booking')}
                   className="border-2 border-rose-400 text-rose-400 px-8 py-3 rounded-full hover:bg-rose-400 hover:text-white transition-all duration-300"
                 >
                   Забронировать съемку
@@ -260,64 +269,15 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Services Section */}
-      <section id="services" className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Услуги и цены</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Профессиональная фотосъемка для особенных моментов вашей жизни
-            </p>
-          </div>
+      {/* Locations Section */}
+      <LocationsSection />
 
-          <div className="grid lg:grid-cols-3 gap-8">
-            {services.map((service, index) => (
-              <div 
-                key={index}
-                className={`relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 ${
-                  service.popular ? 'ring-2 ring-rose-400' : ''
-                }`}
-              >
-                {service.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-rose-400 text-white px-4 py-2 rounded-full text-sm font-medium">
-                      Популярно
-                    </span>
-                  </div>
-                )}
-                
-                <div className="p-8">
-                  <div className="text-center mb-6">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{service.title}</h3>
-                    <p className="text-gray-600 mb-4">{service.description}</p>
-                    <div className="text-3xl font-bold text-rose-400 mb-2">{service.price}</div>
-                    <div className="text-sm text-gray-500">{service.duration}</div>
-                  </div>
+      {/* Pricing Section */}
+      <PricingSection />
 
-                  <div className="space-y-3 mb-8">
-                    {service.includes.map((item, idx) => (
-                      <div key={idx} className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-rose-400 rounded-full"></div>
-                        <span className="text-gray-600">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button 
-                    onClick={() => smoothScroll('contacts')}
-                    className={`w-full py-3 rounded-xl transition-all duration-300 ${
-                      service.popular
-                        ? 'bg-rose-400 text-white hover:bg-rose-500'
-                        : 'border-2 border-rose-400 text-rose-400 hover:bg-rose-400 hover:text-white'
-                    }`}
-                  >
-                    Забронировать
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* Booking Calendar Section */}
+      <section id="booking">
+        <BookingCalendar />
       </section>
 
       {/* Reviews Section */}
@@ -346,6 +306,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* FAQ Section */}
+      <FAQSection />
 
       {/* Contact Section */}
       <section id="contacts" className="py-20 bg-gradient-to-br from-rose-50 to-pink-50">

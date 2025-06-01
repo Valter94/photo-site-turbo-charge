@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,7 +18,7 @@ const BookingForm = ({ selectedDate, selectedTime, selectedLocation }: BookingFo
     name: '',
     email: '',
     phone: '',
-    service_type: '',
+    service_type: selectedLocation || '',
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,7 +35,7 @@ const BookingForm = ({ selectedDate, selectedTime, selectedLocation }: BookingFo
           ...formData,
           date: selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
           time: selectedTime || '12:00',
-          location_id: selectedLocation
+          location_id: null // Will be set later when we have location selection
         });
 
       if (error) throw error;
@@ -50,7 +49,7 @@ const BookingForm = ({ selectedDate, selectedTime, selectedLocation }: BookingFo
         name: '',
         email: '',
         phone: '',
-        service_type: '',
+        service_type: selectedLocation || '',
         message: ''
       });
     } catch (error) {
@@ -68,13 +67,13 @@ const BookingForm = ({ selectedDate, selectedTime, selectedLocation }: BookingFo
   return (
     <Card className="max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Забронировать фотосессию</CardTitle>
+        <CardTitle>Контактная информация</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Input
-              placeholder="Ваше имя"
+              placeholder="Ваше имя *"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
@@ -84,7 +83,7 @@ const BookingForm = ({ selectedDate, selectedTime, selectedLocation }: BookingFo
           <div>
             <Input
               type="email"
-              placeholder="Email"
+              placeholder="Email *"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
@@ -94,47 +93,33 @@ const BookingForm = ({ selectedDate, selectedTime, selectedLocation }: BookingFo
           <div>
             <Input
               type="tel"
-              placeholder="Телефон"
+              placeholder="Телефон *"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              required
             />
-          </div>
-          
-          <div>
-            <Select value={formData.service_type} onValueChange={(value) => setFormData({ ...formData, service_type: value })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Тип съемки" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="wedding">Свадебная съемка</SelectItem>
-                <SelectItem value="lovestory">Love Story</SelectItem>
-                <SelectItem value="portrait">Портретная съемка</SelectItem>
-                <SelectItem value="corporate">Корпоративная съемка</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
           
           <div>
             <Textarea
-              placeholder="Дополнительные пожелания..."
+              placeholder="Дополнительные пожелания, особые требования..."
               value={formData.message}
               onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              rows={3}
+              rows={4}
             />
           </div>
           
-          {selectedDate && selectedTime && (
-            <div className="bg-gray-50 p-3 rounded-lg text-sm">
-              <div className="flex justify-between">
-                <span>Дата:</span>
-                <span>{selectedDate.toLocaleDateString('ru-RU')}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Время:</span>
-                <span>{selectedTime}</span>
-              </div>
-            </div>
-          )}
+          <div className="bg-gray-50 p-4 rounded-lg text-sm">
+            <p className="text-gray-600 mb-2">
+              После отправки заявки с вами свяжется администратор для:
+            </p>
+            <ul className="text-gray-500 space-y-1 text-xs">
+              <li>• Подтверждения деталей съемки</li>
+              <li>• Уточнения локации</li>
+              <li>• Внесения предоплаты</li>
+              <li>• Консультации по образу</li>
+            </ul>
+          </div>
           
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? 'Отправка...' : 'Отправить заявку'}

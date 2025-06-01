@@ -35,6 +35,23 @@ const LocationsSection = () => {
     ? locations 
     : locations?.filter(location => location.location_categories?.name === selectedCategory);
 
+  // Обновленные изображения для локаций
+  const locationImages = [
+    'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?w=800&h=600&fit=crop'
+  ];
+
+  const scrollToBooking = () => {
+    const bookingSection = document.getElementById('booking');
+    if (bookingSection) {
+      bookingSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section id="locations" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -62,11 +79,11 @@ const LocationsSection = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-          {filteredLocations?.map((location) => (
+          {filteredLocations?.map((location, index) => (
             <Card key={location.id} className="overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
               <div className="relative h-64">
                 <OptimizedImage
-                  src={location.image_url || 'https://images.unsplash.com/photo-1441829266145-6d4bbc4ed8fb?w=800&h=600&fit=crop'}
+                  src={locationImages[index % locationImages.length]}
                   alt={location.name}
                   className="w-full h-full object-cover"
                   width={800}
@@ -105,7 +122,10 @@ const LocationsSection = () => {
                 </div>
                 
                 <div className="flex space-x-3 pt-4">
-                  <button className="flex-1 bg-rose-400 text-white py-2 px-4 rounded-lg hover:bg-rose-500 transition-colors flex items-center justify-center space-x-2">
+                  <button 
+                    onClick={scrollToBooking}
+                    className="flex-1 bg-rose-400 text-white py-2 px-4 rounded-lg hover:bg-rose-500 transition-colors flex items-center justify-center space-x-2"
+                  >
                     <Camera className="h-4 w-4" />
                     <span>Забронировать</span>
                   </button>

@@ -1,13 +1,12 @@
 
-import React, { useState } from 'react';
-import { Clock, Camera, MapPin, Check } from 'lucide-react';
+import React from 'react';
+import { Check, Gift } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePricing } from '@/hooks/usePricing';
 
 const PricingSection = () => {
-  const [selectedDuration, setSelectedDuration] = useState('1');
   const { data: pricingData, isLoading } = usePricing();
 
   if (isLoading) {
@@ -25,226 +24,217 @@ const PricingSection = () => {
     );
   }
 
-  // Группируем данные по типам услуг
-  const serviceTypes = pricingData?.reduce((acc, item) => {
-    if (!acc[item.service_type]) {
-      acc[item.service_type] = [];
+  // Группируем данные по типам услуг и создаем планы
+  const serviceTypes = {
+    wedding: {
+      name: 'Свадебная съемка',
+      plans: [
+        {
+          name: 'Сборы',
+          price: 20000,
+          duration: '2-3 часа',
+          photos: '50-80 фото',
+          features: ['Съемка утренних сборов', 'Детали и атмосфера', 'Базовая ретушь', 'Онлайн-галерея']
+        },
+        {
+          name: 'Сборы + Торжество',
+          price: 45000,
+          duration: '6-8 часов',
+          photos: '150-250 фото',
+          features: ['Утренние сборы', 'Церемония', 'Банкет до полуночи', 'Профессиональная ретушь', 'Онлайн-галерея']
+        },
+        {
+          name: 'Полный день',
+          price: 70000,
+          duration: 'Весь день',
+          photos: '300-500 фото',
+          isPopular: true,
+          gift: 'Визажист в подарок',
+          features: ['Утренние сборы', 'Церемония', 'Банкет без ограничений', 'Художественная ретушь', 'Печатные фото 20 шт', 'Онлайн-галерея', 'Слайд-шоу']
+        }
+      ]
+    },
+    lovestory: {
+      name: 'Love Story',
+      plans: [
+        {
+          name: 'Базовый',
+          price: 8000,
+          duration: '1 час',
+          photos: '20-30 фото',
+          features: ['1 локация', 'Помощь в позировании', 'Базовая ретушь', 'Онлайн-галерея']
+        },
+        {
+          name: 'Стандарт',
+          price: 15000,
+          duration: '2 часа',
+          photos: '50-70 фото',
+          features: ['2 локации', 'Смена образов', 'Профессиональная ретушь', 'Онлайн-галерея', 'Консультация стилиста']
+        },
+        {
+          name: 'Премиум',
+          price: 25000,
+          duration: '3 часа',
+          photos: '80-120 фото',
+          isPopular: true,
+          gift: 'Печатная фотокнига в подарок',
+          features: ['3 локации', 'Неограниченная смена образов', 'Художественная ретушь', 'Печатные фото 10 шт', 'Фотокнига 20x30', 'Онлайн-галерея']
+        }
+      ]
+    },
+    portrait: {
+      name: 'Портретная съемка',
+      plans: [
+        {
+          name: 'Базовый',
+          price: 5000,
+          duration: '30 минут',
+          photos: '10-15 фото',
+          features: ['Студия или улица', 'Базовая ретушь', 'Онлайн-галерея']
+        },
+        {
+          name: 'Стандарт',
+          price: 10000,
+          duration: '1 час',
+          photos: '25-40 фото',
+          features: ['Выбор локации', 'Смена образа', 'Профессиональная ретушь', 'Онлайн-галерея', 'Консультация по образу']
+        },
+        {
+          name: 'Премиум',
+          price: 18000,
+          duration: '1.5 часа',
+          photos: '50-80 фото',
+          isPopular: true,
+          gift: 'Профессиональный макияж в подарок',
+          features: ['Студия + улица', 'Множественная смена образов', 'Художественная ретушь', 'Печатные фото 5 шт', 'Онлайн-галерея', 'Персональная консультация']
+        }
+      ]
+    },
+    corporate: {
+      name: 'Корпоративная съемка',
+      plans: [
+        {
+          name: 'Базовый',
+          price: 12000,
+          duration: '1 час',
+          photos: '20-30 фото',
+          features: ['Деловые портреты', 'До 5 человек', 'Быстрая обработка', 'Цифровые файлы']
+        },
+        {
+          name: 'Стандарт',
+          price: 25000,
+          duration: '2-3 часа',
+          photos: '50-100 фото',
+          features: ['Командные и индивидуальные портреты', 'До 15 человек', 'Профессиональная ретушь', 'Коммерческая лицензия', 'Онлайн-галерея']
+        },
+        {
+          name: 'Корпоративное мероприятие',
+          price: 40000,
+          duration: '4-6 часов',
+          photos: '200-400 фото',
+          isPopular: true,
+          gift: 'Видеоролик в подарок (2 мин)',
+          features: ['Полное освещение мероприятия', 'Неограниченное количество участников', 'Экспресс-обработка', 'Печатные материалы', 'Коммерческая лицензия', 'Презентационный ролик']
+        }
+      ]
     }
-    acc[item.service_type].push(item);
-    return acc;
-  }, {} as Record<string, typeof pricingData>);
-
-  // Создаем почасовые тарифы из данных
-  const hourlyRates = pricingData?.reduce((acc, item) => {
-    acc[item.duration_hours.toString()] = {
-      price: item.price,
-      photos: item.photos_count || '20-30',
-      locations: item.locations_count || '1'
-    };
-    return acc;
-  }, {} as Record<string, { price: number; photos: string; locations: string }>);
-
-  const additionalServices = [
-    { name: 'Дополнительная обработка фото', price: 200, unit: 'за фото' },
-    { name: 'Экспресс-обработка (1 день)', price: 5000, unit: 'за съемку' },
-    { name: 'Печать фотокниги', price: 3000, unit: 'от' },
-    { name: 'Видеосъемка', price: 15000, unit: 'за час' },
-    { name: 'Второй фотограф', price: 10000, unit: 'за съемку' },
-    { name: 'Аренда реквизита', price: 2000, unit: 'за комплект' }
-  ];
-
-  const getServiceName = (serviceType: string) => {
-    const names = {
-      wedding: 'Свадебная съемка',
-      lovestory: 'Love Story',
-      portrait: 'Портретная съемка',
-      corporate: 'Корпоративная съемка'
-    };
-    return names[serviceType as keyof typeof names] || serviceType;
-  };
-
-  const getServiceDescription = (serviceType: string) => {
-    const descriptions = {
-      wedding: 'Полное сопровождение свадебного дня',
-      lovestory: 'Романтическая фотосессия для пар',
-      portrait: 'Индивидуальная или семейная съемка',
-      corporate: 'Деловые портреты и мероприятия'
-    };
-    return descriptions[serviceType as keyof typeof descriptions] || '';
   };
 
   return (
     <section id="pricing" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Цены и пакеты</h2>
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">Тарифы и пакеты</h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Прозрачное ценообразование для всех видов фотосъемки
+            Выберите подходящий план для вашего типа съемки
           </p>
         </div>
 
-        <Tabs defaultValue="services" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="services">Виды съемки</TabsTrigger>
-            <TabsTrigger value="hourly">Почасовая оплата</TabsTrigger>
-            <TabsTrigger value="additional">Доп. услуги</TabsTrigger>
+        <Tabs defaultValue="wedding" className="space-y-8">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="wedding">Свадьба</TabsTrigger>
+            <TabsTrigger value="lovestory">Love Story</TabsTrigger>
+            <TabsTrigger value="portrait">Портрет</TabsTrigger>
+            <TabsTrigger value="corporate">Корпоратив</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="services" className="space-y-8">
-            <div className="grid lg:grid-cols-2 gap-8">
-              {Object.entries(serviceTypes || {}).map(([serviceType, services]) => {
-                const mainService = services[0];
-                const features = Array.isArray(mainService.features) ? mainService.features : [];
-                const isPopular = serviceType === 'wedding';
-                
-                return (
+          {Object.entries(serviceTypes).map(([serviceType, service]) => (
+            <TabsContent key={serviceType} value={serviceType} className="space-y-8">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-gray-900">{service.name}</h3>
+              </div>
+              
+              <div className="grid lg:grid-cols-3 gap-8">
+                {service.plans.map((plan, index) => (
                   <Card 
-                    key={serviceType} 
+                    key={index} 
                     className={`relative hover:shadow-2xl transition-all duration-300 ${
-                      isPopular ? 'ring-2 ring-rose-400' : ''
+                      plan.isPopular ? 'ring-2 ring-rose-400 scale-105' : ''
                     }`}
                   >
-                    {isPopular && (
+                    {plan.isPopular && (
                       <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                         <Badge className="bg-rose-400 text-white px-4 py-2">
-                          Популярно
+                          Популярный
                         </Badge>
                       </div>
                     )}
                     
                     <CardHeader className="text-center pb-4">
-                      <CardTitle className="text-2xl font-bold">{getServiceName(serviceType)}</CardTitle>
-                      <p className="text-gray-600">{getServiceDescription(serviceType)}</p>
+                      <CardTitle className="text-xl font-bold">{plan.name}</CardTitle>
                       
                       <div className="pt-4">
                         <div className="text-3xl font-bold text-rose-400">
-                          {mainService.price.toLocaleString()} ₽
+                          {plan.price.toLocaleString()} ₽
                         </div>
-                        <p className="text-sm text-gray-500">{mainService.duration_hours} часа</p>
+                        <p className="text-sm text-gray-500">{plan.duration}</p>
+                        <p className="text-sm text-gray-600 mt-1">{plan.photos}</p>
                       </div>
+
+                      {plan.gift && (
+                        <div className="mt-4 p-3 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg border border-yellow-200">
+                          <div className="flex items-center justify-center space-x-2 text-yellow-700">
+                            <Gift className="h-5 w-5" />
+                            <span className="font-semibold text-sm">{plan.gift}</span>
+                          </div>
+                        </div>
+                      )}
                     </CardHeader>
                     
                     <CardContent>
                       <ul className="space-y-3 mb-6">
-                        {features.map((feature: string, index: number) => (
-                          <li key={index} className="flex items-start space-x-3">
+                        {plan.features.map((feature, featureIndex) => (
+                          <li key={featureIndex} className="flex items-start space-x-3">
                             <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                            <span className="text-gray-600">{feature}</span>
+                            <span className="text-gray-600 text-sm">{feature}</span>
                           </li>
                         ))}
                       </ul>
                       
                       <button className={`w-full py-3 rounded-xl transition-all duration-300 ${
-                        isPopular
+                        plan.isPopular
                           ? 'bg-rose-400 text-white hover:bg-rose-500'
                           : 'border-2 border-rose-400 text-rose-400 hover:bg-rose-400 hover:text-white'
                       }`}>
-                        Выбрать пакет
+                        Выбрать план
                       </button>
                     </CardContent>
                   </Card>
-                );
-              })}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="hourly" className="space-y-8">
-            <div className="bg-gray-50 rounded-2xl p-8">
-              <h3 className="text-2xl font-bold text-center mb-8">Калькулятор стоимости по часам</h3>
-              
-              <div className="max-w-4xl mx-auto">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-                  {Object.entries(hourlyRates || {}).map(([hours, data]) => (
-                    <button
-                      key={hours}
-                      onClick={() => setSelectedDuration(hours)}
-                      className={`p-4 rounded-lg border-2 transition-all ${
-                        selectedDuration === hours
-                          ? 'border-rose-400 bg-rose-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="text-lg font-bold">{hours}ч</div>
-                      <div className="text-sm text-gray-600">
-                        {data.price.toLocaleString()} ₽
-                      </div>
-                    </button>
-                  ))}
-                </div>
-
-                {hourlyRates && hourlyRates[selectedDuration] && (
-                  <Card className="bg-white">
-                    <CardContent className="p-8">
-                      <div className="grid md:grid-cols-3 gap-6 text-center">
-                        <div>
-                          <Clock className="h-8 w-8 text-rose-400 mx-auto mb-2" />
-                          <div className="text-2xl font-bold">{selectedDuration} часа</div>
-                          <div className="text-gray-600">Продолжительность</div>
-                        </div>
-                        
-                        <div>
-                          <Camera className="h-8 w-8 text-rose-400 mx-auto mb-2" />
-                          <div className="text-2xl font-bold">
-                            {hourlyRates[selectedDuration].photos}
-                          </div>
-                          <div className="text-gray-600">Обработанных фото</div>
-                        </div>
-                        
-                        <div>
-                          <MapPin className="h-8 w-8 text-rose-400 mx-auto mb-2" />
-                          <div className="text-2xl font-bold">
-                            {hourlyRates[selectedDuration].locations}
-                          </div>
-                          <div className="text-gray-600">Локации</div>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-8 p-6 bg-rose-50 rounded-xl text-center">
-                        <div className="text-3xl font-bold text-rose-600 mb-2">
-                          {hourlyRates[selectedDuration].price.toLocaleString()} ₽
-                        </div>
-                        <div className="text-gray-600 mb-4">Общая стоимость съемки</div>
-                        <button className="bg-rose-400 text-white px-8 py-3 rounded-lg hover:bg-rose-500 transition-colors">
-                          Забронировать {selectedDuration}ч съемку
-                        </button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                ))}
               </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="additional" className="space-y-8">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {additionalServices.map((service, index) => (
-                <Card key={index} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
-                    <h3 className="font-semibold mb-2">{service.name}</h3>
-                    <div className="text-2xl font-bold text-rose-400 mb-2">
-                      {service.price.toLocaleString()} ₽
-                    </div>
-                    <div className="text-sm text-gray-500">{service.unit}</div>
-                    
-                    <button className="w-full mt-4 py-2 border border-rose-400 text-rose-400 rounded-lg hover:bg-rose-400 hover:text-white transition-colors">
-                      Добавить к заказу
-                    </button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            
-            <div className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-8 text-center">
-              <h3 className="text-2xl font-bold mb-4">Нужна индивидуальная оценка?</h3>
-              <p className="text-gray-600 mb-6">
-                Для масштабных проектов и особых мероприятий мы готовы предложить персональные условия
-              </p>
-              <button className="bg-rose-400 text-white px-8 py-3 rounded-full hover:bg-rose-500 transition-colors">
-                Получить персональное предложение
-              </button>
-            </div>
-          </TabsContent>
+            </TabsContent>
+          ))}
         </Tabs>
+
+        <div className="mt-16 bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-8 text-center">
+          <h3 className="text-2xl font-bold mb-4">Индивидуальные условия</h3>
+          <p className="text-gray-600 mb-6">
+            Для особых мероприятий и уникальных проектов мы готовы предложить персональные условия
+          </p>
+          <button className="bg-rose-400 text-white px-8 py-3 rounded-full hover:bg-rose-500 transition-colors">
+            Получить персональное предложение
+          </button>
+        </div>
       </div>
     </section>
   );

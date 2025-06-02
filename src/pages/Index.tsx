@@ -6,6 +6,7 @@ import BookingCalendar from "../components/BookingCalendar";
 import PortfolioSection from "../components/PortfolioSection";
 import ReviewsSection from "../components/ReviewsSection";
 import FAQSection from "../components/FAQSection";
+import Footer from "../components/Footer";
 
 const Index = () => {
   return (
@@ -17,6 +18,7 @@ const Index = () => {
       <BookingCalendar />
       <ReviewsSection />
       <FAQSection />
+      <Footer />
     </div>
   );
 };

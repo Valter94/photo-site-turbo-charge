@@ -9,11 +9,10 @@ import { useToast } from '@/hooks/use-toast';
 
 interface BookingFormProps {
   selectedDate?: Date;
-  selectedTime?: string;
   selectedLocation?: string;
 }
 
-const BookingForm = ({ selectedDate, selectedTime, selectedLocation }: BookingFormProps) => {
+const BookingForm = ({ selectedDate, selectedLocation }: BookingFormProps) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -34,7 +33,7 @@ const BookingForm = ({ selectedDate, selectedTime, selectedLocation }: BookingFo
         .insert({
           ...formData,
           date: selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
-          time: '12:00', // Устанавливаем время по умолчанию
+          time: '12:00',
           location_id: null
         });
 

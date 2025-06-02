@@ -11,7 +11,6 @@ const BookingCalendar = () => {
   const [selectedPlan, setSelectedPlan] = useState<string>('');
   const [showBookingForm, setShowBookingForm] = useState(false);
 
-  // Планы для каждого типа съемки
   const serviceTypes = {
     wedding: {
       name: 'Свадебная съемка',
@@ -35,14 +34,6 @@ const BookingCalendar = () => {
         { id: 'portrait-basic', name: 'Базовый', price: 5000, duration: '30 минут' },
         { id: 'portrait-standard', name: 'Стандарт', price: 10000, duration: '1 час' },
         { id: 'portrait-premium', name: 'Премиум', price: 18000, duration: '1.5 часа', gift: 'Макияж в подарок' }
-      ]
-    },
-    corporate: {
-      name: 'Корпоративная съемка',
-      plans: [
-        { id: 'corporate-basic', name: 'Базовый', price: 12000, duration: '1 час' },
-        { id: 'corporate-standard', name: 'Стандарт', price: 25000, duration: '2-3 часа' },
-        { id: 'corporate-premium', name: 'Мероприятие', price: 40000, duration: '4-6 часов', gift: 'Видеоролик в подарок' }
       ]
     }
   };
@@ -103,7 +94,6 @@ const BookingCalendar = () => {
             
             <BookingForm 
               selectedDate={selectedDate}
-              selectedTime=""
               selectedLocation={selectedService}
             />
           </div>
@@ -123,7 +113,6 @@ const BookingCalendar = () => {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Выбор типа съемки */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Тип съемки</CardTitle>
@@ -151,7 +140,6 @@ const BookingCalendar = () => {
             </CardContent>
           </Card>
 
-          {/* Выбор плана */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">План съемки</CardTitle>
@@ -184,7 +172,6 @@ const BookingCalendar = () => {
             </CardContent>
           </Card>
 
-          {/* Календарь */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -213,7 +200,6 @@ const BookingCalendar = () => {
           </Card>
         </div>
 
-        {/* Кнопка бронирования */}
         {selectedDate && selectedService && selectedPlan && (
           <div className="mt-8 text-center">
             <Card className="max-w-md mx-auto">

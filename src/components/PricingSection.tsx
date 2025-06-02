@@ -24,7 +24,6 @@ const PricingSection = () => {
     );
   }
 
-  // Группируем данные по типам услуг и создаем планы
   const serviceTypes = {
     wedding: {
       name: 'Свадебная съемка',
@@ -109,34 +108,6 @@ const PricingSection = () => {
           features: ['Студия + улица', 'Множественная смена образов', 'Художественная ретушь', 'Печатные фото 5 шт', 'Онлайн-галерея', 'Персональная консультация']
         }
       ]
-    },
-    corporate: {
-      name: 'Корпоративная съемка',
-      plans: [
-        {
-          name: 'Базовый',
-          price: 12000,
-          duration: '1 час',
-          photos: '20-30 фото',
-          features: ['Деловые портреты', 'До 5 человек', 'Быстрая обработка', 'Цифровые файлы']
-        },
-        {
-          name: 'Стандарт',
-          price: 25000,
-          duration: '2-3 часа',
-          photos: '50-100 фото',
-          features: ['Командные и индивидуальные портреты', 'До 15 человек', 'Профессиональная ретушь', 'Коммерческая лицензия', 'Онлайн-галерея']
-        },
-        {
-          name: 'Корпоративное мероприятие',
-          price: 40000,
-          duration: '4-6 часов',
-          photos: '200-400 фото',
-          isPopular: true,
-          gift: 'Видеоролик в подарок (2 мин)',
-          features: ['Полное освещение мероприятия', 'Неограниченное количество участников', 'Экспресс-обработка', 'Печатные материалы', 'Коммерческая лицензия', 'Презентационный ролик']
-        }
-      ]
     }
   };
 
@@ -151,11 +122,10 @@ const PricingSection = () => {
         </div>
 
         <Tabs defaultValue="wedding" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="wedding">Свадьба</TabsTrigger>
             <TabsTrigger value="lovestory">Love Story</TabsTrigger>
             <TabsTrigger value="portrait">Портрет</TabsTrigger>
-            <TabsTrigger value="corporate">Корпоратив</TabsTrigger>
           </TabsList>
 
           {Object.entries(serviceTypes).map(([serviceType, service]) => (

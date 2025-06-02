@@ -28,22 +28,107 @@ const LocationsSection = () => {
 
   const allCategories = [
     { id: 'all', name: 'Все локации' },
-    ...(categories?.map(cat => ({ id: cat.name, name: cat.description })) || [])
+    { id: 'spring', name: 'Весенние' },
+    { id: 'summer', name: 'Летние' },
+    { id: 'autumn', name: 'Осенние' },
+    { id: 'winter', name: 'Зимние' },
+    { id: 'indoor', name: 'В помещении' }
   ];
 
-  const filteredLocations = selectedCategory === 'all' 
-    ? locations 
-    : locations?.filter(location => location.location_categories?.name === selectedCategory);
+  // Актуальные фотографии по сезонам - Москва и Московская область
+  const seasonalLocations = {
+    spring: [
+      {
+        id: 'spring-1',
+        name: 'Сад Эрмитаж',
+        description: 'Весенний сад с цветущими деревьями в центре Москвы',
+        image: 'https://images.unsplash.com/photo-1524863479829-916d8e77f114?w=800&h=600&fit=crop',
+        season: 'spring'
+      },
+      {
+        id: 'spring-2', 
+        name: 'Парк Горького',
+        description: 'Парк с весенними тюльпанами и молодой зеленью',
+        image: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800&h=600&fit=crop',
+        season: 'spring'
+      }
+    ],
+    summer: [
+      {
+        id: 'summer-1',
+        name: 'Воробьевы горы',
+        description: 'Летние виды на Москву-реку с панорамной площадки',
+        image: 'https://images.unsplash.com/photo-1520637836862-4d197d17c968?w=800&h=600&fit=crop',
+        season: 'summer'
+      },
+      {
+        id: 'summer-2',
+        name: 'Царицыно',
+        description: 'Летний дворцовый комплекс с садами и прудами',
+        image: 'https://images.unsplash.com/photo-1595606571647-47b11eebb26c?w=800&h=600&fit=crop',
+        season: 'summer'
+      }
+    ],
+    autumn: [
+      {
+        id: 'autumn-1',
+        name: 'Коломенское',
+        description: 'Осенние золотые аллеи и историческая архитектура',
+        image: 'https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=800&h=600&fit=crop',
+        season: 'autumn'
+      },
+      {
+        id: 'autumn-2',
+        name: 'Измайловский парк',
+        description: 'Осенний лес с яркими красками листопада',
+        image: 'https://images.unsplash.com/photo-1540206351-d6465b3ac5c1?w=800&h=600&fit=crop',
+        season: 'autumn'
+      }
+    ],
+    winter: [
+      {
+        id: 'winter-1',
+        name: 'Красная площадь',
+        description: 'Зимняя сказка с новогодними украшениями',
+        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop',
+        season: 'winter'
+      },
+      {
+        id: 'winter-2',
+        name: 'Сокольники',
+        description: 'Зимний парк с заснеженными тропинками',
+        image: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&h=600&fit=crop',
+        season: 'winter'
+      }
+    ],
+    indoor: [
+      {
+        id: 'indoor-1',
+        name: 'Фотостудия "Loft"',
+        description: 'Современная студия с большими окнами и белыми стенами',
+        image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop',
+        season: 'indoor'
+      },
+      {
+        id: 'indoor-2',
+        name: 'Студия "Винтаж"',
+        description: 'Уютная студия с винтажным интерьером и мягким светом',
+        image: 'https://images.unsplash.com/photo-1556912167-f556f1ae1776?w=800&h=600&fit=crop',
+        season: 'indoor'
+      }
+    ]
+  };
 
-  // Обновленные изображения для локаций
-  const locationImages = [
-    'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=600&fit=crop',
-    'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=800&h=600&fit=crop',
-    'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&h=600&fit=crop',
-    'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=800&h=600&fit=crop',
-    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&h=600&fit=crop',
-    'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?w=800&h=600&fit=crop'
-  ];
+  const getAllLocations = () => {
+    return Object.values(seasonalLocations).flat();
+  };
+
+  const getFilteredLocations = () => {
+    if (selectedCategory === 'all') {
+      return getAllLocations();
+    }
+    return seasonalLocations[selectedCategory as keyof typeof seasonalLocations] || [];
+  };
 
   const scrollToBooking = () => {
     const bookingSection = document.getElementById('booking');
@@ -58,7 +143,7 @@ const LocationsSection = () => {
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">Локации для фотосессий</h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Выберите идеальное место для вашей фотосессии из нашей коллекции проверенных локаций
+            Выберите идеальное место для вашей фотосессии из нашей коллекции проверенных локаций по сезонам
           </p>
         </div>
 
@@ -79,11 +164,11 @@ const LocationsSection = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-          {filteredLocations?.map((location, index) => (
+          {getFilteredLocations().map((location) => (
             <Card key={location.id} className="overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
               <div className="relative h-64">
                 <OptimizedImage
-                  src={locationImages[index % locationImages.length]}
+                  src={location.image}
                   alt={location.name}
                   className="w-full h-full object-cover"
                   width={800}
@@ -91,7 +176,10 @@ const LocationsSection = () => {
                 />
                 <div className="absolute top-4 right-4">
                   <Badge className="bg-white/90 text-gray-900">
-                    {location.indoor ? 'В помещении' : 'На улице'}
+                    {location.season === 'indoor' ? 'В помещении' : 
+                     location.season === 'spring' ? 'Весна' :
+                     location.season === 'summer' ? 'Лето' :
+                     location.season === 'autumn' ? 'Осень' : 'Зима'}
                   </Badge>
                 </div>
               </div>
@@ -113,11 +201,11 @@ const LocationsSection = () => {
                 <div className="flex items-center space-x-4 text-sm text-gray-500">
                   <div className="flex items-center space-x-1">
                     <Clock className="h-4 w-4" />
-                    <span>{location.best_time || 'Любое время'}</span>
+                    <span>Любое время</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <MapPin className="h-4 w-4" />
-                    <span>{location.address || 'Москва'}</span>
+                    <span>Москва</span>
                   </div>
                 </div>
                 

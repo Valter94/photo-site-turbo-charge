@@ -2,26 +2,14 @@
 import React, { useState } from 'react';
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Clock, Calendar as CalendarIcon, Camera } from 'lucide-react';
+import { Calendar as CalendarIcon, Camera } from 'lucide-react';
 import BookingForm from './BookingForm';
 
 const BookingCalendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [selectedTime, setSelectedTime] = useState<string>('');
   const [selectedService, setSelectedService] = useState<string>('');
   const [selectedPlan, setSelectedPlan] = useState<string>('');
   const [showBookingForm, setShowBookingForm] = useState(false);
-
-  // Доступные временные слоты
-  const availableSlots = [
-    { time: '09:00', available: true },
-    { time: '11:00', available: true },
-    { time: '13:00', available: false },
-    { time: '15:00', available: true },
-    { time: '17:00', available: true },
-    { time: '19:00', available: true }
-  ];
 
   // Планы для каждого типа съемки
   const serviceTypes = {
@@ -60,7 +48,7 @@ const BookingCalendar = () => {
   };
 
   const handleBooking = () => {
-    if (selectedDate && selectedTime && selectedService && selectedPlan) {
+    if (selectedDate && selectedService && selectedPlan) {
       setShowBookingForm(true);
     }
   };
@@ -102,10 +90,6 @@ const BookingCalendar = () => {
                     <span>Дата:</span>
                     <span>{selectedDate?.toLocaleDateString('ru-RU')}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Время:</span>
-                    <span>{selectedTime}</span>
-                  </div>
                 </div>
                 
                 <button 
@@ -119,7 +103,7 @@ const BookingCalendar = () => {
             
             <BookingForm 
               selectedDate={selectedDate}
-              selectedTime={selectedTime}
+              selectedTime=""
               selectedLocation={selectedService}
             />
           </div>
@@ -130,15 +114,15 @@ const BookingCalendar = () => {
 
   return (
     <section id="booking" className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">Бронирование фотосессии</h2>
           <p className="text-xl text-gray-600">
-            Выберите тип съемки, план, дату и время
+            Выберите тип съемки, план и дату
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-6">
+        <div className="grid lg:grid-cols-3 gap-6">
           {/* Выбор типа съемки */}
           <Card>
             <CardHeader>
@@ -216,59 +200,21 @@ const BookingCalendar = () => {
                 className="rounded-md border"
                 disabled={(date) => date < new Date()}
               />
-            </CardContent>
-          </Card>
-
-          {/* Время */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Clock className="h-5 w-5" />
-                <span>Время</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {selectedDate ? (
-                <>
-                  <p className="text-sm text-gray-600 mb-4">
-                    {selectedDate.toLocaleDateString('ru-RU', { 
-                      weekday: 'long', 
-                      day: 'numeric',
-                      month: 'long'
-                    })}
-                  </p>
-                  
-                  {availableSlots.map((slot) => (
-                    <button
-                      key={slot.time}
-                      onClick={() => slot.available && setSelectedTime(slot.time)}
-                      disabled={!slot.available}
-                      className={`w-full p-3 rounded-lg border text-left transition-all ${
-                        selectedTime === slot.time
-                          ? 'border-rose-400 bg-rose-50'
-                          : slot.available
-                          ? 'border-gray-200 hover:border-gray-300'
-                          : 'border-gray-100 bg-gray-50 cursor-not-allowed opacity-50'
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium">{slot.time}</span>
-                        {!slot.available && (
-                          <Badge variant="destructive" className="text-xs">Занято</Badge>
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </>
-              ) : (
-                <p className="text-gray-500 text-sm">Выберите дату</p>
+              {selectedDate && (
+                <p className="text-sm text-gray-600 mt-4 text-center">
+                  {selectedDate.toLocaleDateString('ru-RU', { 
+                    weekday: 'long', 
+                    day: 'numeric',
+                    month: 'long'
+                  })}
+                </p>
               )}
             </CardContent>
           </Card>
         </div>
 
         {/* Кнопка бронирования */}
-        {selectedDate && selectedTime && selectedService && selectedPlan && (
+        {selectedDate && selectedService && selectedPlan && (
           <div className="mt-8 text-center">
             <Card className="max-w-md mx-auto">
               <CardContent className="p-6">
@@ -285,10 +231,6 @@ const BookingCalendar = () => {
                   <div className="flex justify-between">
                     <span>Дата:</span>
                     <span>{selectedDate.toLocaleDateString('ru-RU')}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Время:</span>
-                    <span>{selectedTime}</span>
                   </div>
                   <div className="flex justify-between font-semibold text-gray-900 text-base">
                     <span>Стоимость:</span>

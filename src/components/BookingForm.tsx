@@ -34,8 +34,8 @@ const BookingForm = ({ selectedDate, selectedTime, selectedLocation }: BookingFo
         .insert({
           ...formData,
           date: selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
-          time: selectedTime || '12:00',
-          location_id: null // Will be set later when we have location selection
+          time: '12:00', // Устанавливаем время по умолчанию
+          location_id: null
         });
 
       if (error) throw error;
@@ -115,7 +115,7 @@ const BookingForm = ({ selectedDate, selectedTime, selectedLocation }: BookingFo
             </p>
             <ul className="text-gray-500 space-y-1 text-xs">
               <li>• Подтверждения деталей съемки</li>
-              <li>• Уточнения локации</li>
+              <li>• Уточнения локации и времени</li>
               <li>• Внесения предоплаты</li>
               <li>• Консультации по образу</li>
             </ul>

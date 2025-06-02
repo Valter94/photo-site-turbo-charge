@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      additional_services: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          price: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          price?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          price?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       availability: {
         Row: {
           created_at: string
@@ -214,6 +244,7 @@ export type Database = {
       portfolio: {
         Row: {
           category: string
+          client_name: string | null
           created_at: string
           description: string | null
           id: string
@@ -222,11 +253,13 @@ export type Database = {
           location: string | null
           order_index: number | null
           shoot_date: string | null
+          tags: string[] | null
           thumbnail_url: string | null
           title: string
         }
         Insert: {
           category: string
+          client_name?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -235,11 +268,13 @@ export type Database = {
           location?: string | null
           order_index?: number | null
           shoot_date?: string | null
+          tags?: string[] | null
           thumbnail_url?: string | null
           title: string
         }
         Update: {
           category?: string
+          client_name?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -248,6 +283,7 @@ export type Database = {
           location?: string | null
           order_index?: number | null
           shoot_date?: string | null
+          tags?: string[] | null
           thumbnail_url?: string | null
           title?: string
         }
@@ -352,6 +388,48 @@ export type Database = {
           rating?: number
           service_type?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          contact_address: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string | null
+          hero_subtitle: string | null
+          hero_title: string | null
+          id: string
+          photographer_description: string | null
+          photographer_name: string
+          photographer_photo: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          contact_address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
+          id?: string
+          photographer_description?: string | null
+          photographer_name?: string
+          photographer_photo?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          contact_address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
+          id?: string
+          photographer_description?: string | null
+          photographer_name?: string
+          photographer_photo?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }

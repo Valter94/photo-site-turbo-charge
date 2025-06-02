@@ -1,9 +1,12 @@
 
 import React, { useState } from 'react';
-import { Settings, MapPin, Camera, Calendar, DollarSign, Users, MessageSquare, LogOut } from 'lucide-react';
+import { Settings, MapPin, Camera, Calendar, DollarSign, Users, MessageSquare, LogOut, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import PortfolioManager from './admin/PortfolioManager';
+import PricingManager from './admin/PricingManager';
+import SiteSettingsManager from './admin/SiteSettingsManager';
 
 interface AdminPanelProps {
   onLogout: () => void;
@@ -18,7 +21,7 @@ const AdminPanel = ({ onLogout }: AdminPanelProps) => {
         <div className="mb-8 flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Админ-панель</h1>
-            <p className="text-gray-600">Управление сайтом фотографа</p>
+            <p className="text-gray-600">Управление сайтом фотографа Ирины</p>
           </div>
           <Button 
             onClick={onLogout}
@@ -31,26 +34,30 @@ const AdminPanel = ({ onLogout }: AdminPanelProps) => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
               Обзор
             </TabsTrigger>
-            <TabsTrigger value="locations" className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              Локации
+            <TabsTrigger value="settings" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Настройки
             </TabsTrigger>
             <TabsTrigger value="portfolio" className="flex items-center gap-2">
               <Camera className="h-4 w-4" />
               Портфолио
             </TabsTrigger>
-            <TabsTrigger value="booking" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Бронирования
-            </TabsTrigger>
             <TabsTrigger value="pricing" className="flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
               Цены
+            </TabsTrigger>
+            <TabsTrigger value="locations" className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              Локации
+            </TabsTrigger>
+            <TabsTrigger value="booking" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Бронирования
             </TabsTrigger>
             <TabsTrigger value="reviews" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
@@ -77,8 +84,8 @@ const AdminPanel = ({ onLogout }: AdminPanelProps) => {
                   <MapPin className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">10</div>
-                  <p className="text-xs text-muted-foreground">по сезонам</p>
+                  <div className="text-2xl font-bold">15</div>
+                  <p className="text-xs text-muted-foreground">по всем сезонам</p>
                 </CardContent>
               </Card>
 
@@ -104,6 +111,43 @@ const AdminPanel = ({ onLogout }: AdminPanelProps) => {
                 </CardContent>
               </Card>
             </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Последние активности</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-sm">Новая заявка на свадебную съемку от Анны</span>
+                    <span className="text-xs text-gray-500 ml-auto">2 часа назад</span>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="text-sm">Обновлено портфолио - добавлено 5 новых фото</span>
+                    <span className="text-xs text-gray-500 ml-auto">1 день назад</span>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    <span className="text-sm">Новый отзыв с оценкой 5 звезд</span>
+                    <span className="text-xs text-gray-500 ml-auto">2 дня назад</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="settings" className="space-y-6">
+            <SiteSettingsManager />
+          </TabsContent>
+
+          <TabsContent value="portfolio" className="space-y-6">
+            <PortfolioManager />
+          </TabsContent>
+
+          <TabsContent value="pricing" className="space-y-6">
+            <PricingManager />
           </TabsContent>
 
           <TabsContent value="locations" className="space-y-6">
@@ -119,25 +163,14 @@ const AdminPanel = ({ onLogout }: AdminPanelProps) => {
                     {['Весенние', 'Летние', 'Осенние', 'Зимние'].map((season) => (
                       <Card key={season} className="p-4">
                         <h4 className="font-medium">{season}</h4>
-                        <p className="text-sm text-gray-600">2 локации</p>
+                        <p className="text-sm text-gray-600">
+                          {season === 'Весенние' ? '4 локации' : 
+                           season === 'Летние' ? '6 локаций' :
+                           season === 'Осенние' ? '3 локации' : '2 локации'}
+                        </p>
                       </Card>
                     ))}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="portfolio" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Управление портфолио</h2>
-              <Button>Загрузить фото</Button>
-            </div>
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-gray-600">Здесь будет галерея с инструментами для загрузки и обработки изображений</p>
-                <div className="mt-4 text-sm text-blue-600">
-                  💡 Требуется подключение Supabase для хранения изображений
                 </div>
               </CardContent>
             </Card>
@@ -151,31 +184,6 @@ const AdminPanel = ({ onLogout }: AdminPanelProps) => {
             <Card>
               <CardContent className="p-6">
                 <p className="text-gray-600">Здесь будет календарь с доступными слотами времени</p>
-                <div className="mt-4 text-sm text-blue-600">
-                  💡 Требуется подключение Supabase для управления бронированиями
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="pricing" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Управление ценами</h2>
-              <Button>Добавить тариф</Button>
-            </div>
-            <Card>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Текущие тарифы</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {['Свадебная съемка', 'Love Story', 'Портретная съемка'].map((service) => (
-                      <Card key={service} className="p-4">
-                        <h4 className="font-medium">{service}</h4>
-                        <p className="text-sm text-gray-600">3 плана</p>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -188,9 +196,6 @@ const AdminPanel = ({ onLogout }: AdminPanelProps) => {
             <Card>
               <CardContent className="p-6">
                 <p className="text-gray-600">Здесь будет система управления отзывами и рейтингами</p>
-                <div className="mt-4 text-sm text-blue-600">
-                  💡 Требуется подключение Supabase для хранения отзывов
-                </div>
               </CardContent>
             </Card>
           </TabsContent>

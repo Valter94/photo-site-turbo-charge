@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, MapPin, Camera, Calendar, DollarSign, Users, MessageSquare, LogOut, FileText } from 'lucide-react';
+import { Settings, MapPin, Camera, Calendar, DollarSign, Users, MessageSquare, LogOut, FileText, Package } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import PortfolioManager from './admin/PortfolioManager';
 import PricingManager from './admin/PricingManager';
 import SiteSettingsManager from './admin/SiteSettingsManager';
 import ReviewsManager from './admin/ReviewsManager';
+import LocationsManager from './admin/LocationsManager';
+import ExportManager from './admin/ExportManager';
 
 interface AdminPanelProps {
   onLogout: () => void;
@@ -34,7 +36,7 @@ const AdminPanel = ({ onLogout }: AdminPanelProps) => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
               Обзор
@@ -62,6 +64,10 @@ const AdminPanel = ({ onLogout }: AdminPanelProps) => {
             <TabsTrigger value="reviews" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               Отзывы
+            </TabsTrigger>
+            <TabsTrigger value="export" className="flex items-center gap-2">
+              <Package className="h-4 w-4" />
+              Экспорт
             </TabsTrigger>
           </TabsList>
 
@@ -151,29 +157,7 @@ const AdminPanel = ({ onLogout }: AdminPanelProps) => {
           </TabsContent>
 
           <TabsContent value="locations" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Управление локациями</h2>
-              <Button>Добавить локацию</Button>
-            </div>
-            <Card>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Локации по сезонам</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {['Весенние', 'Летние', 'Осенние', 'Зимние'].map((season) => (
-                      <Card key={season} className="p-4">
-                        <h4 className="font-medium">{season}</h4>
-                        <p className="text-sm text-gray-600">
-                          {season === 'Весенние' ? '4 локации' : 
-                           season === 'Летние' ? '6 локаций' :
-                           season === 'Осенние' ? '3 локации' : '2 локации'}
-                        </p>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <LocationsManager />
           </TabsContent>
 
           <TabsContent value="booking" className="space-y-6">
@@ -190,6 +174,10 @@ const AdminPanel = ({ onLogout }: AdminPanelProps) => {
 
           <TabsContent value="reviews" className="space-y-6">
             <ReviewsManager />
+          </TabsContent>
+
+          <TabsContent value="export" className="space-y-6">
+            <ExportManager />
           </TabsContent>
         </Tabs>
       </div>

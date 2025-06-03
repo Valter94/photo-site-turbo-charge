@@ -6,13 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Edit, Save, X } from 'lucide-react';
-import { usePortfolio } from '@/hooks/usePortfolio';
+import { Switch } from "@/components/ui/switch";
+import { Trash2, Edit, Save, X, Plus, Upload } from 'lucide-react';
+import { usePortfolio, useUpdatePortfolio, useDeletePortfolio } from '@/hooks/usePortfolio';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 
 const PortfolioManager = () => {
   const { data: portfolio, refetch } = usePortfolio();
+  const updatePortfolio = useUpdatePortfolio();
+  const deletePortfolio = useDeletePortfolio();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<any>({});
   const { toast } = useToast();
@@ -21,30 +23,33 @@ const PortfolioManager = () => {
     { value: 'wedding', label: 'Свадьба' },
     { value: 'lovestory', label: 'Love Story' },
     { value: 'portrait', label: 'Портрет' },
-    { value: 'family', label: 'Семейная съемка' }
+    { value: 'family', label: 'Семейная съемка' },
+    { value: 'corporate', label: 'Корпоративная съемка' }
   ];
 
   const handleEdit = (item: any) => {
     setEditingId(item.id);
-    setEditForm(item);
+    setEditForm({
+      ...item,
+      tags: Array.isArray(item.tags) ? item.tags.join(', ') : ''
+    });
   };
 
   const handleSave = async () => {
     try {
-      const { error } = await supabase
-        .from('portfolio')
-        .update(editForm)
-        .eq('id', editingId);
-
-      if (error) throw error;
-
+      const dataToSave = {
+        ...editForm,
+        tags: editForm.tags ? editForm.tags.split(',').map((tag: string) => tag.trim()) : []
+      };
+      
+      await updatePortfolio.mutateAsync(dataToSave);
+      
       toast({
         title: "Успешно",
         description: "Фотография обновлена",
       });
 
       setEditingId(null);
-      refetch();
     } catch (error) {
       toast({
         title: "Ошибка",
@@ -55,20 +60,14 @@ const PortfolioManager = () => {
   };
 
   const handleDelete = async (id: string) => {
+    if (!confirm('Вы уверены, что хотите удалить эту фотографию?')) return;
+    
     try {
-      const { error } = await supabase
-        .from('portfolio')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
+      await deletePortfolio.mutateAsync(id);
       toast({
         title: "Успешно",
         description: "Фотография удалена",
       });
-
-      refetch();
     } catch (error) {
       toast({
         title: "Ошибка",
@@ -86,21 +85,16 @@ const PortfolioManager = () => {
         image_url: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=600&h=400&fit=crop',
         description: 'Описание фотографии',
         location: 'Москва',
-        is_featured: false
+        is_featured: false,
+        order_index: (portfolio?.length || 0) + 1
       };
 
-      const { error } = await supabase
-        .from('portfolio')
-        .insert(newItem);
-
-      if (error) throw error;
-
+      await updatePortfolio.mutateAsync(newItem);
+      
       toast({
         title: "Успешно",
         description: "Новая фотография добавлена",
       });
-
-      refetch();
     } catch (error) {
       toast({
         title: "Ошибка",
@@ -114,7 +108,10 @@ const PortfolioManager = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Управление портфолио</h3>
-        <Button onClick={handleAddNew}>Добавить фото</Button>
+        <Button onClick={handleAddNew}>
+          <Plus className="h-4 w-4 mr-2" />
+          Добавить фото
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -160,14 +157,38 @@ const PortfolioManager = () => {
                     value={editForm.description || ''}
                     onChange={(e) => setEditForm({...editForm, description: e.target.value})}
                     placeholder="Описание"
+                    rows={3}
                   />
                   <Input
                     value={editForm.location || ''}
                     onChange={(e) => setEditForm({...editForm, location: e.target.value})}
                     placeholder="Локация"
                   />
+                  <Input
+                    value={editForm.client_name || ''}
+                    onChange={(e) => setEditForm({...editForm, client_name: e.target.value})}
+                    placeholder="Имя клиента"
+                  />
+                  <Input
+                    value={editForm.tags || ''}
+                    onChange={(e) => setEditForm({...editForm, tags: e.target.value})}
+                    placeholder="Теги (через запятую)"
+                  />
+                  <Input
+                    type="number"
+                    value={editForm.order_index || 0}
+                    onChange={(e) => setEditForm({...editForm, order_index: parseInt(e.target.value)})}
+                    placeholder="Порядок отображения"
+                  />
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      checked={editForm.is_featured}
+                      onCheckedChange={(checked) => setEditForm({...editForm, is_featured: checked})}
+                    />
+                    <label className="text-sm">Рекомендуемое</label>
+                  </div>
                   <div className="flex gap-2">
-                    <Button onClick={handleSave} size="sm">
+                    <Button onClick={handleSave} size="sm" disabled={updatePortfolio.isPending}>
                       <Save className="h-4 w-4" />
                     </Button>
                     <Button onClick={() => setEditingId(null)} variant="outline" size="sm">
@@ -184,14 +205,29 @@ const PortfolioManager = () => {
                     )}
                   </div>
                   <p className="text-sm text-gray-600">{item.description}</p>
-                  <p className="text-xs text-gray-500">📍 {item.location}</p>
-                  <div className="flex justify-between">
+                  {item.location && <p className="text-xs text-gray-500">📍 {item.location}</p>}
+                  {item.client_name && <p className="text-xs text-gray-500">👤 {item.client_name}</p>}
+                  {item.tags && item.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {item.tags.map((tag: string, index: number) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center">
                     <Badge>{categories.find(c => c.value === item.category)?.label}</Badge>
                     <div className="flex gap-1">
                       <Button onClick={() => handleEdit(item)} variant="outline" size="sm">
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button onClick={() => handleDelete(item.id)} variant="destructive" size="sm">
+                      <Button 
+                        onClick={() => handleDelete(item.id)} 
+                        variant="destructive" 
+                        size="sm"
+                        disabled={deletePortfolio.isPending}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>

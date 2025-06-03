@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Settings, MapPin, Camera, Calendar, DollarSign, Users, MessageSquare, LogOut, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import PortfolioManager from './admin/PortfolioManager';
 import PricingManager from './admin/PricingManager';
 import SiteSettingsManager from './admin/SiteSettingsManager';
+import ReviewsManager from './admin/ReviewsManager';
 
 interface AdminPanelProps {
   onLogout: () => void;
@@ -189,15 +189,7 @@ const AdminPanel = ({ onLogout }: AdminPanelProps) => {
           </TabsContent>
 
           <TabsContent value="reviews" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Управление отзывами</h2>
-              <Button>Модерировать</Button>
-            </div>
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-gray-600">Здесь будет система управления отзывами и рейтингами</p>
-              </CardContent>
-            </Card>
+            <ReviewsManager />
           </TabsContent>
         </Tabs>
       </div>

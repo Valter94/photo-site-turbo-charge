@@ -68,7 +68,7 @@ const HeroSection = () => {
             <div className="relative">
               <div className="w-80 h-80 lg:w-96 lg:h-96 rounded-full overflow-hidden shadow-2xl border-8 border-white">
                 <img
-                  src={settings?.photographer_photo || 'https://images.unsplash.com/photo-1494790108755-2616c27bb8af?w=400&h=400&fit=crop'}
+                  src={settings?.photographer_photo || '/lovable-uploads/192fde74-a0e2-4178-9e1a-70253c938e8d.png'}
                   alt={settings?.photographer_name || 'Фотограф Ирина'}
                   className="w-full h-full object-cover"
                 />

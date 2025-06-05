@@ -77,6 +77,28 @@ const PortfolioSection = () => {
       is_featured: true,
       client_name: 'Ольга и Сергей',
       shoot_date: '2024-04-28'
+    },
+    {
+      id: '7',
+      title: 'Стильная портретная съемка',
+      category: 'portrait',
+      image_url: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=400&fit=crop',
+      description: 'Современные портреты в городской среде',
+      location: 'Центр Москвы',
+      is_featured: false,
+      client_name: 'Александра',
+      shoot_date: '2024-07-22'
+    },
+    {
+      id: '8',
+      title: 'Love Story на закате',
+      category: 'lovestory',
+      image_url: 'https://images.unsplash.com/photo-1529634597343-3df5d4ac0c84?w=600&h=400&fit=crop',
+      description: 'Романтическая прогулка на Воробьевых горах',
+      location: 'Воробьевы горы',
+      is_featured: true,
+      client_name: 'Виктор и Анна',
+      shoot_date: '2024-08-15'
     }
   ];
 
@@ -194,7 +216,12 @@ const PortfolioSection = () => {
         <div className="mt-16 text-center">
           <Button 
             className="bg-rose-400 text-white px-8 py-3 rounded-full hover:bg-rose-500 transition-colors"
-            onClick={() => window.scrollTo({ top: document.querySelector('#portfolio-full')?.offsetTop || 0, behavior: 'smooth' })}
+            onClick={() => {
+              const portfolioElement = document.querySelector('#portfolio-full') as HTMLElement;
+              if (portfolioElement) {
+                window.scrollTo({ top: portfolioElement.offsetTop, behavior: 'smooth' });
+              }
+            }}
           >
             Посмотреть все работы
           </Button>

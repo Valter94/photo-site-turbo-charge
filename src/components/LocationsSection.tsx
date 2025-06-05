@@ -73,6 +73,46 @@ const LocationsSection = () => {
       best_time: 'В любое время',
       indoor: true,
       location_categories: { name: 'Студийные', description: 'Закрытые студийные пространства' }
+    },
+    {
+      id: '7',
+      name: 'Измайловский парк',
+      description: 'Огромная территория с лесными дорожками и прудами',
+      image_url: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&h=600&fit=crop',
+      address: 'Измайловское шоссе, 73Ж',
+      best_time: 'Золотой час',
+      indoor: false,
+      location_categories: { name: 'Парки', description: 'Парки и скверы Москвы' }
+    },
+    {
+      id: '8',
+      name: 'Арбат',
+      description: 'Пешеходная улица с уличными артистами и кафе',
+      image_url: 'https://images.unsplash.com/photo-1520637836862-4d197d17c32a?w=800&h=600&fit=crop',
+      address: 'ул. Арбат',
+      best_time: 'Вечером после 18:00',
+      indoor: false,
+      location_categories: { name: 'Городские', description: 'Улицы, площади и архитектура города' }
+    },
+    {
+      id: '9',
+      name: 'Воробьевы горы',
+      description: 'Смотровая площадка с видом на город',
+      image_url: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800&h=600&fit=crop',
+      address: 'Воробьевы горы',
+      best_time: 'На закате',
+      indoor: false,
+      location_categories: { name: 'Крыши', description: 'Панорамные виды' }
+    },
+    {
+      id: '10',
+      name: 'Лофт-студия "Индустрия"',
+      description: 'Стильное пространство в индустриальном стиле',
+      image_url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop',
+      address: 'ул. Бауманская, 43',
+      best_time: 'В любое время',
+      indoor: true,
+      location_categories: { name: 'Студийные', description: 'Закрытые студийные пространства' }
     }
   ];
 
@@ -173,7 +213,12 @@ const LocationsSection = () => {
 
                 <Button 
                   className="w-full bg-rose-400 hover:bg-rose-500 text-white"
-                  onClick={() => window.scrollTo({ top: document.querySelector('#booking')?.offsetTop || 0, behavior: 'smooth' })}
+                  onClick={() => {
+                    const bookingElement = document.querySelector('#booking') as HTMLElement;
+                    if (bookingElement) {
+                      window.scrollTo({ top: bookingElement.offsetTop, behavior: 'smooth' });
+                    }
+                  }}
                 >
                   Забронировать съемку
                 </Button>

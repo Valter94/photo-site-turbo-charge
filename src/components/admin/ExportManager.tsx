@@ -16,36 +16,9 @@ const ExportManager = () => {
       setExporting(true);
       const zip = new JSZip();
 
-      // Получаем все файлы из public папки
-      const publicFiles = [
-        'favicon.ico',
-        'manifest.json',
-        'robots.txt'
-      ];
-
-      // Добавляем основные файлы
-      const coreFiles = [
-        'package.json',
-        'index.html',
-        'vite.config.ts',
-        'tailwind.config.ts',
-        'tsconfig.json',
-        'components.json'
-      ];
-
-      // Список всех исходных файлов
-      const sourceFiles = [
-        'src/main.tsx',
-        'src/App.tsx',
-        'src/App.css',
-        'src/index.css',
-        'src/vite-env.d.ts',
-        'src/lib/utils.ts'
-      ];
-
       // Добавляем инструкции по деплою
       const deployInstructions = `
-# Инструкции по развертыванию сайта
+# Инструкции по развертыванию сайта фотографа
 
 ## Установка зависимостей
 npm install
@@ -60,6 +33,7 @@ npm run build
 1. Создайте проект на https://supabase.com
 2. Обновите настройки в src/integrations/supabase/client.ts
 3. Импортируйте схему базы данных из файла database-schema.sql
+4. Создайте storage bucket для изображений
 
 ## Деплой
 Для деплоя рекомендуется использовать:
@@ -72,7 +46,7 @@ npm run build
 
       zip.file('README.md', deployInstructions);
 
-      // Создаем базовую структуру
+      // Создаем базовую структуру package.json
       const packageJson = {
         "name": "photographer-portfolio",
         "private": true,
@@ -89,7 +63,12 @@ npm run build
           "@supabase/supabase-js": "^2.49.8",
           "@tanstack/react-query": "^5.56.2",
           "lucide-react": "^0.462.0",
-          "react-router-dom": "^6.26.2"
+          "react-router-dom": "^6.26.2",
+          "@radix-ui/react-tabs": "^1.1.0",
+          "@radix-ui/react-dialog": "^1.1.2",
+          "class-variance-authority": "^0.7.1",
+          "clsx": "^2.1.1",
+          "tailwind-merge": "^2.5.2"
         },
         "devDependencies": {
           "@types/react": "^18.3.3",
@@ -97,7 +76,9 @@ npm run build
           "@vitejs/plugin-react": "^4.3.1",
           "typescript": "^5.5.3",
           "vite": "^5.4.1",
-          "tailwindcss": "^3.4.1"
+          "tailwindcss": "^3.4.1",
+          "autoprefixer": "^10.4.0",
+          "postcss": "^8.4.0"
         }
       };
 
@@ -107,9 +88,26 @@ npm run build
       const databaseSchema = `
 -- Схема базы данных для сайта фотографа
 
--- Создание таблиц (выполните эти команды в Supabase SQL Editor)
+-- Создание storage bucket для изображений
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'images', 
+  'images', 
+  true, 
+  52428800,
+  ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+);
 
--- Основные настройки сайта
+-- Политики для bucket images
+CREATE POLICY "Public read access for images" 
+ON storage.objects FOR SELECT 
+USING (bucket_id = 'images');
+
+CREATE POLICY "Authenticated users can upload images" 
+ON storage.objects FOR INSERT 
+WITH CHECK (bucket_id = 'images');
+
+-- Создание таблиц
 CREATE TABLE IF NOT EXISTS site_settings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   photographer_name TEXT NOT NULL DEFAULT 'Ирина',
@@ -124,27 +122,76 @@ CREATE TABLE IF NOT EXISTS site_settings (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Портфолио
-CREATE TABLE IF NOT EXISTS portfolio (
+CREATE TABLE IF NOT EXISTS location_categories (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title TEXT NOT NULL,
-  category TEXT NOT NULL,
-  image_url TEXT NOT NULL,
-  thumbnail_url TEXT,
+  name TEXT NOT NULL,
   description TEXT,
-  location TEXT,
-  client_name TEXT,
-  shoot_date DATE,
-  is_featured BOOLEAN DEFAULT false,
-  order_index INTEGER DEFAULT 0,
-  tags TEXT[],
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Остальные таблицы уже созданы в вашем проекте Supabase
+CREATE TABLE IF NOT EXISTS photoshoot_locations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  description TEXT NOT NULL,
+  image_url TEXT,
+  address TEXT,
+  best_time TEXT,
+  indoor BOOLEAN DEFAULT false,
+  category_id UUID REFERENCES location_categories(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Вставка начальных данных
+INSERT INTO location_categories (name, description) VALUES
+('Городские', 'Локации в городской среде'),
+('Природные', 'Локации на природе'),
+('Студийные', 'Крытые студийные пространства');
       `;
 
       zip.file('database-schema.sql', databaseSchema);
+
+      // Создаем конфигурационные файлы
+      const viteConfig = `
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+import path from "path";
+
+export default defineConfig({
+  server: {
+    host: "::",
+    port: 8080,
+  },
+  plugins: [react()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+});
+      `;
+
+      zip.file('vite.config.ts', viteConfig);
+
+      const tailwindConfig = `
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: ["class"],
+  content: [
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [require("tailwindcss-animate")],
+}
+      `;
+
+      zip.file('tailwind.config.js', tailwindConfig);
 
       // Генерируем архив
       const content = await zip.generateAsync({ type: "blob" });
@@ -183,10 +230,10 @@ CREATE TABLE IF NOT EXISTS portfolio (
         <div className="space-y-2">
           <h4 className="font-medium">В архив будет включено:</h4>
           <ul className="text-sm text-gray-600 space-y-1">
-            <li>• Все исходные файлы проекта</li>
-            <li>• Конфигурация и зависимости</li>
+            <li>• Конфигурация проекта</li>
             <li>• Схема базы данных</li>
             <li>• Инструкции по развертыванию</li>
+            <li>• Настройки Supabase</li>
           </ul>
         </div>
 

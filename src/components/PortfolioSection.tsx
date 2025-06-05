@@ -2,12 +2,83 @@
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import OptimizedImage from './OptimizedImage';
 import { usePortfolio } from '@/hooks/usePortfolio';
 
 const PortfolioSection = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const { data: portfolio, isLoading } = usePortfolio();
+
+  // Моковые данные портфолио для демонстрации
+  const mockPortfolio = [
+    {
+      id: '1',
+      title: 'Романтическая свадьба в Царицыно',
+      category: 'wedding',
+      image_url: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=600&h=400&fit=crop',
+      description: 'Волшебная церемония в дворцовом парке',
+      location: 'Царицыно',
+      is_featured: true,
+      client_name: 'Анна и Михаил',
+      shoot_date: '2024-06-15'
+    },
+    {
+      id: '2',
+      title: 'Love Story в парке Горького',
+      category: 'lovestory',
+      image_url: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&h=400&fit=crop',
+      description: 'Нежная прогулка влюбленных по аллеям',
+      location: 'Парк Горького',
+      is_featured: true,
+      client_name: 'Елена и Дмитрий',
+      shoot_date: '2024-05-20'
+    },
+    {
+      id: '3',
+      title: 'Портретная съемка в студии',
+      category: 'portrait',
+      image_url: 'https://images.unsplash.com/photo-1494790108755-2616c6-f24c?w=600&h=400&fit=crop',
+      description: 'Профессиональные портреты в студии',
+      location: 'Фотостудия "Белый зал"',
+      is_featured: false,
+      client_name: 'Мария',
+      shoot_date: '2024-07-10'
+    },
+    {
+      id: '4',
+      title: 'Семейная фотосессия в Сокольниках',
+      category: 'family',
+      image_url: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=600&h=400&fit=crop',
+      description: 'Теплые семейные моменты на природе',
+      location: 'Сокольники',
+      is_featured: true,
+      client_name: 'Семья Петровых',
+      shoot_date: '2024-08-05'
+    },
+    {
+      id: '5',
+      title: 'Корпоративная съемка',
+      category: 'corporate',
+      image_url: 'https://images.unsplash.com/photo-1556155092-8707de31f9c4?w=600&h=400&fit=crop',
+      description: 'Деловые портреты сотрудников',
+      location: 'Москва-Сити',
+      is_featured: false,
+      client_name: 'ООО "Технологии"',
+      shoot_date: '2024-09-12'
+    },
+    {
+      id: '6',
+      title: 'Утренняя свадьба на Красной площади',
+      category: 'wedding',
+      image_url: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=600&h=400&fit=crop',
+      description: 'Уникальная фотосессия в сердце Москвы',
+      location: 'Красная площадь',
+      is_featured: true,
+      client_name: 'Ольга и Сергей',
+      shoot_date: '2024-04-28'
+    }
+  ];
 
   if (isLoading) {
     return (
@@ -29,18 +100,23 @@ const PortfolioSection = () => {
     { id: 'wedding', name: 'Свадьбы' },
     { id: 'lovestory', name: 'Love Story' },
     { id: 'portrait', name: 'Портреты' },
+    { id: 'family', name: 'Семейные' },
     { id: 'corporate', name: 'Корпоративные' }
   ];
 
+  // Используем базу данных если есть, иначе моковые данные
+  const displayPortfolio = portfolio && portfolio.length > 0 ? portfolio : mockPortfolio;
+
   const filteredPortfolio = selectedCategory === 'all' 
-    ? portfolio 
-    : portfolio?.filter(item => item.category === selectedCategory);
+    ? displayPortfolio 
+    : displayPortfolio?.filter(item => item.category === selectedCategory);
 
   const getCategoryName = (category: string) => {
     const names = {
       wedding: 'Свадьба',
       lovestory: 'Love Story',
       portrait: 'Портрет',
+      family: 'Семейная съемка',
       corporate: 'Корпоративная съемка'
     };
     return names[category as keyof typeof names] || category;
@@ -116,9 +192,12 @@ const PortfolioSection = () => {
         </div>
 
         <div className="mt-16 text-center">
-          <button className="bg-rose-400 text-white px-8 py-3 rounded-full hover:bg-rose-500 transition-colors">
+          <Button 
+            className="bg-rose-400 text-white px-8 py-3 rounded-full hover:bg-rose-500 transition-colors"
+            onClick={() => window.scrollTo({ top: document.querySelector('#portfolio-full')?.offsetTop || 0, behavior: 'smooth' })}
+          >
             Посмотреть все работы
-          </button>
+          </Button>
         </div>
       </div>
     </section>

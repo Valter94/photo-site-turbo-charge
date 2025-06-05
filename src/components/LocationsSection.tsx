@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { MapPin, Clock, Sun, Snowflake, Flower, Leaf } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useLocations, useLocationCategories } from '@/hooks/useLocations';
 import OptimizedImage from './OptimizedImage';
 
@@ -11,17 +12,84 @@ const LocationsSection = () => {
   const { data: locations } = useLocations();
   const { data: categories } = useLocationCategories();
 
-  const seasons = [
-    { id: 'all', name: 'Все', icon: MapPin, color: 'text-gray-500' },
-    { id: 'spring', name: 'Весна', icon: Flower, color: 'text-green-500' },
-    { id: 'summer', name: 'Лето', icon: Sun, color: 'text-yellow-500' },
-    { id: 'autumn', name: 'Осень', icon: Leaf, color: 'text-orange-500' },
-    { id: 'winter', name: 'Зима', icon: Snowflake, color: 'text-blue-500' }
+  // Моковые данные локаций для демонстрации
+  const mockLocations = [
+    {
+      id: '1',
+      name: 'Парк Горького',
+      description: 'Один из самых популярных парков Москвы с красивыми аллеями и видами на Москву-реку',
+      image_url: 'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=800&h=600&fit=crop',
+      address: 'ул. Крымский Вал, 9',
+      best_time: 'Утром до 11:00 или после 16:00',
+      indoor: false,
+      location_categories: { name: 'Парки', description: 'Парки и скверы Москвы' }
+    },
+    {
+      id: '2',
+      name: 'Царицыно',
+      description: 'Дворцово-парковый ансамбль с великолепной архитектурой',
+      image_url: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&h=600&fit=crop',
+      address: 'ул. Дольская, 1',
+      best_time: 'Золотой час и голубой час',
+      indoor: false,
+      location_categories: { name: 'Исторические места', description: 'Музеи, усадьбы и исторические локации' }
+    },
+    {
+      id: '3',
+      name: 'Красная площадь',
+      description: 'Главная площадь России с видом на Кремль',
+      image_url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&h=600&fit=crop',
+      address: 'Красная площадь',
+      best_time: 'Раннее утро до 8:00',
+      indoor: false,
+      location_categories: { name: 'Городские', description: 'Улицы, площади и архитектура города' }
+    },
+    {
+      id: '4',
+      name: 'Сокольники',
+      description: 'Большой парк с разнообразными локациями: аллеи, пруды, беседки',
+      image_url: 'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=800&h=600&fit=crop',
+      address: 'Сокольнический Вал, 1',
+      best_time: 'В любое время дня',
+      indoor: false,
+      location_categories: { name: 'Парки', description: 'Парки и скверы Москвы' }
+    },
+    {
+      id: '5',
+      name: 'Коломенское',
+      description: 'Музей-заповедник с древними храмами и садами',
+      image_url: 'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=800&h=600&fit=crop',
+      address: 'Андропова пр-т, 39',
+      best_time: 'Весь день, особенно на рассвете',
+      indoor: false,
+      location_categories: { name: 'Исторические места', description: 'Музеи, усадьбы и исторические локации' }
+    },
+    {
+      id: '6',
+      name: 'Фотостудия "Белый зал"',
+      description: 'Просторная студия с натуральным светом',
+      image_url: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=600&fit=crop',
+      address: 'ул. Тверская, 15',
+      best_time: 'В любое время',
+      indoor: true,
+      location_categories: { name: 'Студийные', description: 'Закрытые студийные пространства' }
+    }
   ];
 
+  const seasons = [
+    { id: 'all', name: 'Все', icon: MapPin, color: 'text-gray-500' },
+    { id: 'Парки', name: 'Парки', icon: Flower, color: 'text-green-500' },
+    { id: 'Исторические места', name: 'Исторические', icon: Sun, color: 'text-yellow-500' },
+    { id: 'Городские', name: 'Городские', icon: Leaf, color: 'text-orange-500' },
+    { id: 'Студийные', name: 'Студии', icon: Snowflake, color: 'text-blue-500' }
+  ];
+
+  // Используем базу данных если есть, иначе моковые данные
+  const displayLocations = locations && locations.length > 0 ? locations : mockLocations;
+
   const filteredLocations = selectedCategory === 'all' 
-    ? locations 
-    : locations?.filter(location => 
+    ? displayLocations 
+    : displayLocations?.filter(location => 
         location.location_categories?.name?.toLowerCase().includes(selectedCategory.toLowerCase())
       );
 
@@ -61,19 +129,13 @@ const LocationsSection = () => {
           {filteredLocations?.map((location) => (
             <Card key={location.id} className="overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
               <div className="relative h-64">
-                {location.image_url ? (
-                  <OptimizedImage
-                    src={location.image_url}
-                    alt={location.name}
-                    className="w-full h-full object-cover"
-                    width={600}
-                    height={400}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <MapPin className="h-12 w-12 text-gray-400" />
-                  </div>
-                )}
+                <OptimizedImage
+                  src={location.image_url}
+                  alt={location.name}
+                  className="w-full h-full object-cover"
+                  width={600}
+                  height={400}
+                />
                 {location.best_time && (
                   <div className="absolute top-4 right-4">
                     <Badge className="bg-white/90 text-gray-900">
@@ -96,7 +158,7 @@ const LocationsSection = () => {
                   <p className="text-sm text-gray-500 mb-2">📍 {location.address}</p>
                 )}
                 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 mb-4">
                   {location.location_categories && (
                     <Badge variant="secondary" className="text-xs">
                       {location.location_categories.name}
@@ -108,6 +170,13 @@ const LocationsSection = () => {
                     </Badge>
                   )}
                 </div>
+
+                <Button 
+                  className="w-full bg-rose-400 hover:bg-rose-500 text-white"
+                  onClick={() => window.scrollTo({ top: document.querySelector('#booking')?.offsetTop || 0, behavior: 'smooth' })}
+                >
+                  Забронировать съемку
+                </Button>
               </CardContent>
             </Card>
           ))}
@@ -125,9 +194,9 @@ const LocationsSection = () => {
             <p className="text-gray-600 mb-6">
               У нас есть еще множество секретных мест для незабываемых фотосессий
             </p>
-            <button className="bg-rose-400 text-white px-8 py-3 rounded-full hover:bg-rose-500 transition-colors">
+            <Button className="bg-rose-400 text-white px-8 py-3 rounded-full hover:bg-rose-500 transition-colors">
               Обсудить локацию
-            </button>
+            </Button>
           </div>
         </div>
       </div>

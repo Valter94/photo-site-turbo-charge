@@ -2,243 +2,286 @@
 import React, { useState } from 'react';
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar as CalendarIcon, Camera } from 'lucide-react';
-import BookingForm from './BookingForm';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { CalendarDays, Clock, MapPin, Phone, Mail, User } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const BookingCalendar = () => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [selectedService, setSelectedService] = useState<string>('');
-  const [selectedPlan, setSelectedPlan] = useState<string>('');
-  const [showBookingForm, setShowBookingForm] = useState(false);
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [selectedTime, setSelectedTime] = useState<string>('');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    serviceType: '',
+    location: '',
+    message: ''
+  });
+  const { toast } = useToast();
 
-  const serviceTypes = {
-    wedding: {
-      name: 'Свадебная съемка',
-      plans: [
-        { id: 'wedding-basic', name: 'Сборы', price: 20000, duration: '2-3 часа' },
-        { id: 'wedding-standard', name: 'Сборы + Торжество', price: 45000, duration: '6-8 часов' },
-        { id: 'wedding-premium', name: 'Полный день', price: 70000, duration: 'Весь день', gift: 'Визажист в подарок' }
-      ]
-    },
-    lovestory: {
-      name: 'Love Story',
-      plans: [
-        { id: 'lovestory-basic', name: 'Базовый', price: 8000, duration: '1 час' },
-        { id: 'lovestory-standard', name: 'Стандарт', price: 15000, duration: '2 часа' },
-        { id: 'lovestory-premium', name: 'Премиум', price: 25000, duration: '3 часа', gift: 'Фотокнига в подарок' }
-      ]
-    },
-    portrait: {
-      name: 'Портретная съемка',
-      plans: [
-        { id: 'portrait-basic', name: 'Базовый', price: 5000, duration: '30 минут' },
-        { id: 'portrait-standard', name: 'Стандарт', price: 10000, duration: '1 час' },
-        { id: 'portrait-premium', name: 'Премиум', price: 18000, duration: '1.5 часа', gift: 'Макияж в подарок' }
-      ]
+  const timeSlots = [
+    '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'
+  ];
+
+  const serviceTypes = [
+    { id: 'wedding', name: 'Свадебная съемка', duration: '8-10 часов', price: 'от 80 000 ₽' },
+    { id: 'lovestory', name: 'Love Story', duration: '2-3 часа', price: 'от 25 000 ₽' },
+    { id: 'portrait', name: 'Портретная съемка', duration: '1-2 часа', price: 'от 15 000 ₽' },
+    { id: 'family', name: 'Семейная фотосессия', duration: '2-3 часа', price: 'от 20 000 ₽' },
+    { id: 'corporate', name: 'Корпоративная съемка', duration: '3-4 часа', price: 'от 30 000 ₽' }
+  ];
+
+  const popularLocations = [
+    'Парк Горького',
+    'Царицыно',
+    'Красная площадь',
+    'Сокольники',
+    'Коломенское',
+    'Студия',
+    'Другая локация'
+  ];
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!date || !selectedTime || !formData.name || !formData.email || !formData.serviceType) {
+      toast({
+        title: "Ошибка",
+        description: "Пожалуйста, заполните все обязательные поля",
+        variant: "destructive"
+      });
+      return;
     }
+
+    // Здесь будет логика отправки данных
+    console.log('Booking data:', {
+      date,
+      time: selectedTime,
+      ...formData
+    });
+
+    toast({
+      title: "Заявка отправлена!",
+      description: "Мы свяжемся с вами в ближайшее время для подтверждения брони",
+    });
+
+    // Сброс формы
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      serviceType: '',
+      location: '',
+      message: ''
+    });
+    setSelectedTime('');
   };
 
-  const handleBooking = () => {
-    if (selectedDate && selectedService && selectedPlan) {
-      setShowBookingForm(true);
-    }
-  };
-
-  const selectedServiceData = selectedService ? serviceTypes[selectedService as keyof typeof serviceTypes] : null;
-  const selectedPlanData = selectedServiceData?.plans.find(plan => plan.id === selectedPlan);
-
-  if (showBookingForm) {
-    return (
-      <section id="booking" className="py-20 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Оформление заявки</h2>
-            <p className="text-xl text-gray-600">
-              Заполните форму для подтверждения бронирования
-            </p>
-          </div>
-          
-          <div className="grid lg:grid-cols-2 gap-8">
-            <Card>
-              <CardHeader>
-                <CardTitle>Детали бронирования</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold mb-2">{selectedServiceData?.name}</h3>
-                  <p className="text-gray-600 mb-2">{selectedPlanData?.name}</p>
-                  <div className="text-2xl font-bold text-rose-400 mb-2">
-                    {selectedPlanData?.price.toLocaleString()} ₽
-                  </div>
-                  <p className="text-sm text-gray-500">{selectedPlanData?.duration}</p>
-                  {selectedPlanData?.gift && (
-                    <p className="text-sm text-yellow-600 font-medium mt-2">🎁 {selectedPlanData.gift}</p>
-                  )}
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Дата:</span>
-                    <span>{selectedDate?.toLocaleDateString('ru-RU')}</span>
-                  </div>
-                </div>
-                
-                <button 
-                  onClick={() => setShowBookingForm(false)}
-                  className="w-full py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Вернуться к выбору
-                </button>
-              </CardContent>
-            </Card>
-            
-            <BookingForm 
-              selectedDate={selectedDate}
-              selectedLocation={selectedService}
-            />
-          </div>
-        </div>
-      </section>
-    );
-  }
+  const selectedService = serviceTypes.find(s => s.id === formData.serviceType);
 
   return (
     <section id="booking" className="py-20 bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Бронирование фотосессии</h2>
-          <p className="text-xl text-gray-600">
-            Выберите тип съемки, план и дату
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">Забронировать съемку</h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Выберите удобную дату и время для вашей фотосессии
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Тип съемки</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {Object.entries(serviceTypes).map(([key, service]) => (
-                <button
-                  key={key}
-                  onClick={() => {
-                    setSelectedService(key);
-                    setSelectedPlan('');
-                  }}
-                  className={`w-full p-3 rounded-lg border text-left transition-all ${
-                    selectedService === key
-                      ? 'border-rose-400 bg-rose-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="font-medium">{service.name}</div>
-                  <div className="text-sm text-gray-500">
-                    от {Math.min(...service.plans.map(p => p.price)).toLocaleString()} ₽
-                  </div>
-                </button>
-              ))}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">План съемки</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {selectedServiceData ? (
-                selectedServiceData.plans.map((plan) => (
-                  <button
-                    key={plan.id}
-                    onClick={() => setSelectedPlan(plan.id)}
-                    className={`w-full p-3 rounded-lg border text-left transition-all ${
-                      selectedPlan === plan.id
-                        ? 'border-rose-400 bg-rose-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="font-medium">{plan.name}</div>
-                    <div className="text-sm font-semibold text-rose-400">
-                      {plan.price.toLocaleString()} ₽
-                    </div>
-                    <div className="text-xs text-gray-500">{plan.duration}</div>
-                    {plan.gift && (
-                      <div className="text-xs text-yellow-600 font-medium">🎁 {plan.gift}</div>
-                    )}
-                  </button>
-                ))
-              ) : (
-                <p className="text-gray-500 text-sm">Сначала выберите тип съемки</p>
-              )}
-            </CardContent>
-          </Card>
-
+        <div className="grid lg:grid-cols-2 gap-12">
+          {/* Календарь и время */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <CalendarIcon className="h-5 w-5" />
-                <span>Дата</span>
+                <CalendarDays className="h-5 w-5 text-rose-400" />
+                <span>Выбор даты и времени</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                disabled={(date) => date < new Date() || date.getDay() === 0}
+                className="rounded-md border"
+              />
+              
+              {date && (
+                <div>
+                  <h4 className="font-medium mb-3 flex items-center space-x-2">
+                    <Clock className="h-4 w-4 text-rose-400" />
+                    <span>Доступное время</span>
+                  </h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    {timeSlots.map((time) => (
+                      <Button
+                        key={time}
+                        variant={selectedTime === time ? "default" : "outline"}
+                        className={`text-sm ${selectedTime === time ? 'bg-rose-400 hover:bg-rose-500' : ''}`}
+                        onClick={() => setSelectedTime(time)}
+                      >
+                        {time}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Форма бронирования */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <User className="h-5 w-5 text-rose-400" />
+                <span>Детали бронирования</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                className="rounded-md border"
-                disabled={(date) => date < new Date()}
-              />
-              {selectedDate && (
-                <p className="text-sm text-gray-600 mt-4 text-center">
-                  {selectedDate.toLocaleDateString('ru-RU', { 
-                    weekday: 'long', 
-                    day: 'numeric',
-                    month: 'long'
-                  })}
-                </p>
-              )}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Имя *</label>
+                    <Input
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      placeholder="Ваше имя"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Email *</label>
+                    <Input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      placeholder="your@email.com"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Телефон</label>
+                  <Input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    placeholder="+7 (926) 256-35-50"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Тип съемки *</label>
+                  <Select value={formData.serviceType} onValueChange={(value) => setFormData({...formData, serviceType: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите тип съемки" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {serviceTypes.map((service) => (
+                        <SelectItem key={service.id} value={service.id}>
+                          <div className="flex flex-col">
+                            <span>{service.name}</span>
+                            <span className="text-xs text-gray-500">{service.duration} • {service.price}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {selectedService && (
+                  <div className="bg-rose-50 p-4 rounded-lg">
+                    <h4 className="font-medium text-rose-800 mb-2">{selectedService.name}</h4>
+                    <div className="flex items-center space-x-4 text-sm text-rose-600">
+                      <span>⏱ {selectedService.duration}</span>
+                      <span>💰 {selectedService.price}</span>
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Локация</label>
+                  <Select value={formData.location} onValueChange={(value) => setFormData({...formData, location: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите локацию" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {popularLocations.map((location) => (
+                        <SelectItem key={location} value={location}>
+                          {location}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Сообщение</label>
+                  <Textarea
+                    value={formData.message}
+                    onChange={(e) => setFormData({...formData, message: e.target.value})}
+                    placeholder="Расскажите о ваших пожеланиях к съемке..."
+                    rows={3}
+                  />
+                </div>
+
+                {date && selectedTime && (
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="font-medium mb-2">Выбранная дата и время:</h4>
+                    <div className="flex items-center space-x-4 text-sm text-gray-600">
+                      <span>📅 {date.toLocaleDateString('ru-RU')}</span>
+                      <span>🕐 {selectedTime}</span>
+                    </div>
+                  </div>
+                )}
+
+                <Button 
+                  type="submit" 
+                  className="w-full bg-rose-400 hover:bg-rose-500 text-white py-3"
+                  disabled={!date || !selectedTime || !formData.name || !formData.email || !formData.serviceType}
+                >
+                  Забронировать съемку
+                </Button>
+              </form>
             </CardContent>
           </Card>
         </div>
 
-        {selectedDate && selectedService && selectedPlan && (
-          <div className="mt-8 text-center">
-            <Card className="max-w-md mx-auto">
-              <CardContent className="p-6">
-                <h3 className="font-semibold mb-4">Готово к бронированию</h3>
-                <div className="space-y-2 text-sm text-gray-600 mb-6">
-                  <div className="flex justify-between">
-                    <span>Услуга:</span>
-                    <span>{selectedServiceData?.name}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>План:</span>
-                    <span>{selectedPlanData?.name}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Дата:</span>
-                    <span>{selectedDate.toLocaleDateString('ru-RU')}</span>
-                  </div>
-                  <div className="flex justify-between font-semibold text-gray-900 text-base">
-                    <span>Стоимость:</span>
-                    <span>{selectedPlanData?.price.toLocaleString()} ₽</span>
-                  </div>
+        {/* Контактная информация */}
+        <div className="mt-16 text-center">
+          <div className="bg-white rounded-2xl p-8 shadow-lg max-w-4xl mx-auto">
+            <h3 className="text-2xl font-bold mb-6">Или свяжитесь с нами напрямую</h3>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="flex items-center justify-center space-x-3">
+                <Phone className="h-5 w-5 text-rose-400" />
+                <div>
+                  <p className="font-medium">Телефон</p>
+                  <p className="text-gray-600">+7 (926) 256-35-50</p>
                 </div>
-                
-                <button 
-                  onClick={handleBooking}
-                  className="w-full bg-rose-400 text-white py-3 rounded-lg hover:bg-rose-500 transition-colors flex items-center justify-center space-x-2"
-                >
-                  <Camera className="h-5 w-5" />
-                  <span>Забронировать съемку</span>
-                </button>
-                
-                <p className="text-xs text-gray-500 mt-3">
-                  После отправки заявки с вами свяжется администратор
-                </p>
-              </CardContent>
-            </Card>
+              </div>
+              <div className="flex items-center justify-center space-x-3">
+                <Mail className="h-5 w-5 text-rose-400" />
+                <div>
+                  <p className="font-medium">Email</p>
+                  <p className="text-gray-600">Bagreshevafoto@gmail.com</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-center space-x-3">
+                <MapPin className="h-5 w-5 text-rose-400" />
+                <div>
+                  <p className="font-medium">Локация</p>
+                  <p className="text-gray-600">Москва, Россия</p>
+                </div>
+              </div>
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </section>
   );

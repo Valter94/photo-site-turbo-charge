@@ -5,11 +5,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, Package } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
 
 const ExportManager = () => {
   const [exporting, setExporting] = useState(false);
   const { toast } = useToast();
+
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   const exportSite = async () => {
     try {
@@ -68,7 +78,8 @@ npm run build
           "@radix-ui/react-dialog": "^1.1.2",
           "class-variance-authority": "^0.7.1",
           "clsx": "^2.1.1",
-          "tailwind-merge": "^2.5.2"
+          "tailwind-merge": "^2.5.2",
+          "jszip": "^3.10.1"
         },
         "devDependencies": {
           "@types/react": "^18.3.3",
@@ -193,9 +204,9 @@ module.exports = {
 
       zip.file('tailwind.config.js', tailwindConfig);
 
-      // Генерируем архив
+      // Генерируем архив и используем встроенную функцию браузера для скачивания
       const content = await zip.generateAsync({ type: "blob" });
-      saveAs(content, `photographer-site-${new Date().getTime()}.zip`);
+      downloadBlob(content, `photographer-site-${new Date().getTime()}.zip`);
 
       toast({
         title: "Успешно!",

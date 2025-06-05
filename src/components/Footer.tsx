@@ -2,17 +2,21 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Settings } from 'lucide-react';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 const Footer = () => {
+  const { data: settings } = useSiteSettings();
+
   return (
     <footer className="bg-gray-900 text-white py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <h3 className="text-xl font-bold mb-4">Фотограф Ирина</h3>
+            <h3 className="text-xl font-bold mb-4">
+              {settings?.photographer_name || 'Фотограф Ирина'}
+            </h3>
             <p className="text-gray-400">
-              Профессиональная фотосъемка в Москве и Московской области. 
-              Создаем незабываемые моменты вашей жизни.
+              {settings?.photographer_description || 'Профессиональная фотосъемка в Москве и Московской области. Создаем незабываемые моменты вашей жизни.'}
             </p>
           </div>
           
@@ -29,16 +33,16 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4">Контакты</h4>
             <div className="space-y-2 text-gray-400">
-              <p>📞 +7 (925) 506-24-27</p>
-              <p>📧 Bagreshevafoto@gmail.com</p>
-              <p>📍 Москва, Россия</p>
+              <p>📞 +7 (926) 256-35-50</p>
+              <p>📧 {settings?.contact_email || 'Bagreshevafoto@gmail.com'}</p>
+              <p>📍 {settings?.contact_address || 'Москва, Россия'}</p>
             </div>
           </div>
         </div>
         
         <div className="border-t border-gray-800 mt-8 pt-8 flex justify-between items-center">
           <p className="text-gray-400">
-            © 2024 Фотограф Ирина. Все права защищены.
+            © 2024 {settings?.photographer_name || 'Фотограф Ирина'}. Все права защищены.
           </p>
           
           <Link 

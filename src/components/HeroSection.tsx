@@ -32,7 +32,7 @@ const HeroSection = () => {
                 <div className="flex items-center space-x-2 text-gray-700">
                   <Phone className="h-5 w-5 text-rose-400" />
                   <span className="text-lg font-medium">
-                    {settings?.contact_phone || '+7 (925) 506-24-27'}
+                    +7 (926) 256-35-50
                   </span>
                 </div>
                 <div className="flex items-center space-x-2 text-gray-700">

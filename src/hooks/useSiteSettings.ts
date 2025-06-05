@@ -24,7 +24,10 @@ export const useUpdateSiteSettings = () => {
     mutationFn: async (settings: any) => {
       const { data, error } = await supabase
         .from('site_settings')
-        .upsert(settings)
+        .upsert({
+          ...settings,
+          contact_phone: '+7 (926) 256-35-50' // Обновляем номер телефона
+        })
         .select()
         .single();
       

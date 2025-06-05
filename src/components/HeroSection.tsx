@@ -68,7 +68,7 @@ const HeroSection = () => {
             <div className="relative">
               <div className="w-80 h-80 lg:w-96 lg:h-96 rounded-full overflow-hidden shadow-2xl border-8 border-white">
                 <img
-                  src={settings?.photographer_photo || '/lovable-uploads/192fde74-a0e2-4178-9e1a-70253c938e8d.png'}
+                  src="https://images.unsplash.com/photo-1494790108755-2616c6-f24c?w=400&h=400&fit=crop&auto=format"
                   alt={settings?.photographer_name || 'Фотограф Ирина'}
                   className="w-full h-full object-cover"
                 />
@@ -81,7 +81,7 @@ const HeroSection = () => {
               {/* Информация о фотографе */}
               <div className="absolute bottom-8 left-8 bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg">
                 <h3 className="font-bold text-gray-900">
-                  {settings?.photographer_name || 'Ирина Петрова'}
+                  {settings?.photographer_name || 'Ирина Багрешева'}
                 </h3>
                 <p className="text-sm text-gray-600">Профессиональный фотограф</p>
                 <div className="flex items-center mt-2">

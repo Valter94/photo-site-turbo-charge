@@ -12,13 +12,13 @@ const LocationsSection = () => {
   const { data: locations } = useLocations();
   const { data: categories } = useLocationCategories();
 
-  // Моковые данные локаций для демонстрации
+  // Расширенные моковые данные локаций для демонстрации
   const mockLocations = [
     {
       id: '1',
       name: 'Парк Горького',
       description: 'Один из самых популярных парков Москвы с красивыми аллеями и видами на Москву-реку',
-      image_url: 'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=800&h=600&fit=crop',
+      image_url: 'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=800&h=600&fit=crop&auto=format',
       address: 'ул. Крымский Вал, 9',
       best_time: 'Утром до 11:00 или после 16:00',
       indoor: false,
@@ -27,8 +27,8 @@ const LocationsSection = () => {
     {
       id: '2',
       name: 'Царицыно',
-      description: 'Дворцово-парковый ансамбль с великолепной архитектурой',
-      image_url: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&h=600&fit=crop',
+      description: 'Дворцово-парковый ансамбль с великолепной архитектурой XVIII века',
+      image_url: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&h=600&fit=crop&auto=format',
       address: 'ул. Дольская, 1',
       best_time: 'Золотой час и голубой час',
       indoor: false,
@@ -37,8 +37,8 @@ const LocationsSection = () => {
     {
       id: '3',
       name: 'Красная площадь',
-      description: 'Главная площадь России с видом на Кремль',
-      image_url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&h=600&fit=crop',
+      description: 'Главная площадь России с видом на Кремль и Собор Василия Блаженного',
+      image_url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&h=600&fit=crop&auto=format',
       address: 'Красная площадь',
       best_time: 'Раннее утро до 8:00',
       indoor: false,
@@ -46,9 +46,9 @@ const LocationsSection = () => {
     },
     {
       id: '4',
-      name: 'Сокольники',
-      description: 'Большой парк с разнообразными локациями: аллеи, пруды, беседки',
-      image_url: 'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=800&h=600&fit=crop',
+      name: 'Парк Сокольники',
+      description: 'Большой парк с разнообразными локациями: аллеи, пруды, беседки, розарий',
+      image_url: 'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=800&h=600&fit=crop&auto=format',
       address: 'Сокольнический Вал, 1',
       best_time: 'В любое время дня',
       indoor: false,
@@ -57,8 +57,8 @@ const LocationsSection = () => {
     {
       id: '5',
       name: 'Коломенское',
-      description: 'Музей-заповедник с древними храмами и садами',
-      image_url: 'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=800&h=600&fit=crop',
+      description: 'Музей-заповедник с древними храмами, садами и видом на Москву-реку',
+      image_url: 'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=800&h=600&fit=crop&auto=format',
       address: 'Андропова пр-т, 39',
       best_time: 'Весь день, особенно на рассвете',
       indoor: false,
@@ -67,8 +67,8 @@ const LocationsSection = () => {
     {
       id: '6',
       name: 'Фотостудия "Белый зал"',
-      description: 'Просторная студия с натуральным светом',
-      image_url: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=600&fit=crop',
+      description: 'Просторная студия с натуральным светом и минималистичным интерьером',
+      image_url: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=600&fit=crop&auto=format',
       address: 'ул. Тверская, 15',
       best_time: 'В любое время',
       indoor: true,
@@ -77,8 +77,8 @@ const LocationsSection = () => {
     {
       id: '7',
       name: 'Измайловский парк',
-      description: 'Огромная территория с лесными дорожками и прудами',
-      image_url: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&h=600&fit=crop',
+      description: 'Огромная территория с лесными дорожками, прудами и живописными мостиками',
+      image_url: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&h=600&fit=crop&auto=format',
       address: 'Измайловское шоссе, 73Ж',
       best_time: 'Золотой час',
       indoor: false,
@@ -86,9 +86,9 @@ const LocationsSection = () => {
     },
     {
       id: '8',
-      name: 'Арбат',
-      description: 'Пешеходная улица с уличными артистами и кафе',
-      image_url: 'https://images.unsplash.com/photo-1520637836862-4d197d17c32a?w=800&h=600&fit=crop',
+      name: 'Старый Арбат',
+      description: 'Пешеходная улица с историческими зданиями, уличными артистами и кафе',
+      image_url: 'https://images.unsplash.com/photo-1520637836862-4d197d17c32a?w=800&h=600&fit=crop&auto=format',
       address: 'ул. Арбат',
       best_time: 'Вечером после 18:00',
       indoor: false,
@@ -97,22 +97,42 @@ const LocationsSection = () => {
     {
       id: '9',
       name: 'Воробьевы горы',
-      description: 'Смотровая площадка с видом на город',
-      image_url: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800&h=600&fit=crop',
+      description: 'Смотровая площадка с панорамным видом на город и МГУ',
+      image_url: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800&h=600&fit=crop&auto=format',
       address: 'Воробьевы горы',
       best_time: 'На закате',
       indoor: false,
-      location_categories: { name: 'Крыши', description: 'Панорамные виды' }
+      location_categories: { name: 'Смотровые площадки', description: 'Панорамные виды' }
     },
     {
       id: '10',
       name: 'Лофт-студия "Индустрия"',
-      description: 'Стильное пространство в индустриальном стиле',
-      image_url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop',
+      description: 'Стильное пространство в индустриальном стиле с кирпичными стенами',
+      image_url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop&auto=format',
       address: 'ул. Бауманская, 43',
       best_time: 'В любое время',
       indoor: true,
       location_categories: { name: 'Студийные', description: 'Закрытые студийные пространства' }
+    },
+    {
+      id: '11',
+      name: 'ВДНХ',
+      description: 'Выставка достижений с фонтанами, павильонами и космическим музеем',
+      image_url: 'https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?w=800&h=600&fit=crop&auto=format',
+      address: 'просп. Мира, 119',
+      best_time: 'Днем и вечером',
+      indoor: false,
+      location_categories: { name: 'Исторические места', description: 'Музеи, усадьбы и исторические локации' }
+    },
+    {
+      id: '12',
+      name: 'Усадьба Кусково',
+      description: 'Историческая усадьба XVIII века с дворцом и французским парком',
+      image_url: 'https://images.unsplash.com/photo-1605106715994-18d3fecffb98?w=800&h=600&fit=crop&auto=format',
+      address: 'ул. Юности, 2',
+      best_time: 'Утром и в золотой час',
+      indoor: false,
+      location_categories: { name: 'Исторические места', description: 'Музеи, усадьбы и исторические локации' }
     }
   ];
 
@@ -121,7 +141,8 @@ const LocationsSection = () => {
     { id: 'Парки', name: 'Парки', icon: Flower, color: 'text-green-500' },
     { id: 'Исторические места', name: 'Исторические', icon: Sun, color: 'text-yellow-500' },
     { id: 'Городские', name: 'Городские', icon: Leaf, color: 'text-orange-500' },
-    { id: 'Студийные', name: 'Студии', icon: Snowflake, color: 'text-blue-500' }
+    { id: 'Студийные', name: 'Студии', icon: Snowflake, color: 'text-blue-500' },
+    { id: 'Смотровые площадки', name: 'Виды', icon: MapPin, color: 'text-purple-500' }
   ];
 
   // Используем базу данных если есть, иначе моковые данные

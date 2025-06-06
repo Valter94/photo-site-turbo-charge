@@ -94,14 +94,6 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
               {isLoading ? 'Вход...' : 'Войти'}
             </Button>
           </form>
-          
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-700">
-              <strong>Данные для входа:</strong><br />
-              Логин: Irina<br />
-              Пароль: Ameliya2024
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>

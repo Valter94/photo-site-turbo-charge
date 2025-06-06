@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Calendar, Phone, Instagram } from 'lucide-react';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import OptimizedImage from './OptimizedImage';
 
 const HeroSection = () => {
   const { data: settings } = useSiteSettings();
@@ -67,10 +68,12 @@ const HeroSection = () => {
           <div className="flex justify-center lg:justify-end">
             <div className="relative">
               <div className="w-80 h-80 lg:w-96 lg:h-96 rounded-full overflow-hidden shadow-2xl border-8 border-white">
-                <img
-                  src="https://images.unsplash.com/photo-1494790108755-2616c6-f24c?w=400&h=400&fit=crop&auto=format"
+                <OptimizedImage
+                  src={settings?.photographer_photo || "https://images.unsplash.com/photo-1494790108755-2616c6-f24c?w=400&h=400&fit=crop&auto=format"}
                   alt={settings?.photographer_name || 'Фотограф Ирина'}
                   className="w-full h-full object-cover"
+                  width={384}
+                  height={384}
                 />
               </div>
               

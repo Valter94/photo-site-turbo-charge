@@ -112,7 +112,7 @@ const SiteSettingsManager = () => {
             <Input
               value={form.contact_phone || ''}
               onChange={(e) => setForm({...form, contact_phone: e.target.value})}
-              placeholder="+7 (925) 506-24-27"
+              placeholder="+7 (926) 256-35-50"
             />
           </div>
           
@@ -121,7 +121,7 @@ const SiteSettingsManager = () => {
             <Input
               value={form.contact_email || ''}
               onChange={(e) => setForm({...form, contact_email: e.target.value})}
-              placeholder="Bagreshevafoto@gmail.com"
+              placeholder="bagreshevafoto@gmail.com"
             />
           </div>
           

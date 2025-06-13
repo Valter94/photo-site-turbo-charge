@@ -34,7 +34,7 @@ const Footer = () => {
             <h4 className="text-lg font-semibold mb-4">Контакты</h4>
             <div className="space-y-2 text-gray-400">
               <p>📞 +7 (926) 256-35-50</p>
-              <p>📧 {settings?.contact_email || 'Bagreshevafoto@gmail.com'}</p>
+              <p>📧 {settings?.contact_email || 'bagreshevafoto@gmail.com'}</p>
               <p>📍 {settings?.contact_address || 'Москва, Россия'}</p>
             </div>
           </div>

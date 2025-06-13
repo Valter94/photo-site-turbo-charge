@@ -26,13 +26,28 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   };
 
   const handleImageError = () => {
+    console.error('Image failed to load:', src);
     setImageError(true);
   };
 
-  // Создаем WebP версию для поддерживающих браузеров
-  const webpSrc = src.includes('unsplash.com') 
+  // Проверяем, является ли изображение из Supabase Storage
+  const isSupabaseImage = src?.includes('supabase.co') || src?.includes('ojrekbttkriwwyaupbox');
+  
+  // Создаем WebP версию только для внешних изображений
+  const webpSrc = !isSupabaseImage && src?.includes('unsplash.com') 
     ? `${src}&fm=webp&q=80` 
-    : src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
+    : src;
+
+  if (!src) {
+    return (
+      <div className={`bg-gray-200 flex items-center justify-center ${className}`}>
+        <div className="text-gray-400 text-center">
+          <div className="text-2xl mb-2">📷</div>
+          <div className="text-sm">Нет изображения</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`relative overflow-hidden ${className}`}>
@@ -42,8 +57,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         </div>
       )}
       
-      <picture>
-        <source srcSet={webpSrc} type="image/webp" />
+      {isSupabaseImage ? (
         <img
           src={src}
           alt={alt}
@@ -56,7 +70,23 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
             imageLoaded ? 'opacity-100' : 'opacity-0'
           } ${className}`}
         />
-      </picture>
+      ) : (
+        <picture>
+          <source srcSet={webpSrc} type="image/webp" />
+          <img
+            src={src}
+            alt={alt}
+            width={width}
+            height={height}
+            loading={loading}
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            className={`transition-opacity duration-300 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            } ${className}`}
+          />
+        </picture>
+      )}
 
       {imageError && (
         <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,6 +9,7 @@ import PricingManager from '../admin/PricingManager';
 import ReviewsManager from '../admin/ReviewsManager';
 import SiteSettingsManager from '../admin/SiteSettingsManager';
 import SiteAnalyticsDashboard from '../admin/SiteAnalyticsDashboard';
+import TelegramSettings from "./TelegramSettings";
 
 interface EnhancedAdminPanelProps {
   onLogout: () => void;
@@ -163,6 +163,7 @@ const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-6">
+            <TelegramSettings />
             <Card className="border-rose-200 shadow-md">
               <CardHeader className="bg-gradient-to-r from-rose-100 to-pink-100 rounded-t-lg">
                 <CardTitle className="flex items-center space-x-2 text-rose-800">

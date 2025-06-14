@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Eye, Heart, Download, Star, MapPin, Calendar, User } from 'lucide-react';
 import OptimizedImage from './OptimizedImage';
 import ImageViewer from './ImageViewer';
+import StoryCarousel from "./StoryCarousel";
 
 interface GalleryItem {
   id: string;
@@ -74,6 +74,7 @@ const GalleryGrid = ({ items, columns = 3 }: GalleryGridProps) => {
 
   return (
     <>
+      <StoryCarousel />
       <div className={`grid ${gridCols[columns as keyof typeof gridCols] || gridCols[3]} gap-8`}>
         {items.map((item, index) => (
           <Card 

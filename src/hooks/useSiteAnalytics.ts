@@ -1,6 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { sendTelegramMessage } from "@/utils/telegram";
 
 interface AnalyticsData {
   pageViews: number;
@@ -194,9 +194,24 @@ export const useSiteAnalytics = () => {
     setRecommendations(recs);
   };
 
+  // Список chat_id для Telegram (из localStorage, можно редактировать в TelegramSettings)
+  const chatIds = [
+    localStorage.getItem('TELEGRAM_CHAT_ID_1'),
+    localStorage.getItem('TELEGRAM_CHAT_ID_2')
+  ].filter(Boolean) as string[];
+
+  // Отправка важных событий в Telegram
+  const notifyTelegram = (msg: string) => {
+    sendTelegramMessage(msg, chatIds);
+  };
+
   // Обновление аналитики
   const updateAnalytics = () => {
     const pageViews = getStoredPageViews();
+    notifyTelegram(
+      `👁 Кто-то посетил страницу: <b>${window.location.pathname}</b>\n`+
+      `Всего просмотров: <b>${pageViews.length}</b>`
+    );
     const errors = getStoredErrors();
     
     // Подсчет уникальных посетителей

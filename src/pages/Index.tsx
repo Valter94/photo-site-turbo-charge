@@ -13,7 +13,6 @@ import ScrollToTop from "@/components/ScrollToTop";
 import LiveStats from "@/components/LiveStats";
 import FloatingReviews from "@/components/FloatingReviews";
 import BeforeAfterGallery from "@/components/BeforeAfterGallery";
-import InteractiveLocationMap from "@/components/InteractiveLocationMap";
 
 const Index = () => {
   return (
@@ -24,7 +23,6 @@ const Index = () => {
         <LiveStats />
         <StoryCarousel />
         <BeforeAfterGallery />
-        <InteractiveLocationMap />
         <PortfolioSection />
         <LocationsSection />
         <PricingSection />

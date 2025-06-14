@@ -16,7 +16,6 @@ const BookingForm = () => {
     email: '',
     phone: '',
     date: '',
-    time: '',
     service_type: '',
     location_id: '',
     message: ''
@@ -37,15 +36,10 @@ const BookingForm = () => {
     { value: 'newborn', label: 'Съемка новорожденного' }
   ];
 
-  const timeSlots = [
-    '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', 
-    '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'
-  ];
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.email || !formData.date || !formData.time || !formData.service_type) {
+    if (!formData.name || !formData.email || !formData.date || !formData.service_type) {
       toast({
         title: "Ошибка",
         description: "Пожалуйста, заполните все обязательные поля",
@@ -63,6 +57,7 @@ const BookingForm = () => {
         .from('bookings')
         .insert([{
           ...formData,
+          time: '10:00:00', // Устанавливаем дефолтное время
           total_price: selectedPricing?.price || 0,
           status: 'pending'
         }]);
@@ -71,7 +66,7 @@ const BookingForm = () => {
 
       toast({
         title: "Успешно!",
-        description: "Ваша заявка отправлена. Мы свяжемся с вами в ближайшее время.",
+        description: "Ваша заявка отправлена. Мы свяжемся с вами для уточнения времени съемки.",
       });
 
       // Сброс формы
@@ -80,7 +75,6 @@ const BookingForm = () => {
         email: '',
         phone: '',
         date: '',
-        time: '',
         service_type: '',
         location_id: '',
         message: ''
@@ -99,20 +93,22 @@ const BookingForm = () => {
   const selectedPricing = pricing?.find(p => p.service_type === formData.service_type);
 
   return (
-    <section id="booking" className="py-20 bg-gray-50">
+    <section id="booking" className="py-20 bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Забронировать съемку</h2>
+          <h2 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-4">
+            Забронировать съемку
+          </h2>
           <p className="text-xl text-gray-600">
-            Заполните форму, и мы свяжемся с вами для обсуждения деталей
+            Заполните форму, и мы свяжемся с вами для обсуждения деталей и времени
           </p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Форма бронирования</CardTitle>
+        <Card className="shadow-2xl border-0 bg-white/90 backdrop-blur-sm">
+          <CardHeader className="bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-t-lg">
+            <CardTitle className="text-2xl text-center">Форма бронирования</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -125,6 +121,7 @@ const BookingForm = () => {
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
                     placeholder="Ваше имя"
                     required
+                    className="border-2 border-pink-200 focus:border-pink-500 rounded-lg"
                   />
                 </div>
                 
@@ -138,6 +135,7 @@ const BookingForm = () => {
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
                     placeholder="your@email.com"
                     required
+                    className="border-2 border-pink-200 focus:border-pink-500 rounded-lg"
                   />
                 </div>
               </div>
@@ -151,6 +149,7 @@ const BookingForm = () => {
                   value={formData.phone}
                   onChange={(e) => setFormData({...formData, phone: e.target.value})}
                   placeholder="+7 (999) 123-45-67"
+                  className="border-2 border-pink-200 focus:border-pink-500 rounded-lg"
                 />
               </div>
 
@@ -162,7 +161,7 @@ const BookingForm = () => {
                   value={formData.service_type}
                   onValueChange={(value) => setFormData({...formData, service_type: value})}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="border-2 border-pink-200 focus:border-pink-500 rounded-lg">
                     <SelectValue placeholder="Выберите тип съемки" />
                   </SelectTrigger>
                   <SelectContent>
@@ -174,47 +173,32 @@ const BookingForm = () => {
                   </SelectContent>
                 </Select>
                 {selectedPricing && (
-                  <p className="text-sm text-gray-600 mt-2">
-                    Цена: {selectedPricing.price.toLocaleString('ru-RU')} ₽ 
-                    ({selectedPricing.duration_hours} ч, {selectedPricing.photos_count})
-                  </p>
+                  <div className="mt-3 p-3 bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg">
+                    <p className="text-sm text-gray-700">
+                      💰 Цена: <span className="font-bold text-pink-600">{selectedPricing.price.toLocaleString('ru-RU')} ₽</span>
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      ⏱️ Продолжительность: {selectedPricing.duration_hours} ч | 📸 Фотографии: {selectedPricing.photos_count}
+                    </p>
+                  </div>
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Дата съемки *
-                  </label>
-                  <Input
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => setFormData({...formData, date: e.target.value})}
-                    min={new Date().toISOString().split('T')[0]}
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Время *
-                  </label>
-                  <Select
-                    value={formData.time}
-                    onValueChange={(value) => setFormData({...formData, time: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите время" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timeSlots.map((time) => (
-                        <SelectItem key={time} value={time}>
-                          {time}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Дата съемки *
+                </label>
+                <Input
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData({...formData, date: e.target.value})}
+                  min={new Date().toISOString().split('T')[0]}
+                  required
+                  className="border-2 border-pink-200 focus:border-pink-500 rounded-lg"
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Время съемки обсудим при звонке
+                </p>
               </div>
 
               <div>
@@ -225,7 +209,7 @@ const BookingForm = () => {
                   value={formData.location_id}
                   onValueChange={(value) => setFormData({...formData, location_id: value})}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="border-2 border-pink-200 focus:border-pink-500 rounded-lg">
                     <SelectValue placeholder="Выберите локацию (опционально)" />
                   </SelectTrigger>
                   <SelectContent>
@@ -245,17 +229,25 @@ const BookingForm = () => {
                 <Textarea
                   value={formData.message}
                   onChange={(e) => setFormData({...formData, message: e.target.value})}
-                  placeholder="Расскажите о ваших пожеланиях к съемке..."
+                  placeholder="Расскажите о ваших пожеланиях к съемке, предпочтениям по времени..."
                   rows={4}
+                  className="border-2 border-pink-200 focus:border-pink-500 rounded-lg"
                 />
               </div>
 
               <Button 
                 type="submit" 
-                className="w-full bg-pink-600 hover:bg-pink-700 text-lg py-3"
+                className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white text-lg py-4 rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Отправка...' : 'Отправить заявку'}
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Отправка...
+                  </div>
+                ) : (
+                  '💌 Отправить заявку'
+                )}
               </Button>
             </form>
           </CardContent>

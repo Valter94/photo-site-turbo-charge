@@ -1,9 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Camera, Star, Clock, Users, MapPin } from "lucide-react";
+import { usePricing } from '@/hooks/usePricing';
 
 const LiveStats = () => {
+  const { data: pricing } = usePricing();
   const [stats, setStats] = useState({
     happyClients: 0,
     photosCreated: 0,
@@ -60,33 +63,62 @@ const LiveStats = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Имитация активности в реальном времени с большим интервалом
+  // Создаем активности на основе реальных услуг
   useEffect(() => {
-    const activities = [
-      "Анна забронировала Love Story съемку",
-      "Михаил заказал семейную фотосессию",
-      "Елена оставила отзыв ⭐⭐⭐⭐⭐",
-      "Дмитрий забронировал свадебную съемку",
-      "Ольга заказала портретную фотосессию",
-      "Александр оценил работу на 5 звезд",
-      "Мария интересуется корпоративной съемкой",
-      "Владимир запросил расчет стоимости",
-      "Наталья выбирает дату для Love Story"
-    ];
+    if (!pricing || pricing.length === 0) return;
+
+    const serviceNames = pricing.map(service => {
+      const serviceTypes = {
+        'wedding_preparations': 'утренние сборы',
+        'wedding_ceremony': 'свадебную съемку',
+        'wedding_full_day': 'полный свадебный день',
+        'lovestory': 'Love Story съемку',
+        'portrait': 'портретную фотосессию',
+        'family': 'семейную фотосессию',
+        'corporate': 'корпоративную съемку'
+      };
+      return serviceTypes[service.service_type] || 'фотосессию';
+    });
+
+    const names = ['Анна', 'Михаил', 'Елена', 'Дмитрий', 'Ольга', 'Александр', 'Мария', 'Владимир', 'Наталья', 'Сергей'];
+    
+    const generateActivities = () => {
+      const activities = [];
+      
+      // Активности бронирования
+      serviceNames.forEach(serviceName => {
+        names.slice(0, 3).forEach(name => {
+          activities.push(`${name} забронировал(а) ${serviceName}`);
+        });
+      });
+
+      // Общие активности
+      names.slice(0, 4).forEach(name => {
+        activities.push(`${name} оставил(а) отзыв ⭐⭐⭐⭐⭐`);
+        activities.push(`${name} оценил(а) работу на 5 звезд`);
+        activities.push(`${name} запросил(а) расчет стоимости`);
+      });
+
+      return activities;
+    };
+
+    const activities = generateActivities();
 
     const addActivity = () => {
+      if (activities.length === 0) return;
+      
       const randomActivity = activities[Math.floor(Math.random() * activities.length)];
       setRecentActivity(prev => [randomActivity, ...prev.slice(0, 2)]);
     };
 
-    // Увеличиваем интервал: каждые 12-25 минут
-    const timer = setInterval(addActivity, Math.random() * 13 * 60 * 1000 + 12 * 60 * 1000);
+    // Увеличиваем интервал: каждые 15-30 минут
+    const timer = setInterval(addActivity, Math.random() * 15 * 60 * 1000 + 15 * 60 * 1000);
     
-    // Начальная активность
-    setTimeout(addActivity, 3000);
+    // Начальная активность через 5 секунд
+    setTimeout(addActivity, 5000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [pricing]);
 
   return (
     <div className="py-16 bg-gradient-to-br from-pink-50 via-purple-50 to-rose-50">
@@ -175,28 +207,28 @@ const LiveStats = () => {
               </div>
               
               <div className="space-y-3 min-h-[120px]">
-                {recentActivity.map((activity, index) => (
-                  <div 
-                    key={index}
-                    className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-500 ${
-                      index === 0 
-                        ? 'bg-gradient-to-r from-pink-100 to-rose-100 transform scale-105' 
-                        : 'bg-gray-50'
-                    }`}
-                    style={{
-                      opacity: index === 0 ? 1 : 0.7 - (index * 0.2),
-                      transform: `translateY(${index * 2}px)`
-                    }}
-                  >
-                    <div className="w-2 h-2 bg-pink-500 rounded-full flex-shrink-0"></div>
-                    <span className="text-sm text-gray-700">{activity}</span>
-                    <div className="text-xs text-gray-500 ml-auto">
-                      {index === 0 ? 'только что' : `${(index + 1) * 3} мин назад`}
+                {recentActivity.length > 0 ? (
+                  recentActivity.map((activity, index) => (
+                    <div 
+                      key={index}
+                      className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-500 ${
+                        index === 0 
+                          ? 'bg-gradient-to-r from-pink-100 to-rose-100 transform scale-105' 
+                          : 'bg-gray-50'
+                      }`}
+                      style={{
+                        opacity: index === 0 ? 1 : 0.7 - (index * 0.2),
+                        transform: `translateY(${index * 2}px)`
+                      }}
+                    >
+                      <div className="w-2 h-2 bg-pink-500 rounded-full flex-shrink-0"></div>
+                      <span className="text-sm text-gray-700">{activity}</span>
+                      <div className="text-xs text-gray-500 ml-auto">
+                        {index === 0 ? 'только что' : `${(index + 1) * 15} мин назад`}
+                      </div>
                     </div>
-                  </div>
-                ))}
-                
-                {recentActivity.length === 0 && (
+                  ))
+                ) : (
                   <div className="text-center text-gray-500 py-8">
                     <div className="animate-pulse">Загрузка активности...</div>
                   </div>

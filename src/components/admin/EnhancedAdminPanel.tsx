@@ -3,19 +3,20 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogOut, Settings, Image, MapPin, DollarSign, Star, User } from 'lucide-react';
+import { LogOut, Settings, Image, MapPin, DollarSign, Star, User, BarChart3 } from 'lucide-react';
 import PortfolioManager from './PortfolioManager';
 import LocationsManager from '../admin/LocationsManager';
 import PricingManager from '../admin/PricingManager';
 import ReviewsManager from '../admin/ReviewsManager';
 import SiteSettingsManager from '../admin/SiteSettingsManager';
+import SiteAnalyticsDashboard from '../admin/SiteAnalyticsDashboard';
 
 interface EnhancedAdminPanelProps {
   onLogout: () => void;
 }
 
 const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
-  const [activeTab, setActiveTab] = useState('portfolio');
+  const [activeTab, setActiveTab] = useState('analytics');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50">
@@ -46,7 +47,14 @@ const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 bg-white shadow-sm border border-rose-200 h-12">
+          <TabsList className="grid w-full grid-cols-6 bg-white shadow-sm border border-rose-200 h-12">
+            <TabsTrigger 
+              value="analytics" 
+              className="flex items-center space-x-2 data-[state=active]:bg-rose-100 data-[state=active]:text-rose-700 py-2"
+            >
+              <BarChart3 className="h-4 w-4" />
+              <span className="hidden sm:inline">Аналитика</span>
+            </TabsTrigger>
             <TabsTrigger 
               value="portfolio" 
               className="flex items-center space-x-2 data-[state=active]:bg-rose-100 data-[state=active]:text-rose-700 py-2"
@@ -83,6 +91,20 @@ const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
               <span className="hidden sm:inline">Настройки</span>
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="analytics" className="space-y-6">
+            <Card className="border-rose-200 shadow-md">
+              <CardHeader className="bg-gradient-to-r from-rose-100 to-pink-100 rounded-t-lg">
+                <CardTitle className="flex items-center space-x-2 text-rose-800">
+                  <BarChart3 className="h-5 w-5" />
+                  <span>Аналитика и мониторинг сайта</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <SiteAnalyticsDashboard />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="portfolio" className="space-y-6">
             <Card className="border-rose-200 shadow-md">

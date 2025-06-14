@@ -109,7 +109,7 @@ const HeroSection = () => {
               <Button
                 variant="outline"
                 size="lg"
-                className="border-2 border-white/50 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 hover:border-white/70 rounded-full px-6 font-bold shadow-xl transition-all duration-300"
+                className="border-2 border-white/70 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 hover:border-white/90 rounded-full px-6 font-bold shadow-xl transition-all duration-300"
                 onClick={handleCall}
               >
                 <Phone className="w-4 h-4 mr-2 text-white" />
@@ -118,7 +118,7 @@ const HeroSection = () => {
               <Button
                 variant="outline"
                 size="lg"
-                className="border-2 border-white/50 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 hover:border-white/70 rounded-full px-6 font-bold shadow-xl transition-all duration-300"
+                className="border-2 border-white/70 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 hover:border-white/90 rounded-full px-6 font-bold shadow-xl transition-all duration-300"
                 onClick={() => scrollToSection('pricing')}
               >
                 <Heart className="w-4 h-4 mr-2 text-white" />

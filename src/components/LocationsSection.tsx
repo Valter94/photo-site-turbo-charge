@@ -5,7 +5,7 @@ import { MapPin, Clock, Home, ExternalLink } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
 const LocationsSection = () => {
-  // Реальные локации Москвы и Подмосковья с подходящими фотографиями
+  // Расширенный список локаций Москвы и Подмосковья с обновленными фотографиями
   const locations = [
     {
       id: 1,
@@ -138,6 +138,50 @@ const LocationsSection = () => {
       bestTime: 'Днем',
       indoor: false,
       features: ['Башни', 'Храмы', 'Дворы', 'Ремесленные мастерские']
+    },
+    {
+      id: 13,
+      name: 'Нескучный сад',
+      description: 'Старинный парк на берегу Москвы-реки с романтическими аллеями и беседками.',
+      image: 'https://images.unsplash.com/photo-1574958269340-fa927503f3dd?w=800&h=600&fit=crop&auto=format&q=80',
+      category: 'Парки',
+      address: 'Ленинский пр-т, 30, Москва',
+      bestTime: 'Вечером на закате',
+      indoor: false,
+      features: ['Набережная', 'Беседки', 'Старые деревья', 'Мосты']
+    },
+    {
+      id: 14,
+      name: 'Александровский сад',
+      description: 'Исторический сад у стен Кремля с вечным огнем и могилой неизвестного солдата.',
+      image: 'https://images.unsplash.com/photo-1578894381820-7a526b1b2b9e?w=800&h=600&fit=crop&auto=format&q=80',
+      category: 'Исторические места',
+      address: 'Александровский сад, Москва',
+      bestTime: 'Утром до 9:00',
+      indoor: false,
+      features: ['Кремлевская стена', 'Фонтаны', 'Аллеи', 'Памятники']
+    },
+    {
+      id: 15,
+      name: 'Останкинский парк',
+      description: 'Большой парк с прудами, аллеями и видом на Останкинскую башню.',
+      image: 'https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?w=800&h=600&fit=crop&auto=format&q=80',
+      category: 'Парки',
+      address: 'ул. Академика Королева, Москва',
+      bestTime: 'Утром и вечером',
+      indoor: false,
+      features: ['Пруды', 'Телебашня', 'Аллеи', 'Мостики']
+    },
+    {
+      id: 16,
+      name: 'Усадьба Люблино',
+      description: 'Уникальная усадьба в форме креста с романтичным парком.',
+      image: 'https://images.unsplash.com/photo-1580894547592-a5d8b5ab5cb5?w=800&h=600&fit=crop&auto=format&q=80',
+      category: 'Усадьбы',
+      address: 'Летняя ул., 1, к. 1, Москва',
+      bestTime: 'Золотой час',
+      indoor: false,
+      features: ['Дворец', 'Парк', 'Пруд', 'Грот']
     }
   ];
 
@@ -161,10 +205,6 @@ const LocationsSection = () => {
                   src={location.image} 
                   alt={location.name}
                   className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
-                  onError={(e) => {
-                    console.log(`Ошибка загрузки изображения для ${location.name}, используем запасное`);
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?w=400&h=300&fit=crop&auto=format&q=50';
-                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div className="absolute top-3 right-3">

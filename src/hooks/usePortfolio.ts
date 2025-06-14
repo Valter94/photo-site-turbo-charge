@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -16,7 +15,7 @@ export interface PortfolioItem {
   created_at?: string;
 }
 
-// Реальные красивые фотографии для портфолио
+// Расширенное портфолио с реальными красивыми фотографиями
 const mockPortfolioData: PortfolioItem[] = [
   {
     id: '1',
@@ -148,6 +147,94 @@ const mockPortfolioData: PortfolioItem[] = [
     location: 'Битцевский парк, Москва',
     client_name: 'Семья Смирновых',
     shoot_date: '2024-05-18',
+    is_featured: false
+  },
+  {
+    id: '13',
+    title: 'Свадьба в Останкино',
+    category: 'wedding',
+    image_url: 'https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?w=800&h=600&fit=crop&auto=format&q=80',
+    description: 'Элегантная церемония в парке Останкино',
+    location: 'Останкино, Москва',
+    client_name: 'Екатерина и Владимир',
+    shoot_date: '2024-08-10',
+    is_featured: true
+  },
+  {
+    id: '14',
+    title: 'Love Story в Нескучном саду',
+    category: 'lovestory',
+    image_url: 'https://images.unsplash.com/photo-1529391408-7a5b2d28b17b?w=800&h=600&fit=crop&auto=format&q=80',
+    description: 'Романтическая прогулка по старинному парку',
+    location: 'Нескучный сад, Москва',
+    client_name: 'Алексей и Кристина',
+    shoot_date: '2024-09-05',
+    is_featured: true
+  },
+  {
+    id: '15',
+    title: 'Детский портрет в Лужниках',
+    category: 'portrait',
+    image_url: 'https://images.unsplash.com/photo-1503928094834-42b1fd14b4b8?w=800&h=600&fit=crop&auto=format&q=80',
+    description: 'Веселая детская фотосессия в парке',
+    location: 'Лужники, Москва',
+    client_name: 'Маленький Артем',
+    shoot_date: '2024-07-22',
+    is_featured: false
+  },
+  {
+    id: '16',
+    title: 'Семейная съемка в Филевском парке',
+    category: 'family',
+    image_url: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800&h=600&fit=crop&auto=format&q=80',
+    description: 'Счастливые семейные моменты осенью',
+    location: 'Филевский парк, Москва',
+    client_name: 'Семья Ивановых',
+    shoot_date: '2024-10-12',
+    is_featured: false
+  },
+  {
+    id: '17',
+    title: 'Свадьба в Летнем саду',
+    category: 'wedding',
+    image_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop&auto=format&q=80',
+    description: 'Изысканная церемония среди цветущих деревьев',
+    location: 'Летний сад, Москва',
+    client_name: 'Светлана и Николай',
+    shoot_date: '2024-05-25',
+    is_featured: true
+  },
+  {
+    id: '18',
+    title: 'Love Story в Александровском саду',
+    category: 'lovestory',
+    image_url: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=800&h=600&fit=crop&auto=format&q=80',
+    description: 'Романтика у стен Кремля',
+    location: 'Александровский сад, Москва',
+    client_name: 'Денис и Анна',
+    shoot_date: '2024-06-15',
+    is_featured: true
+  },
+  {
+    id: '19',
+    title: 'Портрет в Парке Победы',
+    category: 'portrait',
+    image_url: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=800&h=600&fit=crop&auto=format&q=80',
+    description: 'Торжественная портретная съемка',
+    location: 'Парк Победы, Москва',
+    client_name: 'Елизавета',
+    shoot_date: '2024-09-08',
+    is_featured: false
+  },
+  {
+    id: '20',
+    title: 'Семейное фото в Бирюлевском дендропарке',
+    category: 'family',
+    image_url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop&auto=format&q=80',
+    description: 'Семейное счастье среди экзотических растений',
+    location: 'Бирюлевский дендропарк, Москва',
+    client_name: 'Семья Козловых',
+    shoot_date: '2024-08-30',
     is_featured: false
   }
 ];

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Camera, Menu, X, Heart } from "lucide-react";
@@ -32,7 +31,6 @@ const Navigation = () => {
 
   const navItems = [
     { name: 'Главная', action: () => scrollToSection('hero') },
-    { name: 'Услуги', path: '/services' },
     { name: 'Портфолио', action: () => scrollToSection('portfolio') },
     { name: 'Галерея', path: '/gallery' },
     { name: 'Локации', action: () => scrollToSection('locations') },

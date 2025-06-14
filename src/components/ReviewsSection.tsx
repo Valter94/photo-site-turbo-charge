@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { Star } from 'lucide-react';
+import { Star, Mail } from 'lucide-react';
 import { useReviews } from '@/hooks/useReviews';
 
 const ReviewsSection = () => {
@@ -84,6 +84,12 @@ const ReviewsSection = () => {
     return types[serviceType as keyof typeof types] || serviceType;
   };
 
+  const handleWriteReview = () => {
+    const subject = 'Отзыв о фотосъемке';
+    const body = 'Здравствуйте, Ирина!\n\nХочу оставить отзыв о проведенной фотосъемке:\n\n[Напишите ваш отзыв здесь]\n\nС уважением,\n[Ваше имя]';
+    window.location.href = `mailto:bagreshevafoto@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
   if (isLoading) {
     return (
       <section className="py-20 bg-gray-50">
@@ -147,7 +153,11 @@ const ReviewsSection = () => {
             <p className="text-gray-600 mb-6">
               Мы ценим ваше мнение и будем рады узнать о вашем опыте работы с нами
             </p>
-            <button className="bg-rose-400 text-white px-8 py-3 rounded-full hover:bg-rose-500 transition-colors">
+            <button 
+              onClick={handleWriteReview}
+              className="bg-rose-400 text-white px-8 py-3 rounded-full hover:bg-rose-500 transition-colors flex items-center mx-auto"
+            >
+              <Mail className="w-5 h-5 mr-2" />
               Написать отзыв
             </button>
           </div>

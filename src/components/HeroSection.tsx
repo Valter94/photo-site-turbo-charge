@@ -35,7 +35,7 @@ const HeroSection = () => {
             <div className="relative mx-auto w-40 h-40 group">
               <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-600 rounded-full animate-spin-slow opacity-75 blur-sm"></div>
               <img
-                src="https://images.unsplash.com/photo-1494790108755-2616c6f24c34?w=300&h=300&fit=crop&crop=face&auto=format"
+                src="/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png"
                 alt="Фотограф Ирина"
                 className="relative w-40 h-40 rounded-full mx-auto object-cover border-4 border-white/30 shadow-2xl group-hover:scale-105 transition-all duration-500 hover-lift"
               />

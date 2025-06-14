@@ -5,7 +5,7 @@ import { MapPin, Clock, Home, ExternalLink } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
 const LocationsSection = () => {
-  // Реальные локации Москвы и Подмосковья с настоящими фотографиями
+  // Реальные локации Москвы и Подмосковья с подходящими фотографиями
   const locations = [
     {
       id: 1,
@@ -55,7 +55,7 @@ const LocationsSection = () => {
       id: 5,
       name: 'Усадьба Архангельское',
       description: 'Роскошная усадьба XVIII века в Подмосковье с дворцом, парком и великолепной архитектурой.',
-      image: 'https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?w=800&h=600&fit=crop&auto=format&q=80',
+      image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Усадьбы',
       address: 'пос. Архангельское, Красногорский р-н',
       bestTime: 'Утром и в золотой час',
@@ -88,7 +88,7 @@ const LocationsSection = () => {
       id: 8,
       name: 'Коломенское',
       description: 'Музей-заповедник с древними храмами и панорамным видом на Москву-реку.',
-      image: 'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=800&h=600&fit=crop&auto=format&q=80',
+      image: 'https://images.unsplash.com/photo-1582706975765-9c3a6e36c3dc?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Исторические места',
       address: 'Андропова пр-т, 39, Москва',
       bestTime: 'Рассвет и золотой час',
@@ -161,6 +161,10 @@ const LocationsSection = () => {
                   src={location.image} 
                   alt={location.name}
                   className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
+                  onError={(e) => {
+                    console.log(`Ошибка загрузки изображения для ${location.name}, используем запасное`);
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?w=400&h=300&fit=crop&auto=format&q=50';
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div className="absolute top-3 right-3">

@@ -56,9 +56,10 @@ export const useFileUpload = () => {
       return urlData.publicUrl;
     } catch (error: any) {
       console.error('Upload failed:', error);
+      const errorMessage = error.message || "Не удалось загрузить файл";
       toast({
         title: "Ошибка загрузки",
-        description: error.message || "Не удалось загрузить файл",
+        description: errorMessage,
         variant: "destructive"
       });
       throw error;
@@ -71,9 +72,13 @@ export const useFileUpload = () => {
     try {
       // Извлекаем путь файла из URL
       const urlParts = url.split('/');
-      const fileName = urlParts[urlParts.length - 1];
-      const folderIndex = urlParts.findIndex(part => part === 'images') + 1;
-      const filePath = urlParts.slice(folderIndex).join('/');
+      const bucketIndex = urlParts.findIndex(part => part === 'images');
+      
+      if (bucketIndex === -1) {
+        throw new Error('Некорректный URL файла');
+      }
+      
+      const filePath = urlParts.slice(bucketIndex + 1).join('/');
 
       const { error } = await supabase.storage
         .from('images')

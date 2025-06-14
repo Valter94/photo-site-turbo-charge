@@ -9,11 +9,19 @@ import { Switch } from "@/components/ui/switch";
 import { Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useLocationCategories } from '@/hooks/useLocations';
 import ImageUpload from './ImageUpload';
 
 const LocationUploadCard = () => {
-  const { data: categories } = useLocationCategories();
+  // Статичные категории для демо
+  const categories = [
+    { id: '1', name: 'Парки' },
+    { id: '2', name: 'Исторические места' },
+    { id: '3', name: 'Усадьбы' },
+    { id: '4', name: 'Смотровые площадки' },
+    { id: '5', name: 'Природные парки' },
+    { id: '6', name: 'Выставочные комплексы' }
+  ];
+
   const [newLocation, setNewLocation] = useState({
     name: '',
     description: '',
@@ -49,7 +57,10 @@ const LocationUploadCard = () => {
         .from('photoshoot_locations')
         .insert([newLocation]);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Ошибка добавления локации:', error);
+        throw error;
+      }
 
       toast({
         title: "Успешно",
@@ -66,10 +77,11 @@ const LocationUploadCard = () => {
         indoor: false,
         image_url: ''
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Полная ошибка:', error);
       toast({
         title: "Ошибка",
-        description: "Не удалось добавить локацию",
+        description: error.message || "Не удалось добавить локацию",
         variant: "destructive"
       });
     } finally {
@@ -111,7 +123,7 @@ const LocationUploadCard = () => {
               <SelectValue placeholder="Выберите категорию *" />
             </SelectTrigger>
             <SelectContent>
-              {categories?.map((category) => (
+              {categories.map((category) => (
                 <SelectItem key={category.id} value={category.id}>
                   {category.name}
                 </SelectItem>

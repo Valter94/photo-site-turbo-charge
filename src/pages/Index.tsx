@@ -2,7 +2,6 @@
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
 import StoryCarousel from "@/components/StoryCarousel";
-import ServicesVideoPresentation from "@/components/ServicesVideoPresentation";
 import PortfolioSection from "@/components/PortfolioSection";
 import LocationsSection from "@/components/LocationsSection";
 import PricingSection from "@/components/PricingSection";
@@ -25,7 +24,6 @@ const Index = () => {
         <LiveStats />
         <StoryCarousel />
         <BeforeAfterGallery />
-        <ServicesVideoPresentation />
         <InteractiveLocationMap />
         <PortfolioSection />
         <LocationsSection />

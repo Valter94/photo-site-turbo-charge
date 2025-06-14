@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { useSiteSettings } from '@/hooks/useSiteSettings';
@@ -37,11 +36,11 @@ const HeroSection = () => {
 С уважением,
 [Ваше имя]`;
     
-    window.location.href = `mailto:irina.photo@email.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:bagreshevafoto@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   const handleCall = () => {
-    window.location.href = 'tel:+79991234567';
+    window.location.href = 'tel:+79262563550';
   };
 
   return (
@@ -110,16 +109,16 @@ const HeroSection = () => {
               <Button
                 variant="outline"
                 size="lg"
-                className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm rounded-full px-6 font-bold"
+                className="border-2 border-white/50 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 hover:border-white/70 rounded-full px-6 font-bold shadow-xl transition-all duration-300"
                 onClick={handleCall}
               >
                 <Phone className="w-4 h-4 mr-2 text-white" />
-                <span className="text-white font-bold">Позвонить сейчас</span>
+                <span className="text-white font-bold">+7 (926) 256-35-50</span>
               </Button>
               <Button
                 variant="outline"
                 size="lg"
-                className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm rounded-full px-6 font-bold"
+                className="border-2 border-white/50 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 hover:border-white/70 rounded-full px-6 font-bold shadow-xl transition-all duration-300"
                 onClick={() => scrollToSection('pricing')}
               >
                 <Heart className="w-4 h-4 mr-2 text-white" />

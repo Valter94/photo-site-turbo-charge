@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import Navigation from "../components/Navigation";
 import HeroSection from "../components/HeroSection";
@@ -9,13 +8,12 @@ import PortfolioSection from "../components/PortfolioSection";
 import ReviewsSection from "../components/ReviewsSection";
 import FAQSection from "../components/FAQSection";
 import Footer from "../components/Footer";
+import ScrollToTop from "../components/ScrollToTop";
 
 const Index = () => {
   useEffect(() => {
-    // SEO оптимизация
     document.title = "Фотограф Ирина Москва - Свадебная и Портретная Фотосъемка | 5+ лет опыта";
     
-    // Обновляем meta описание
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', 
@@ -28,13 +26,11 @@ const Index = () => {
       document.head.appendChild(meta);
     }
 
-    // Добавляем keywords
     const metaKeywords = document.createElement('meta');
     metaKeywords.name = 'keywords';
     metaKeywords.content = 'фотограф москва, свадебный фотограф, портретная съемка, семейная фотосъемка, love story, фотосессия москва, профессиональный фотограф, фотограф ирина';
     document.head.appendChild(metaKeywords);
 
-    // Open Graph теги
     const ogTitle = document.createElement('meta');
     ogTitle.setAttribute('property', 'og:title');
     ogTitle.content = 'Фотограф Ирина - Профессиональная фотосъемка в Москве';
@@ -50,7 +46,6 @@ const Index = () => {
     ogImage.content = 'https://images.unsplash.com/photo-1494790108755-2616c6f24c34?w=1200&h=630&fit=crop&auto=format';
     document.head.appendChild(ogImage);
 
-    // Structured Data для поисковых систем
     const structuredData = {
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
@@ -67,7 +62,7 @@ const Index = () => {
         "latitude": "55.7558",
         "longitude": "37.6176"
       },
-      "telephone": "+7 (999) 123-45-67",
+      "telephone": "+7 (926) 256-35-50",
       "email": "bagreshevafoto@gmail.com",
       "url": window.location.origin,
       "openingHours": "Mo-Su 09:00-21:00",
@@ -118,15 +113,12 @@ const Index = () => {
     script.text = JSON.stringify(structuredData);
     document.head.appendChild(script);
 
-    // Canonical URL
     const canonical = document.createElement('link');
     canonical.rel = 'canonical';
     canonical.href = window.location.origin;
     document.head.appendChild(canonical);
 
-    // Cleanup function
     return () => {
-      // Удаляем добавленные элементы при размонтировании компонента
       const elementsToRemove = [metaKeywords, ogTitle, ogDescription, ogImage, script, canonical];
       elementsToRemove.forEach(element => {
         if (element.parentNode) {
@@ -147,6 +139,7 @@ const Index = () => {
       <ReviewsSection />
       <FAQSection />
       <Footer />
+      <ScrollToTop />
     </div>
   );
 };

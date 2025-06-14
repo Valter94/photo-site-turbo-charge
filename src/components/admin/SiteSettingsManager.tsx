@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Save } from 'lucide-react';
 import { useSiteSettings, useUpdateSiteSettings } from '@/hooks/useSiteSettings';
 import { useToast } from '@/hooks/use-toast';
+import ImageUpload from './ImageUpload';
 
 const SiteSettingsManager = () => {
   const { data: settings, isLoading } = useSiteSettings();
@@ -34,6 +35,10 @@ const SiteSettingsManager = () => {
         variant: "destructive"
       });
     }
+  };
+
+  const handlePhotoUpload = (url: string) => {
+    setForm({...form, photographer_photo: url});
   };
 
   if (isLoading) {
@@ -67,11 +72,12 @@ const SiteSettingsManager = () => {
           </div>
           
           <div>
-            <label className="text-sm font-medium">Фото профиля (URL)</label>
-            <Input
-              value={form.photographer_photo || ''}
-              onChange={(e) => setForm({...form, photographer_photo: e.target.value})}
-              placeholder="https://..."
+            <label className="text-sm font-medium mb-2 block">Фото профиля</label>
+            <ImageUpload
+              currentImage={form.photographer_photo}
+              onImageUploaded={handlePhotoUpload}
+              onRemoveImage={() => setForm({...form, photographer_photo: ''})}
+              folder="profile"
             />
           </div>
         </CardContent>

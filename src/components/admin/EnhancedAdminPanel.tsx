@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,8 @@ import {
   Plus,
   LogOut,
   Sparkles,
-  Image
+  Image,
+  Play
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
@@ -28,6 +28,7 @@ import SiteAnalyticsDashboard from './SiteAnalyticsDashboard';
 import ExportManager from './ExportManager';
 import AllSectionsManager from './AllSectionsManager';
 import PhotoRetouchManager from './PhotoRetouchManager';
+import VideoTutorials from './VideoTutorials';
 
 interface EnhancedAdminPanelProps {
   onLogout: () => void;
@@ -81,10 +82,14 @@ const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
 
       <div className="p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-8 w-full max-w-4xl mx-auto">
+          <TabsList className="grid grid-cols-9 w-full max-w-5xl mx-auto">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Обзор
+            </TabsTrigger>
+            <TabsTrigger value="tutorials" className="flex items-center gap-2">
+              <Play className="h-4 w-4" />
+              Видео
             </TabsTrigger>
             <TabsTrigger value="portfolio" className="flex items-center gap-2">
               <Camera className="h-4 w-4" />
@@ -176,6 +181,10 @@ const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="tutorials">
+            <VideoTutorials />
           </TabsContent>
 
           <TabsContent value="portfolio">

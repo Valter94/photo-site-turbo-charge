@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,27 @@ const GalleryGrid = ({ items, columns = 3 }: GalleryGridProps) => {
     });
   };
 
+  const handleDownload = async (item: GalleryItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!item.image_url) return;
+    
+    try {
+      const response = await fetch(item.image_url);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${item.title || 'image'}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Ошибка при загрузке изображения:', error);
+    }
+  };
+
   const getCategoryName = (category: string) => {
     const names = {
       wedding: '💒 Свадьба',
@@ -71,6 +93,15 @@ const GalleryGrid = ({ items, columns = 3 }: GalleryGridProps) => {
     3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
     4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
   };
+
+  // Проверяем, что items существует и является массивом
+  if (!items || !Array.isArray(items)) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500 text-lg">Нет данных для отображения</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -121,7 +152,7 @@ const GalleryGrid = ({ items, columns = 3 }: GalleryGridProps) => {
                   <Button
                     size="icon"
                     className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm transition-all duration-200 hover:scale-110"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => handleDownload(item, e)}
                   >
                     <Download className="h-4 w-4" />
                   </Button>

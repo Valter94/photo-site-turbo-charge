@@ -42,6 +42,8 @@ const ImageViewer = ({ images, initialIndex, isOpen, onClose }: ImageViewerProps
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
+    if (!isOpen) return;
+    
     if (event.key === 'ArrowLeft') goToPrevious();
     if (event.key === 'ArrowRight') goToNext();
     if (event.key === 'Escape') onClose();
@@ -55,13 +57,15 @@ const ImageViewer = ({ images, initialIndex, isOpen, onClose }: ImageViewerProps
   }, [isOpen]);
 
   const downloadImage = async () => {
+    if (!currentImage?.image_url) return;
+    
     try {
       const response = await fetch(currentImage.image_url);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${currentImage.title}.jpg`;
+      link.download = `${currentImage.title || 'image'}.jpg`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

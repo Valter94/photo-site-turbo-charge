@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, Volume2, VolumeX, RotateCcw } from "lucide-react";
+import DetailedServiceCard from './DetailedServiceCard';
 
 const ServicesVideoPresentation = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -39,45 +41,86 @@ const ServicesVideoPresentation = () => {
       content: "Теплые семейные моменты в парках Москвы. Съемка с детьми, семейные традиции, естественные эмоции",
       image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=800&fit=crop&auto=format&q=80",
       duration: 4500
-    },
-    {
-      title: "Дополнительные услуги",
-      content: "Расширьте свой опыт с нашими дополнительными услугами",
-      image: "https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=1200&h=800&fit=crop&auto=format&q=80",
-      duration: 3000
     }
   ];
 
-  const additionalServices = [
+  const services = [
     {
-      icon: "✨",
-      title: "Ретушь и обработка",
-      description: "Профессиональная художественная обработка",
-      price: "от 500 ₽/фото"
+      title: "Свадебная съемка",
+      subtitle: "Полный день вашей свадьбы",
+      price: "от 45,000 ₽",
+      duration: "8-12 часов",
+      photosCount: "200+ фото",
+      rating: 4.9,
+      reviewsCount: 156,
+      image: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=400&fit=crop&auto=format&q=80",
+      description: "Полный свадебный день от утренних сборов до последнего танца. Создаем историю вашей любви в фотографиях.",
+      features: [
+        { icon: "💍", text: "Съемка церемонии и банкета" },
+        { icon: "👰", text: "Утренние сборы невесты" },
+        { icon: "🤵", text: "Сборы жениха" },
+        { icon: "💕", text: "Love Story съемка" },
+        { icon: "🎨", text: "Художественная обработка" },
+        { icon: "📱", text: "Онлайн галерея" }
+      ],
+      popular: true
     },
     {
-      icon: "📚",
-      title: "Фотокниги и альбомы",
-      description: "Дизайн и печать premium фотокниг",
-      price: "от 8,000 ₽"
+      title: "Love Story",
+      subtitle: "Романтическая фотосессия для пары",
+      price: "от 15,000 ₽",
+      duration: "2-3 часа",
+      photosCount: "40-60 фото",
+      rating: 4.8,
+      reviewsCount: 203,
+      image: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&h=400&fit=crop&auto=format&q=80",
+      description: "Романтические кадры в живописных локациях Москвы. Передаем вашу любовь через объектив.",
+      features: [
+        { icon: "🌸", text: "Красивые локации" },
+        { icon: "👫", text: "Естественные эмоции" },
+        { icon: "🎭", text: "Смена образов" },
+        { icon: "🌅", text: "Золотой час съемки" },
+        { icon: "🎨", text: "Цветокоррекция" },
+        { icon: "💝", text: "Подарочная упаковка" }
+      ]
     },
     {
-      icon: "🎨",
-      title: "Стилистика и макияж",
-      description: "Услуги профессионального визажиста",
-      price: "от 5,000 ₽"
+      title: "Портретная съемка",
+      subtitle: "Индивидуальные и семейные портреты",
+      price: "от 8,000 ₽",
+      duration: "1-2 часа",
+      photosCount: "20-30 фото",
+      rating: 4.9,
+      reviewsCount: 89,
+      image: "https://images.unsplash.com/photo-1494790108755-2616c6f24c34?w=600&h=400&fit=crop&auto=format&q=80",
+      description: "Создаем выразительные портреты, которые раскрывают вашу индивидуальность.",
+      features: [
+        { icon: "📸", text: "Студийная съемка" },
+        { icon: "🌿", text: "Съемка на природе" },
+        { icon: "💡", text: "Профессиональный свет" },
+        { icon: "🎨", text: "Ретушь портретов" },
+        { icon: "👔", text: "Деловые портреты" },
+        { icon: "🖼️", text: "Печать фотографий" }
+      ]
     },
     {
-      icon: "🚁",
-      title: "Аэросъемка",
-      description: "Съемка с дрона для особых моментов",
-      price: "В разработке"
-    },
-    {
-      icon: "📱",
-      title: "Онлайн-галереи",
-      description: "Персональные галереи для клиентов",
-      price: "Бесплатно"
+      title: "Семейная фотосессия",
+      subtitle: "Теплые семейные моменты",
+      price: "от 12,000 ₽",
+      duration: "2-3 часа",
+      photosCount: "50-70 фото",
+      rating: 4.8,
+      reviewsCount: 127,
+      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400&fit=crop&auto=format&q=80",
+      description: "Запечатлеваем искренние эмоции и связь между членами семьи в уютной атмосфере.",
+      features: [
+        { icon: "👨‍👩‍👧‍👦", text: "Съемка всей семьи" },
+        { icon: "🎈", text: "Реквизит для детей" },
+        { icon: "🏞️", text: "Локации в парках" },
+        { icon: "🎪", text: "Игровая съемка" },
+        { icon: "📚", text: "Семейная книга" },
+        { icon: "🎁", text: "Магниты в подарок" }
+      ]
     }
   ];
 
@@ -126,12 +169,12 @@ const ServicesVideoPresentation = () => {
   const currentSlideData = slides[currentSlide];
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-8">
+    <div className="space-y-16">
       {/* Video Presentation */}
       <Card className="overflow-hidden bg-gradient-to-br from-pink-50 to-rose-50 border-pink-200">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
-            🎥 Видео-презентация наших услуг
+            🎥 Видео-презентация услуг
           </CardTitle>
           <p className="text-gray-600">Узнайте о всех наших услугах за 3 минуты</p>
         </CardHeader>
@@ -216,32 +259,23 @@ const ServicesVideoPresentation = () => {
         </CardContent>
       </Card>
 
-      {/* Additional Services */}
-      <Card className="border-pink-200">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
-            ✨ Дополнительные услуги
-          </CardTitle>
-          <p className="text-center text-gray-600">
-            Сделайте вашу фотосессию еще более особенной
+      {/* Detailed Services */}
+      <div className="space-y-8">
+        <div className="text-center">
+          <h2 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent mb-4">
+            Наши услуги в деталях
+          </h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Выберите идеальный пакет для вашего особенного события
           </p>
-        </CardHeader>
-        
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {additionalServices.map((service, index) => (
-              <Card key={index} className="border-pink-100 hover:border-pink-300 transition-colors hover:shadow-lg">
-                <CardContent className="p-6 text-center space-y-3">
-                  <div className="text-4xl mb-3">{service.icon}</div>
-                  <h3 className="font-semibold text-lg text-gray-900">{service.title}</h3>
-                  <p className="text-gray-600 text-sm">{service.description}</p>
-                  <div className="text-pink-600 font-bold text-lg">{service.price}</div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {services.map((service, index) => (
+            <DetailedServiceCard key={index} {...service} />
+          ))}
+        </div>
+      </div>
 
       {/* Call to Action */}
       <Card className="bg-gradient-to-r from-pink-500 to-rose-500 text-white border-0">
@@ -253,6 +287,12 @@ const ServicesVideoPresentation = () => {
           <Button 
             size="lg" 
             className="bg-white text-pink-600 hover:bg-pink-50 font-semibold px-8"
+            onClick={() => {
+              const element = document.getElementById('booking');
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
           >
             Забронировать фотосессию
           </Button>

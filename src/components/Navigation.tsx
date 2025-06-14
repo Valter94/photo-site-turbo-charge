@@ -1,185 +1,194 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { useNavigate } from 'react-router-dom';
-import { Camera, Menu, X, Star, Heart } from 'lucide-react';
+import { Camera, Menu, X, Heart, Star, MapPin, Phone, Mail } from "lucide-react";
+import { Link, useLocation } from 'react-router-dom';
 
 const Navigation = () => {
-  const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const scrollToSection = (sectionId: string) => {
-    if (window.location.pathname !== '/') {
-      navigate('/');
-      setTimeout(() => {
-        const element = document.getElementById(sectionId);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
-    } else {
-      const element = document.getElementById(sectionId);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
+    if (location.pathname !== '/') {
+      window.location.href = `/#${sectionId}`;
+      return;
     }
-    setIsMobileMenuOpen(false);
+    
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+    setIsOpen(false);
   };
 
+  const navItems = [
+    { name: 'Главная', action: () => scrollToSection('hero') },
+    { name: 'Услуги', path: '/services' },
+    { name: 'Портфолио', action: () => scrollToSection('portfolio') },
+    { name: 'Галерея', path: '/gallery' },
+    { name: 'Локации', action: () => scrollToSection('locations') },
+    { name: 'Цены', action: () => scrollToSection('pricing') },
+    { name: 'Отзывы', action: () => scrollToSection('reviews') },
+    { name: 'Контакты', action: () => scrollToSection('contact') }
+  ];
+
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled 
-        ? 'bg-white/95 backdrop-blur-md shadow-xl border-b border-pink-100' 
-        : 'bg-white/90 backdrop-blur-sm shadow-lg'
-    }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Логотип */}
-          <div className="flex items-center space-x-3">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/')}
-              className="flex items-center space-x-2 text-xl font-bold text-gray-900 hover:text-pink-600 transition-colors p-2"
-            >
+    <>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        isScrolled 
+          ? 'bg-white/95 backdrop-blur-md shadow-xl border-b border-pink-100' 
+          : 'bg-transparent'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-20">
+            {/* Logo */}
+            <Link to="/" className="flex items-center space-x-2 group">
               <div className="relative">
-                <div className={`w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center transition-transform duration-300 ${
-                  isScrolled ? 'scale-90' : 'scale-100'
-                }`}>
-                  <Camera className="w-5 h-5 text-white" />
-                </div>
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center animate-pulse">
-                  <Star className="w-2 h-2 text-white fill-current" />
+                <Camera className={`w-8 h-8 transition-colors duration-300 ${
+                  isScrolled ? 'text-pink-600' : 'text-white'
+                } group-hover:text-pink-500`} />
+                <div className="absolute -top-1 -right-1">
+                  <Heart className="w-4 h-4 text-pink-500 animate-pulse" />
                 </div>
               </div>
-              <span className="bg-gradient-to-r from-gray-900 via-pink-600 to-purple-600 bg-clip-text text-transparent">
-                Фотограф Ирина
+              <span className={`text-2xl font-bold transition-colors duration-300 ${
+                isScrolled ? 'text-gray-900' : 'text-white'
+              } group-hover:text-pink-600`}>
+                Ирина Фото
               </span>
-            </Button>
-          </div>
-          
-          {/* Десктопное меню */}
-          <div className="hidden md:flex items-center space-x-1">
-            <Button 
-              variant="ghost" 
-              onClick={() => scrollToSection('portfolio')}
-              className="hover:bg-pink-50 hover:text-pink-600 transition-all duration-200 px-4 py-2 rounded-full"
-            >
-              <Star className="w-4 h-4 mr-2" />
-              Портфолио
-            </Button>
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate('/gallery')}
-              className="hover:bg-purple-50 hover:text-purple-600 transition-all duration-200 px-4 py-2 rounded-full"
-            >
-              <Camera className="w-4 h-4 mr-2" />
-              Галерея
-            </Button>
-            <Button 
-              variant="ghost" 
-              onClick={() => scrollToSection('locations')}
-              className="hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 px-4 py-2 rounded-full"
-            >
-              📍 Локации
-            </Button>
-            <Button 
-              variant="ghost" 
-              onClick={() => scrollToSection('pricing')}
-              className="hover:bg-green-50 hover:text-green-600 transition-all duration-200 px-4 py-2 rounded-full"
-            >
-              💰 Цены
-            </Button>
-            <Button 
-              variant="ghost" 
-              onClick={() => scrollToSection('reviews')}
-              className="hover:bg-rose-50 hover:text-rose-600 transition-all duration-200 px-4 py-2 rounded-full"
-            >
-              <Heart className="w-4 h-4 mr-2" />
-              Отзывы
-            </Button>
-            <Button 
-              className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-6 py-2 rounded-full font-semibold shadow-lg transform transition-all duration-200 hover:scale-105 hover:-translate-y-0.5 ml-4"
-              onClick={() => scrollToSection('booking')}
-            >
-              ✨ Записаться
-            </Button>
-          </div>
+            </Link>
 
-          {/* Мобильная кнопка меню */}
-          <div className="md:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-gray-900 hover:text-pink-600 transition-colors"
-            >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center space-x-1">
+              {navItems.map((item) => (
+                <div key={item.name}>
+                  {item.path ? (
+                    <Link to={item.path}>
+                      <Button
+                        variant="ghost"
+                        className={`text-sm font-medium transition-all duration-300 hover:bg-pink-50 hover:text-pink-600 ${
+                          isScrolled ? 'text-gray-700' : 'text-white hover:bg-white/10'
+                        }`}
+                      >
+                        {item.name}
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      onClick={item.action}
+                      className={`text-sm font-medium transition-all duration-300 hover:bg-pink-50 hover:text-pink-600 ${
+                        isScrolled ? 'text-gray-700' : 'text-white hover:bg-white/10'
+                      }`}
+                    >
+                      {item.name}
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* CTA Button & Mobile Menu */}
+            <div className="flex items-center space-x-4">
+              <Button
+                onClick={() => scrollToSection('booking')}
+                className="hidden md:flex bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-medium px-6 py-2 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
+              >
+                Забронировать
+              </Button>
+
+              {/* Mobile menu button */}
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className={`lg:hidden p-2 rounded-md transition-colors duration-300 ${
+                  isScrolled ? 'text-gray-700 hover:bg-gray-100' : 'text-white hover:bg-white/10'
+                }`}
+              >
+                {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Мобильное меню */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden absolute top-16 left-0 right-0 bg-white/95 backdrop-blur-md shadow-xl border-b border-pink-100 animate-slide-up">
-            <div className="px-4 pt-2 pb-4 space-y-2">
-              <Button 
-                variant="ghost" 
-                onClick={() => scrollToSection('portfolio')}
-                className="w-full justify-start hover:bg-pink-50 hover:text-pink-600 transition-all duration-200 rounded-xl"
-              >
-                <Star className="w-4 h-4 mr-3" />
-                Портфолио
-              </Button>
-              <Button 
-                variant="ghost" 
-                onClick={() => navigate('/gallery')}
-                className="w-full justify-start hover:bg-purple-50 hover:text-purple-600 transition-all duration-200 rounded-xl"
-              >
-                <Camera className="w-4 h-4 mr-3" />
-                Галерея
-              </Button>
-              <Button 
-                variant="ghost" 
-                onClick={() => scrollToSection('locations')}
-                className="w-full justify-start hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 rounded-xl"
-              >
-                📍 Локации
-              </Button>
-              <Button 
-                variant="ghost" 
-                onClick={() => scrollToSection('pricing')}
-                className="w-full justify-start hover:bg-green-50 hover:text-green-600 transition-all duration-200 rounded-xl"
-              >
-                💰 Цены
-              </Button>
-              <Button 
-                variant="ghost" 
-                onClick={() => scrollToSection('reviews')}
-                className="w-full justify-start hover:bg-rose-50 hover:text-rose-600 transition-all duration-200 rounded-xl"
-              >
-                <Heart className="w-4 h-4 mr-3" />
-                Отзывы
-              </Button>
-              <Button 
-                className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold shadow-lg mt-4 rounded-xl"
-                onClick={() => scrollToSection('booking')}
-              >
-                ✨ Записаться на съемку
-              </Button>
+        {/* Mobile Navigation Menu */}
+        {isOpen && (
+          <div className="lg:hidden bg-white/95 backdrop-blur-md border-t border-pink-100 shadow-xl">
+            <div className="px-4 py-6 space-y-4">
+              {navItems.map((item) => (
+                <div key={item.name}>
+                  {item.path ? (
+                    <Link to={item.path} onClick={() => setIsOpen(false)}>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-gray-700 hover:bg-pink-50 hover:text-pink-600 text-lg py-3"
+                      >
+                        {item.name}
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      onClick={item.action}
+                      className="w-full justify-start text-gray-700 hover:bg-pink-50 hover:text-pink-600 text-lg py-3"
+                    >
+                      {item.name}
+                    </Button>
+                  )}
+                </div>
+              ))}
+              
+              <div className="pt-4 border-t border-pink-100">
+                <Button
+                  onClick={() => scrollToSection('booking')}
+                  className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-medium py-3 rounded-lg shadow-lg"
+                >
+                  Забронировать съемку
+                </Button>
+              </div>
             </div>
           </div>
         )}
+      </nav>
+
+      {/* Top Info Bar */}
+      <div className="bg-gradient-to-r from-pink-600 to-rose-600 text-white py-2 text-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row justify-between items-center space-y-1 sm:space-y-0">
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-2">
+                <Phone className="w-4 h-4" />
+                <span>+7 (999) 123-45-67</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Mail className="w-4 h-4" />
+                <span>photo@irina.ru</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-1">
+                <Star className="w-4 h-4 text-yellow-300 fill-current" />
+                <span className="font-medium">4.9</span>
+                <span className="text-pink-200">• 523+ отзыва</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <MapPin className="w-4 h-4" />
+                <span>Москва и МО</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </nav>
+    </>
   );
 };
 

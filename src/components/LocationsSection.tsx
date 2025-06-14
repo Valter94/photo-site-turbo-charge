@@ -20,7 +20,7 @@ const LocationsSection = () => {
       address: 'Красная площадь, 1, Москва',
       best_time: 'Рассвет и золотой час',
       indoor: false,
-      image_url: 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=800&h=600&fit=crop&auto=format&q=80',
+      image_url: 'https://images.unsplash.com/photo-1513326738677-b964603b136d?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Исторические'
     },
     {
@@ -30,7 +30,7 @@ const LocationsSection = () => {
       address: 'Дольская ул., 1, Москва',
       best_time: 'Весна и лето',
       indoor: false,
-      image_url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&auto=format&q=80',
+      image_url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Парки'
     },
     {
@@ -40,7 +40,7 @@ const LocationsSection = () => {
       address: 'Воробьевы горы, Москва',
       best_time: 'Закат',
       indoor: false,
-      image_url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&h=600&fit=crop&auto=format&q=80',
+      image_url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Панорамные'
     },
     {
@@ -50,7 +50,7 @@ const LocationsSection = () => {
       address: 'Патриаршие пруды, Москва',
       best_time: 'Вечер',
       indoor: false,
-      image_url: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?w=800&h=600&fit=crop&auto=format&q=80',
+      image_url: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Романтические'
     },
     {
@@ -60,7 +60,7 @@ const LocationsSection = () => {
       address: 'Московский международный деловой центр "Москва-Сити"',
       best_time: 'Синий час',
       indoor: false,
-      image_url: 'https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?w=800&h=600&fit=crop&auto=format&q=80',
+      image_url: 'https://images.unsplash.com/photo-1520637836862-4d197d17c16a?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Современные'
     },
     {
@@ -70,7 +70,7 @@ const LocationsSection = () => {
       address: 'Андропова пр-т, 39, Москва',
       best_time: 'Утро',
       indoor: false,
-      image_url: 'https://images.unsplash.com/photo-1466442929976-97f336a657be?w=800&h=600&fit=crop&auto=format&q=80',
+      image_url: 'https://images.unsplash.com/photo-1578321272176-b7bbc0679853?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Исторические'
     },
     {
@@ -80,7 +80,7 @@ const LocationsSection = () => {
       address: 'Крымский Вал, 9, Москва',
       best_time: 'Дневные часы',
       indoor: false,
-      image_url: 'https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?w=800&h=600&fit=crop&auto=format&q=80',
+      image_url: 'https://images.unsplash.com/photo-1441716844725-09cedc13a4e7?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Парки'
     },
     {
@@ -90,27 +90,35 @@ const LocationsSection = () => {
       address: 'Артплей, Нижняя Сыромятническая ул., 10, стр. 2',
       best_time: 'Любое время',
       indoor: true,
-      image_url: 'https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b?w=800&h=600&fit=crop&auto=format&q=80',
+      image_url: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Студии'
     }
   ];
 
   const displayLocations = locations || mockLocations;
 
+  // Helper function to get category name safely
+  const getCategoryName = (location: any) => {
+    if (location.category) {
+      return location.category;
+    }
+    if (location.location_categories?.name) {
+      return location.location_categories.name;
+    }
+    return 'Без категории';
+  };
+
   const categories = [
     { id: 'all', name: 'Все локации', count: displayLocations.length },
-    { id: 'Исторические', name: 'Исторические', count: displayLocations.filter(l => l.category === 'Исторические').length },
-    { id: 'Парки', name: 'Парки', count: displayLocations.filter(l => l.category === 'Парки').length },
-    { id: 'Романтические', name: 'Романтические', count: displayLocations.filter(l => l.category === 'Романтические').length },
-    { id: 'Современные', name: 'Современные', count: displayLocations.filter(l => l.category === 'Современные').length }
+    { id: 'Исторические', name: 'Исторические', count: displayLocations.filter(l => getCategoryName(l) === 'Исторические').length },
+    { id: 'Парки', name: 'Парки', count: displayLocations.filter(l => getCategoryName(l) === 'Парки').length },
+    { id: 'Романтические', name: 'Романтические', count: displayLocations.filter(l => getCategoryName(l) === 'Романтические').length },
+    { id: 'Современные', name: 'Современные', count: displayLocations.filter(l => getCategoryName(l) === 'Современные').length }
   ];
 
   const filteredLocations = selectedCategory === 'all' 
     ? displayLocations 
-    : displayLocations.filter(location => {
-        const locationCategory = location.category || (location.location_categories?.name);
-        return locationCategory === selectedCategory;
-      });
+    : displayLocations.filter(location => getCategoryName(location) === selectedCategory);
 
   const handleBookLocation = (locationName: string) => {
     const subject = `Бронирование съемки в локации: ${locationName}`;
@@ -214,7 +222,7 @@ const LocationsSection = () => {
                 {/* Бейдж категории */}
                 <div className="absolute top-4 right-4">
                   <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg font-medium">
-                    {location.category || (location.location_categories?.name)}
+                    {getCategoryName(location)}
                   </Badge>
                 </div>
 

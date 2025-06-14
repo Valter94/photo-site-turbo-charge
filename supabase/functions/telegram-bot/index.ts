@@ -29,7 +29,7 @@ interface UserSession {
   type: 'portfolio' | 'location'
 }
 
-// Храним сессии пользователей в памяти (в продакшене лучше использовать базу данных)
+// Храним сессии пользователей в памяти
 const userSessions = new Map<number, UserSession>()
 
 serve(async (req) => {
@@ -38,16 +38,34 @@ serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
+    // Проверяем наличие всех необходимых переменных окружения
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
-    if (!botToken) {
-      console.error('TELEGRAM_BOT_TOKEN не настроен')
-      throw new Error('TELEGRAM_BOT_TOKEN не настроен')
+
+    console.log('Environment check:', {
+      hasSupabaseUrl: !!supabaseUrl,
+      hasServiceKey: !!supabaseServiceKey,
+      hasBotToken: !!botToken
+    })
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing Supabase environment variables')
+      return new Response('Server configuration error', { 
+        status: 500, 
+        headers: corsHeaders 
+      })
     }
+
+    if (!botToken) {
+      console.error('TELEGRAM_BOT_TOKEN не настроен в секретах Supabase')
+      return new Response('Bot token not configured', { 
+        status: 500, 
+        headers: corsHeaders 
+      })
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     const update: TelegramUpdate = await req.json()
     console.log('Получено обновление:', JSON.stringify(update, null, 2))
@@ -165,6 +183,44 @@ serve(async (req) => {
       } else if (data === 'cancel') {
         userSessions.delete(userId)
         await editMessage('❌ <b>Операция отменена</b>')
+      } else if (data === 'stats') {
+        const { data: portfolioCount } = await supabase
+          .from('portfolio')
+          .select('id', { count: 'exact' })
+
+        const { data: bookingsCount } = await supabase
+          .from('bookings')
+          .select('id', { count: 'exact' })
+
+        const { data: reviewsCount } = await supabase
+          .from('reviews')
+          .select('id', { count: 'exact' })
+
+        const { data: locationsCount } = await supabase
+          .from('photoshoot_locations')
+          .select('id', { count: 'exact' })
+
+        await editMessage(
+          `📊 <b>Статистика сайта:</b>\n\n` +
+          `📸 Фото в портфолио: <b>${portfolioCount?.length || 0}</b>\n` +
+          `📝 Заявок на съемку: <b>${bookingsCount?.length || 0}</b>\n` +
+          `⭐ Отзывов: <b>${reviewsCount?.length || 0}</b>\n` +
+          `📍 Локаций: <b>${locationsCount?.length || 0}</b>\n\n` +
+          `🕐 Обновлено: ${new Date().toLocaleString('ru-RU')}`
+        )
+      } else if (data === 'help') {
+        await editMessage(
+          `📋 <b>Доступные функции:</b>\n\n` +
+          `🎮 <b>Главное меню:</b>\n` +
+          `Нажмите /start для открытия меню\n\n` +
+          `📸 <b>Как добавить контент:</b>\n` +
+          `1. Выберите действие кнопкой\n` +
+          `2. Отправьте фото\n` +
+          `3. Введите название\n` +
+          `4. Выберите категорию (для портфолио)\n` +
+          `5. Добавьте описание\n\n` +
+          `✨ Все просто и пошагово!`
+        )
       }
       
       return new Response('OK', { headers: corsHeaders })
@@ -316,7 +372,6 @@ serve(async (req) => {
           
           // Теперь обрабатываем фото и сохраняем в базу
           try {
-            const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
             const fileResponse = await fetch(`https://api.telegram.org/bot${botToken}/getFile?file_id=${session.data.photo_file_id}`)
             const fileData = await fileResponse.json()
             
@@ -423,6 +478,9 @@ serve(async (req) => {
     return new Response('OK', { headers: corsHeaders })
   } catch (error) {
     console.error('Ошибка в Telegram боте:', error)
-    return new Response('Error', { status: 500, headers: corsHeaders })
+    return new Response(`Error: ${error.message}`, { 
+      status: 500, 
+      headers: corsHeaders 
+    })
   }
 })

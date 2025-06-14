@@ -39,8 +39,18 @@ const Navigation = () => {
     setIsOpen(false);
   };
 
+  const goToHome = () => {
+    if (location.pathname !== '/') {
+      navigate('/');
+    } else {
+      // Если уже на главной, прокручиваем в самый верх
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    setIsOpen(false);
+  };
+
   const navItems = [
-    { name: 'Главная', action: () => scrollToSection('hero') },
+    { name: 'Главная', action: goToHome },
     { name: 'Портфолио', action: () => scrollToSection('portfolio') },
     { name: 'Галерея', path: '/gallery' },
     { name: 'Локации', action: () => scrollToSection('locations') },
@@ -58,7 +68,7 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group">
+          <div onClick={goToHome} className="flex items-center space-x-2 group cursor-pointer">
             <div className="relative">
               <Camera className={`w-8 h-8 transition-colors duration-300 ${
                 isScrolled ? 'text-pink-600' : 'text-white'
@@ -72,7 +82,7 @@ const Navigation = () => {
             } group-hover:text-pink-600`}>
               Ирина Фото
             </span>
-          </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-1">

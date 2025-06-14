@@ -32,7 +32,7 @@ const HeroSection = () => {
 
 📱 Мой контактный телефон: [укажите номер]
 
-С нетерпением жду нашей встречи!
+С нетерпением жду нашей встречи и создания магических кадров вместе! 💕
 
 С уважением,
 [Ваше имя]`;
@@ -67,22 +67,23 @@ const HeroSection = () => {
             </h1>
             
             <h2 className="text-2xl md:text-3xl mb-6 text-pink-300 font-medium animate-slide-up animation-delay-200">
-              ✨ Превращаю моменты в вечные воспоминания ✨
+              ✨ Создаю магию из каждого мгновения ✨
             </h2>
             
             <div className="max-w-2xl mb-8 animate-slide-up animation-delay-400">
               <p className="text-xl md:text-2xl mb-6 text-gray-200 leading-relaxed">
-                🎯 <strong>Каждый кадр - это история вашей любви</strong>
+                💖 <strong>Превращаю ваши самые дорогие моменты в вечные воспоминания</strong>
               </p>
               <p className="text-lg leading-relaxed text-gray-300 mb-6">
-                За 5+ лет я создала тысячи незабываемых снимков для сотен счастливых пар и семей. 
-                Моя страсть - находить красоту в каждом мгновении и сохранять самые дорогие моменты вашей жизни.
+                Каждая фотосессия для меня - это уникальная история любви, счастья и красоты. 
+                За 5+ лет работы я научилась видеть и запечатлевать то особенное, что делает именно ваш день незабываемым. 
+                Ваши эмоции, ваша любовь, ваша радость - это то, что вдохновляет меня создавать настоящие шедевры!
               </p>
               <div className="flex flex-wrap justify-center lg:justify-start gap-3 mb-8">
-                <span className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium">💒 Свадебная магия</span>
-                <span className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium">💕 Love Story</span>
-                <span className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium">👨‍👩‍👧‍👦 Семейное счастье</span>
-                <span className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium">🎭 Портретное искусство</span>
+                <span className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium border border-white/20">💒 Свадебная магия</span>
+                <span className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium border border-white/20">💕 Love Story</span>
+                <span className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium border border-white/20">👨‍👩‍👧‍👦 Семейное счастье</span>
+                <span className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium border border-white/20">🎭 Портретное искусство</span>
               </div>
             </div>
             
@@ -93,7 +94,7 @@ const HeroSection = () => {
                 onClick={() => scrollToSection('portfolio')}
               >
                 <Star className="w-5 h-5 mr-2" />
-                Посмотреть портфолио
+                Посмотреть мои работы
               </Button>
               <Button 
                 size="lg" 
@@ -113,7 +114,7 @@ const HeroSection = () => {
                 onClick={handleCall}
               >
                 <Phone className="w-4 h-4 mr-2" />
-                Позвонить
+                Позвонить сейчас
               </Button>
               <Button
                 variant="outline"
@@ -127,15 +128,19 @@ const HeroSection = () => {
             </div>
           </div>
 
-          {/* Правая колонка - фотография */}
+          {/* Правая колонка - фотография Ирины */}
           <div className="flex justify-center lg:justify-end animate-fade-in animation-delay-400">
             <div className="relative group">
               <div className="relative w-80 h-96 md:w-96 md:h-[480px]">
                 <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-600 rounded-3xl animate-spin-slow opacity-75 blur-sm group-hover:blur-md transition-all duration-500"></div>
                 <img
-                  src="/public/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png"
+                  src="/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png"
                   alt="Фотограф Ирина - профессиональная фотосъемка в Москве"
                   className="relative w-full h-full rounded-3xl object-cover border-4 border-white/30 shadow-2xl group-hover:scale-105 transition-all duration-500 hover-lift"
+                  onError={(e) => {
+                    console.log('Ошибка загрузки фото Ирины, используем запасное изображение');
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=500&fit=crop&auto=format&q=80';
+                  }}
                 />
                 <div className="absolute -top-4 -right-4 bg-pink-500 rounded-full p-3 animate-bounce shadow-xl">
                   <Camera className="w-8 h-8 text-white" />
@@ -148,14 +153,14 @@ const HeroSection = () => {
           </div>
         </div>
         
-        {/* Статистика */}
+        {/* Статистика с улучшенным дизайном */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 animate-fade-in animation-delay-1000">
           <div className="group text-center">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 hover:scale-105 hover:-translate-y-2 border border-white/20 shadow-xl">
               <div className="text-4xl font-bold text-pink-300 mb-2 group-hover:scale-110 transition-transform duration-300">5+</div>
               <p className="text-sm text-gray-300 flex items-center justify-center">
                 <Award className="w-4 h-4 mr-1" />
-                лет опыта
+                лет создаю магию
               </p>
             </div>
           </div>
@@ -164,7 +169,7 @@ const HeroSection = () => {
               <div className="text-4xl font-bold text-pink-300 mb-2 group-hover:scale-110 transition-transform duration-300">500+</div>
               <p className="text-sm text-gray-300 flex items-center justify-center">
                 <Heart className="w-4 h-4 mr-1" />
-                довольных клиентов
+                счастливых клиентов
               </p>
             </div>
           </div>

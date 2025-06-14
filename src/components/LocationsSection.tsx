@@ -11,84 +11,84 @@ const LocationsSection = () => {
   const { data: locations, isLoading } = useLocations();
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  // Моковые данные с обновленными красивыми фотографиями
+  // Обновленные моковые данные с красивыми фотографиями Москвы
   const mockLocations = [
     {
       id: '1',
       name: 'Красная площадь',
-      description: 'Историческое сердце Москвы с величественной архитектурой и невероятной атмосферой',
+      description: 'Историческое сердце Москвы с величественной архитектурой и атмосферой царской России',
       address: 'Красная площадь, 1, Москва',
       best_time: 'Рассвет и золотой час',
       indoor: false,
-      image_url: 'https://images.unsplash.com/photo-1513326738677-b964603b136d?w=800&h=600&fit=crop&auto=format&q=80',
+      image_url: 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Исторические'
     },
     {
       id: '2', 
       name: 'Парк Царицыно',
-      description: 'Роскошный дворцово-парковый ансамбль с романтическими мостиками и павильонами',
+      description: 'Роскошный дворцово-парковый ансамбль с романтическими мостиками и готической архитектурой',
       address: 'Дольская ул., 1, Москва',
-      best_time: 'Весна и лето',
+      best_time: 'Весна и лето, закат',
       indoor: false,
-      image_url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop&auto=format&q=80',
+      image_url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Парки'
     },
     {
       id: '3',
       name: 'Воробьевы горы',
-      description: 'Потрясающие панорамные виды на Москву и живописная природа',
+      description: 'Потрясающие панорамные виды на столицу с высоты птичьего полета',
       address: 'Воробьевы горы, Москва',
-      best_time: 'Закат',
+      best_time: 'Закат и синий час',
       indoor: false,
-      image_url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&auto=format&q=80',
+      image_url: 'https://images.unsplash.com/photo-1520637736862-4d197d17c16a?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Панорамные'
     },
     {
       id: '4',
       name: 'Патриаршие пруды',
-      description: 'Уютный район с атмосферными кафе и романтическими уголками',
+      description: 'Уютный оазис в центре города с атмосферными кафе и романтическими аллеями',
       address: 'Патриаршие пруды, Москва',
-      best_time: 'Вечер',
+      best_time: 'Вечер, золотой час',
       indoor: false,
-      image_url: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&h=600&fit=crop&auto=format&q=80',
+      image_url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Романтические'
     },
     {
       id: '5',
       name: 'Москва-Сити',
-      description: 'Современный деловой центр с футуристическими небоскребами',
+      description: 'Футуристический деловой центр с небоскребами и современной архитектурой',
       address: 'Московский международный деловой центр "Москва-Сити"',
-      best_time: 'Синий час',
+      best_time: 'Синий час, вечернее время',
       indoor: false,
-      image_url: 'https://images.unsplash.com/photo-1520637836862-4d197d17c16a?w=800&h=600&fit=crop&auto=format&q=80',
+      image_url: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Современные'
     },
     {
       id: '6',
       name: 'Коломенское',
-      description: 'Древняя царская резиденция с деревянными храмами и садами',
+      description: 'Древняя царская резиденция с деревянными храмами и живописными садами',
       address: 'Андропова пр-т, 39, Москва',
-      best_time: 'Утро',
+      best_time: 'Утреннее время, весна',
       indoor: false,
-      image_url: 'https://images.unsplash.com/photo-1578321272176-b7bbc0679853?w=800&h=600&fit=crop&auto=format&q=80',
+      image_url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Исторические'
     },
     {
       id: '7',
       name: 'Парк Горького',
-      description: 'Центральный парк культуры с множеством живописных локаций',
+      description: 'Центральный парк культуры с множеством живописных локаций и современным дизайном',
       address: 'Крымский Вал, 9, Москва',
-      best_time: 'Дневные часы',
+      best_time: 'Дневные часы, закат',
       indoor: false,
       image_url: 'https://images.unsplash.com/photo-1441716844725-09cedc13a4e7?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Парки'
     },
     {
       id: '8',
-      name: 'Креативное пространство',
-      description: 'Современная фотостудия с разнообразными интерьерами',
-      address: 'Артплей, Нижняя Сыромятническая ул., 10, стр. 2',
-      best_time: 'Любое время',
+      name: 'Креативная фотостудия',
+      description: 'Современная студия с разнообразными интерьерами и профессиональным освещением',
+      address: 'Artplay, Нижняя Сыромятническая ул., 10, стр. 2',
+      best_time: 'Любое время года',
       indoor: true,
       image_url: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Студии'
@@ -97,7 +97,7 @@ const LocationsSection = () => {
 
   const displayLocations = locations || mockLocations;
 
-  // Helper function to get category name safely
+  // Функция для безопасного получения категории
   const getCategoryName = (location: any) => {
     if (location.category) {
       return location.category;
@@ -124,17 +124,22 @@ const LocationsSection = () => {
     const subject = `Бронирование съемки в локации: ${locationName}`;
     const body = `Здравствуйте, Ирина!
 
-Хочу забронировать фотосессию в локации: ${locationName}
+Хочу забронировать фотосессию в удивительной локации: ${locationName}
 
 📅 Желаемая дата: [укажите дату]
 🕐 Время: [укажите время]
 📸 Тип съемки: [свадебная/портретная/семейная/love story]
 👥 Количество участников: [укажите количество]
 
-✨ Дополнительные пожелания:
-[опишите ваши идеи для съемки в этой локации]
+✨ Почему выбрал именно эту локацию:
+[расскажите, что вас привлекло в данном месте]
+
+💫 Дополнительные пожелания:
+[опишите ваши идеи для съемки, особые моменты, стиль]
 
 📱 Мой контактный телефон: [укажите номер]
+
+С нетерпением жду создания волшебных кадров в этом прекрасном месте! 
 
 С уважением,
 [Ваше имя]`;
@@ -175,11 +180,11 @@ const LocationsSection = () => {
           </div>
           
           <h2 className="text-5xl font-bold bg-gradient-to-r from-gray-900 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-6">
-            🌍 Лучшие локации Москвы
+            🌍 Волшебные локации Москвы
           </h2>
           
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8 leading-relaxed">
-            <strong>Каждое место имеет свою уникальную атмосферу и историю</strong> - от исторических памятников до современных арт-пространств
+            <strong>Каждое место хранит свою уникальную историю и магию</strong> - от величественных исторических памятников до современных арт-пространств, где рождаются незабываемые кадры
           </p>
         </div>
 
@@ -287,10 +292,10 @@ const LocationsSection = () => {
         <div className="mt-16 text-center animate-scale-in animation-delay-600">
           <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-3xl p-8 shadow-2xl text-white max-w-2xl mx-auto">
             <h3 className="text-2xl font-bold mb-4">
-              🎯 Не нашли подходящую локацию?
+              🎯 Не нашли идеальную локацию?
             </h3>
             <p className="mb-6 opacity-90">
-              Предложите свое место для съемки или доверьтесь моему опыту - я знаю множество скрытых жемчужин Москвы!
+              Предложите свое особенное место или доверьтесь моему опыту - я знаю множество скрытых жемчужин Москвы, где можно создать по-настоящему волшебные кадры!
             </p>
             <Button 
               size="lg"

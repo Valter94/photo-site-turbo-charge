@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { errorHandler } from '@/utils/errorHandler';
 
 interface OptimizedImageProps {
   src: string;
@@ -8,6 +9,7 @@ interface OptimizedImageProps {
   width?: number;
   height?: number;
   loading?: 'lazy' | 'eager';
+  fallbackUrl?: string;
 }
 
 const OptimizedImage: React.FC<OptimizedImageProps> = ({ 
@@ -16,27 +18,22 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   className = '', 
   width, 
   height, 
-  loading = 'lazy' 
+  loading = 'lazy',
+  fallbackUrl
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
   const handleImageLoad = () => {
     setImageLoaded(true);
+    setImageError(false);
   };
 
-  const handleImageError = () => {
+  const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
     console.error('Image failed to load:', src);
     setImageError(true);
+    errorHandler.handleImageError(event.nativeEvent, fallbackUrl);
   };
-
-  // Проверяем, является ли изображение из Supabase Storage
-  const isSupabaseImage = src?.includes('supabase.co') || src?.includes('ojrekbttkriwwyaupbox');
-  
-  // Создаем WebP версию только для внешних изображений
-  const webpSrc = !isSupabaseImage && src?.includes('unsplash.com') 
-    ? `${src}&fm=webp&q=80` 
-    : src;
 
   if (!src) {
     return (
@@ -48,6 +45,14 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       </div>
     );
   }
+
+  // Проверяем, является ли изображение из Supabase Storage
+  const isSupabaseImage = src?.includes('supabase.co') || src?.includes('ojrekbttkriwwyaupbox');
+  
+  // Создаем WebP версию только для внешних изображений
+  const webpSrc = !isSupabaseImage && src?.includes('unsplash.com') 
+    ? `${src}&fm=webp&q=80` 
+    : src;
 
   return (
     <div className={`relative overflow-hidden ${className}`}>

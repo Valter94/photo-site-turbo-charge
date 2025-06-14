@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { sendTelegramMessage } from "@/utils/telegram";
 import { MessageSquare, CheckCircle, AlertCircle, ExternalLink } from 'lucide-react';
+import TelegramBotManager from './TelegramBotManager';
 
 // Safe localStorage access
 const safeLocalStorage = {
@@ -102,12 +102,13 @@ const TelegramSettings = () => {
 
   return (
     <div className="space-y-6">
+      {/* Настройки Telegram */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <MessageSquare className="w-6 h-6 text-blue-500" />
-              <CardTitle>Telegram уведомления</CardTitle>
+              <CardTitle>Настройки Telegram</CardTitle>
             </div>
             <Badge variant={isConnected ? "default" : "secondary"} className="flex items-center space-x-1">
               {isConnected ? (
@@ -233,18 +234,8 @@ const TelegramSettings = () => {
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
-        <CardContent className="p-4">
-          <h4 className="font-medium mb-2">📱 Какие уведомления вы получите:</h4>
-          <ul className="text-sm space-y-1 text-gray-700">
-            <li>👁 <strong>Посещения:</strong> когда кто-то заходит на сайт</li>
-            <li>📝 <strong>Заявки:</strong> новые запросы на фотосессию</li>
-            <li>⭐ <strong>Отзывы:</strong> новые отзывы от клиентов</li>
-            <li>❌ <strong>Ошибки:</strong> технические проблемы на сайте</li>
-            <li>📊 <strong>Статистика:</strong> еженедельные отчеты</li>
-          </ul>
-        </CardContent>
-      </Card>
+      {/* Управление ботом */}
+      <TelegramBotManager />
     </div>
   );
 };

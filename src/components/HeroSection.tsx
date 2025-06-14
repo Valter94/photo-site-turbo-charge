@@ -1,11 +1,15 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { Camera, Star, Award, Heart, Mail, Phone } from 'lucide-react';
 
 const HeroSection = () => {
-  const { data: settings } = useSiteSettings();
+  const { data: settings, isLoading, error } = useSiteSettings();
+
+  // Добавляем логирование для отладки
+  console.log('Settings data:', settings);
+  console.log('Settings loading:', isLoading);
+  console.log('Settings error:', error);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -44,6 +48,11 @@ const HeroSection = () => {
     window.location.href = 'tel:+79262563550';
   };
 
+  // Определяем значения с учетом загрузки
+  const photographerName = settings?.photographer_name || 'Фотограф Ирина';
+  const photographerDescription = settings?.photographer_description || 'Каждая фотосессия для меня - это уникальная история любви, счастья и красоты. За 5+ лет работы я научилась видеть и запечатлевать то особенное, что делает именно ваш день незабываемым. Ваши эмоции, ваша любовь, ваша радость - это то, что вдохновляет меня создавать настоящие шедевры!';
+  const photographerPhoto = settings?.photographer_photo || "/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png";
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Анимированный градиентный фон */}
@@ -63,7 +72,7 @@ const HeroSection = () => {
           {/* Левая колонка - текст */}
           <div className="text-center lg:text-left animate-fade-in">
             <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight bg-gradient-to-r from-white via-pink-200 to-purple-200 bg-clip-text text-transparent animate-slide-up">
-              {settings?.photographer_name || 'Фотограф Ирина'}
+              {photographerName}
             </h1>
             
             <h2 className="text-2xl md:text-3xl mb-6 text-pink-300 font-medium animate-slide-up animation-delay-200">
@@ -75,7 +84,7 @@ const HeroSection = () => {
                 💖 <strong>Превращаю ваши самые дорогие моменты в вечные воспоминания</strong>
               </p>
               <p className="text-lg leading-relaxed text-gray-300 mb-6">
-                {settings?.photographer_description || 'Каждая фотосессия для меня - это уникальная история любви, счастья и красоты. За 5+ лет работы я научилась видеть и запечатлевать то особенное, что делает именно ваш день незабываемым. Ваши эмоции, ваша любовь, ваша радость - это то, что вдохновляет меня создавать настоящие шедевры!'}
+                {photographerDescription}
               </p>
               <div className="flex flex-wrap justify-center lg:justify-start gap-3 mb-8">
                 <span className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium border border-white/20">💒 Свадебная магия</span>
@@ -132,8 +141,8 @@ const HeroSection = () => {
               <div className="relative w-80 h-96 md:w-96 md:h-[480px]">
                 <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-600 rounded-3xl animate-spin-slow opacity-75 blur-sm group-hover:blur-md transition-all duration-500"></div>
                 <img
-                  src={settings?.photographer_photo || "/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png"}
-                  alt={`Фотограф ${settings?.photographer_name || 'Ирина'} - профессиональная фотосъемка в Москве`}
+                  src={photographerPhoto}
+                  alt={`Фотограф ${photographerName} - профессиональная фотосъемка в Москве`}
                   className="relative w-full h-full rounded-3xl object-cover border-4 border-white/30 shadow-2xl group-hover:scale-105 transition-all duration-500 hover-lift"
                   onError={(e) => {
                     console.log('Ошибка загрузки фото фотографа, используем запасное изображение');

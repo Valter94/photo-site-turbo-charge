@@ -1,3 +1,4 @@
+
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
 import StoryCarousel from "@/components/StoryCarousel";
@@ -12,6 +13,8 @@ import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 import LiveStats from "@/components/LiveStats";
 import FloatingReviews from "@/components/FloatingReviews";
+import BeforeAfterGallery from "@/components/BeforeAfterGallery";
+import InteractiveLocationMap from "@/components/InteractiveLocationMap";
 
 const Index = () => {
   return (
@@ -21,7 +24,9 @@ const Index = () => {
         <HeroSection />
         <LiveStats />
         <StoryCarousel />
+        <BeforeAfterGallery />
         <ServicesVideoPresentation />
+        <InteractiveLocationMap />
         <PortfolioSection />
         <LocationsSection />
         <PricingSection />

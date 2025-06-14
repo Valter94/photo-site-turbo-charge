@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -61,7 +60,7 @@ const LiveStats = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Имитация активности в реальном времени
+  // Имитация активности в реальном времени с большим интервалом
   useEffect(() => {
     const activities = [
       "Анна забронировала Love Story съемку",
@@ -69,7 +68,10 @@ const LiveStats = () => {
       "Елена оставила отзыв ⭐⭐⭐⭐⭐",
       "Дмитрий забронировал свадебную съемку",
       "Ольга заказала портретную фотосессию",
-      "Александр оценил работу на 5 звезд"
+      "Александр оценил работу на 5 звезд",
+      "Мария интересуется корпоративной съемкой",
+      "Владимир запросил расчет стоимости",
+      "Наталья выбирает дату для Love Story"
     ];
 
     const addActivity = () => {
@@ -77,11 +79,11 @@ const LiveStats = () => {
       setRecentActivity(prev => [randomActivity, ...prev.slice(0, 2)]);
     };
 
-    // Добавляем активность каждые 8-15 секунд
-    const timer = setInterval(addActivity, Math.random() * 7000 + 8000);
+    // Увеличиваем интервал: каждые 12-25 минут
+    const timer = setInterval(addActivity, Math.random() * 13 * 60 * 1000 + 12 * 60 * 1000);
     
     // Начальная активность
-    setTimeout(addActivity, 2000);
+    setTimeout(addActivity, 3000);
 
     return () => clearInterval(timer);
   }, []);

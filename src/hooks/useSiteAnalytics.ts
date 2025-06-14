@@ -22,6 +22,42 @@ interface Recommendation {
   implemented: boolean;
 }
 
+// Safe localStorage access
+const safeLocalStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // Silently fail in iframe/preview mode
+    }
+  }
+};
+
+// Safe sessionStorage access
+const safeSessionStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      return sessionStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      sessionStorage.setItem(key, value);
+    } catch {
+      // Silently fail in iframe/preview mode
+    }
+  }
+};
+
 export const useSiteAnalytics = () => {
   const [analytics, setAnalytics] = useState<AnalyticsData>({
     pageViews: 0,
@@ -53,7 +89,7 @@ export const useSiteAnalytics = () => {
     };
 
     // В реальном проекте здесь была бы отправка в базу данных
-    localStorage.setItem('page_views', JSON.stringify([
+    safeLocalStorage.setItem('page_views', JSON.stringify([
       ...getStoredPageViews(),
       pageView
     ]));
@@ -75,7 +111,7 @@ export const useSiteAnalytics = () => {
     // Сохраняем ошибку
     const errors = getStoredErrors();
     errors.push(errorData);
-    localStorage.setItem('site_errors', JSON.stringify(errors));
+    safeLocalStorage.setItem('site_errors', JSON.stringify(errors));
 
     // Пытаемся автоматически исправить известные ошибки
     attemptAutoFix(error);
@@ -196,8 +232,8 @@ export const useSiteAnalytics = () => {
 
   // Список chat_id для Telegram (из localStorage, можно редактировать в TelegramSettings)
   const chatIds = [
-    localStorage.getItem('TELEGRAM_CHAT_ID_1'),
-    localStorage.getItem('TELEGRAM_CHAT_ID_2')
+    safeLocalStorage.getItem('TELEGRAM_CHAT_ID_1'),
+    safeLocalStorage.getItem('TELEGRAM_CHAT_ID_2')
   ].filter(Boolean) as string[];
 
   // Отправка важных событий в Telegram
@@ -272,10 +308,10 @@ export const useSiteAnalytics = () => {
 
   // Вспомогательные функции
   const getOrCreateSessionId = () => {
-    let sessionId = sessionStorage.getItem('session_id');
+    let sessionId = safeSessionStorage.getItem('session_id');
     if (!sessionId) {
       sessionId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-      sessionStorage.setItem('session_id', sessionId);
+      safeSessionStorage.setItem('session_id', sessionId);
     }
     return sessionId;
   };
@@ -295,7 +331,7 @@ export const useSiteAnalytics = () => {
 
   const getStoredPageViews = () => {
     try {
-      return JSON.parse(localStorage.getItem('page_views') || '[]');
+      return JSON.parse(safeLocalStorage.getItem('page_views') || '[]');
     } catch {
       return [];
     }
@@ -303,7 +339,7 @@ export const useSiteAnalytics = () => {
 
   const getStoredErrors = () => {
     try {
-      return JSON.parse(localStorage.getItem('site_errors') || '[]');
+      return JSON.parse(safeLocalStorage.getItem('site_errors') || '[]');
     } catch {
       return [];
     }

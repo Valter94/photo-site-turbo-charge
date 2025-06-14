@@ -7,17 +7,35 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { sendTelegramMessage } from "@/utils/telegram";
 
+// Safe localStorage access
+const safeLocalStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      console.warn('localStorage access denied - settings will not persist');
+    }
+  }
+};
+
 const TelegramSettings = () => {
-  const [botToken, setBotToken] = useState(localStorage.getItem('TELEGRAM_BOT_TOKEN') || '');
-  const [chatId1, setChatId1] = useState(localStorage.getItem('TELEGRAM_CHAT_ID_1') || '');
-  const [chatId2, setChatId2] = useState(localStorage.getItem('TELEGRAM_CHAT_ID_2') || '');
+  const [botToken, setBotToken] = useState(safeLocalStorage.getItem('TELEGRAM_BOT_TOKEN') || '');
+  const [chatId1, setChatId1] = useState(safeLocalStorage.getItem('TELEGRAM_CHAT_ID_1') || '');
+  const [chatId2, setChatId2] = useState(safeLocalStorage.getItem('TELEGRAM_CHAT_ID_2') || '');
   const [isConnected, setIsConnected] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     // Проверим подключение при загрузке
-    const token = localStorage.getItem('TELEGRAM_BOT_TOKEN');
-    const chat1 = localStorage.getItem('TELEGRAM_CHAT_ID_1');
+    const token = safeLocalStorage.getItem('TELEGRAM_BOT_TOKEN');
+    const chat1 = safeLocalStorage.getItem('TELEGRAM_CHAT_ID_1');
     setIsConnected(!!(token && chat1));
     
     // Устанавливаем глобальную переменную
@@ -27,9 +45,9 @@ const TelegramSettings = () => {
   }, []);
 
   const saveSettings = () => {
-    localStorage.setItem('TELEGRAM_BOT_TOKEN', botToken.trim());
-    localStorage.setItem('TELEGRAM_CHAT_ID_1', chatId1.trim());
-    localStorage.setItem('TELEGRAM_CHAT_ID_2', chatId2.trim());
+    safeLocalStorage.setItem('TELEGRAM_BOT_TOKEN', botToken.trim());
+    safeLocalStorage.setItem('TELEGRAM_CHAT_ID_1', chatId1.trim());
+    safeLocalStorage.setItem('TELEGRAM_CHAT_ID_2', chatId2.trim());
     (window as any).TELEGRAM_BOT_TOKEN = botToken.trim();
     
     setIsConnected(!!(botToken.trim() && chatId1.trim()));

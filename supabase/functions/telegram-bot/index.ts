@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -43,14 +42,15 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
 
-    console.log('Environment check:', {
+    console.log('🔍 Environment check:', {
       hasSupabaseUrl: !!supabaseUrl,
       hasServiceKey: !!supabaseServiceKey,
-      hasBotToken: !!botToken
+      hasBotToken: !!botToken,
+      botTokenLength: botToken ? botToken.length : 0
     })
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing Supabase environment variables')
+      console.error('❌ Missing Supabase environment variables')
       return new Response('Server configuration error', { 
         status: 500, 
         headers: corsHeaders 
@@ -58,7 +58,8 @@ serve(async (req) => {
     }
 
     if (!botToken) {
-      console.error('TELEGRAM_BOT_TOKEN не настроен в секретах Supabase')
+      console.error('❌ TELEGRAM_BOT_TOKEN не настроен в секретах Supabase')
+      console.log('💡 Убедитесь, что токен добавлен в Edge Functions secrets')
       return new Response('Bot token not configured', { 
         status: 500, 
         headers: corsHeaders 
@@ -68,7 +69,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     const update: TelegramUpdate = await req.json()
-    console.log('Получено обновление:', JSON.stringify(update, null, 2))
+    console.log('📨 Получено обновление:', JSON.stringify(update, null, 2))
 
     const message = update.message
     const callbackQuery = update.callback_query
@@ -477,7 +478,7 @@ serve(async (req) => {
 
     return new Response('OK', { headers: corsHeaders })
   } catch (error) {
-    console.error('Ошибка в Telegram боте:', error)
+    console.error('💥 Ошибка в Telegram боте:', error)
     return new Response(`Error: ${error.message}`, { 
       status: 500, 
       headers: corsHeaders 

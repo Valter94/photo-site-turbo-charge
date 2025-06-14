@@ -5,21 +5,27 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTelegramBot } from "@/hooks/useTelegramBot";
-import { Bot, CheckCircle, AlertCircle, Send } from 'lucide-react';
+import { Bot, CheckCircle, AlertCircle, Send, Wrench } from 'lucide-react';
 
 const TelegramBotManager = () => {
-  const { setupWebhook, sendInstructions, isLoading } = useTelegramBot();
+  const { setupWebhook, sendInstructions, testBot, isLoading } = useTelegramBot();
 
   const botToken = localStorage.getItem('TELEGRAM_BOT_TOKEN');
   const chatId = localStorage.getItem('TELEGRAM_CHAT_ID_1');
   const isConfigured = !!(botToken && chatId);
 
   const handleActivateBot = async () => {
+    console.log('🤖 Активируем бота...');
     const success = await setupWebhook();
     if (success) {
-      // Отправляем инструкции после успешной активации
+      console.log('✅ Бот активирован, отправляем инструкции');
       await sendInstructions();
     }
+  };
+
+  const handleTestBot = async () => {
+    console.log('🔧 Тестируем бота...');
+    await testBot();
   };
 
   return (
@@ -28,7 +34,7 @@ const TelegramBotManager = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Bot className="w-6 h-6 text-blue-500" />
-            <CardTitle>Telegram Бот для управления контентом</CardTitle>
+            <CardTitle>Telegram Бот (Улучшенная версия)</CardTitle>
           </div>
           <Badge variant={isConfigured ? "default" : "secondary"} className="flex items-center space-x-1">
             {isConfigured ? (
@@ -50,7 +56,7 @@ const TelegramBotManager = () => {
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              <strong>Сначала настройте Telegram:</strong> Перейдите в раздел "Telegram" и 
+              <strong>Сначала настройте Telegram:</strong> Перейдите в раздел выше и 
               введите Bot Token и Chat ID, затем вернитесь сюда для активации бота.
             </AlertDescription>
           </Alert>
@@ -79,25 +85,36 @@ const TelegramBotManager = () => {
                 disabled={isLoading}
               >
                 <Send className="w-4 h-4 mr-2" />
-                Отправить инструкции
+                Инструкции
+              </Button>
+              
+              <Button 
+                onClick={handleTestBot}
+                variant="outline"
+                disabled={isLoading}
+              >
+                <Wrench className="w-4 h-4 mr-2" />
+                Тест
               </Button>
             </div>
           </div>
         )}
 
-        <div className="bg-blue-50 p-4 rounded-lg space-y-3">
-          <h4 className="font-medium text-blue-900">🤖 Что умеет бот:</h4>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li><strong>/add_portfolio</strong> - добавить фото в портфолио</li>
-            <li><strong>/add_location</strong> - добавить фото локации</li>
-            <li><strong>/stats</strong> - показать статистику сайта</li>
-            <li><strong>/help</strong> - список всех команд</li>
+        <div className="bg-green-50 p-4 rounded-lg space-y-3">
+          <h4 className="font-medium text-green-900">🎉 Новые возможности:</h4>
+          <ul className="text-sm text-green-800 space-y-1">
+            <li><strong>🎮 Кнопочный интерфейс</strong> - никаких команд!</li>
+            <li><strong>📝 Пошаговое добавление</strong> - бот спросит всё по порядку</li>
+            <li><strong>🎯 Выбор категорий кнопками</strong> - не нужно запоминать названия</li>
+            <li><strong>📊 Реальная статистика</strong> - точные данные с сайта</li>
           </ul>
           
-          <div className="mt-3 p-3 bg-white rounded border-l-4 border-blue-400">
+          <div className="mt-3 p-3 bg-white rounded border-l-4 border-green-400">
             <p className="text-sm text-gray-700">
-              <strong>Формат для добавления фото:</strong><br/>
-              Отправьте фото с подписью: <code>Название|Категория|Описание</code>
+              <strong>Как использовать:</strong><br/>
+              1. Отправьте боту <code>/start</code><br/>
+              2. Выберите действие кнопкой<br/>
+              3. Следуйте инструкциям пошагово
             </p>
           </div>
         </div>

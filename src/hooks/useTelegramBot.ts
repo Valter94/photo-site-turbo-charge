@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 export const useTelegramBot = () => {
@@ -19,18 +18,26 @@ export const useTelegramBot = () => {
       // URL для webhook (Edge Function)
       const webhookUrl = `https://ojrekbttkriwwyaupbox.supabase.co/functions/v1/telegram-bot`;
 
+      console.log('Настраиваем webhook:', { webhookUrl, botToken: botToken.substring(0, 10) + '...' });
+
       const response = await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           url: webhookUrl,
-          allowed_updates: ['message']
+          allowed_updates: ['message', 'callback_query']
         })
       });
 
       const result = await response.json();
+      console.log('Результат настройки webhook:', result);
       
       if (result.ok) {
+        // Проверяем статус webhook
+        const statusResponse = await fetch(`https://api.telegram.org/bot${botToken}/getWebhookInfo`);
+        const statusResult = await statusResponse.json();
+        console.log('Статус webhook:', statusResult);
+        
         toast({
           title: "Успешно!",
           description: "Telegram бот активирован и готов к работе",
@@ -62,28 +69,31 @@ export const useTelegramBot = () => {
       }
 
       const instructions = `
-🤖 <b>Ваш бот для управления сайтом активирован!</b>
+🤖 <b>Ваш бот активирован!</b>
 
-📸 <b>Как добавить фото в портфолио:</b>
-1. Отправьте команду /add_portfolio
-2. Отправьте фото с подписью в формате:
-   <code>Название|Категория|Описание</code>
+🎮 <b>Новый интерфейс с кнопками:</b>
+• Отправьте /start для главного меню
+• Выбирайте действия кнопками
+• Пошаговое добавление контента
 
-🎯 <b>Доступные категории:</b>
-• wedding - свадебная съемка
-• lovestory - love story
-• portrait - портретная съемка  
-• family - семейная съемка
-• corporate - корпоративная съемка
+📸 <b>Как добавить фото:</b>
+1. /start → выберите "Добавить в портфолио"
+2. Отправьте фото
+3. Введите название
+4. Выберите категорию кнопкой
+5. Добавьте описание
 
-📝 <b>Пример:</b>
-<code>Свадьба Анны и Ивана|wedding|Прекрасная церемония в парке Сокольники</code>
+📍 <b>Как добавить локацию:</b>
+1. /start → выберите "Добавить локацию"  
+2. Отправьте фото места
+3. Введите название
+4. Добавьте описание
 
 📊 <b>Другие команды:</b>
 /stats - статистика сайта
-/help - список всех команд
+/help - помощь
 
-✅ Теперь вы можете управлять сайтом прямо из Telegram!
+✨ Теперь всё стало намного проще!
       `;
 
       await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -109,9 +119,53 @@ export const useTelegramBot = () => {
     }
   };
 
+  const testBot = async () => {
+    try {
+      setIsLoading(true);
+      const botToken = localStorage.getItem('TELEGRAM_BOT_TOKEN');
+      
+      if (!botToken) {
+        throw new Error('Bot Token не настроен');
+      }
+
+      // Проверяем статус бота
+      const botResponse = await fetch(`https://api.telegram.org/bot${botToken}/getMe`);
+      const botResult = await botResponse.json();
+      
+      if (!botResult.ok) {
+        throw new Error('Неверный Bot Token');
+      }
+
+      // Проверяем webhook
+      const webhookResponse = await fetch(`https://api.telegram.org/bot${botToken}/getWebhookInfo`);
+      const webhookResult = await webhookResponse.json();
+      
+      console.log('Информация о боте:', botResult.result);
+      console.log('Информация о webhook:', webhookResult.result);
+      
+      toast({
+        title: "Диагностика завершена",
+        description: `Бот: ${botResult.result.username}. Проверьте консоль для деталей.`,
+      });
+      
+      return true;
+    } catch (error: any) {
+      console.error('Ошибка тестирования:', error);
+      toast({
+        title: "Ошибка",
+        description: error.message,
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     setupWebhook,
     sendInstructions,
+    testBot,
     isLoading
   };
 };

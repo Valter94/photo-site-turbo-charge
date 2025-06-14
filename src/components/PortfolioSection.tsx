@@ -12,6 +12,7 @@ const PortfolioSection = () => {
 
   const handleViewGallery = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     navigate('/gallery');
   };
 
@@ -103,6 +104,7 @@ const PortfolioSection = () => {
             <Button 
               className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg transform transition-all duration-300 hover:scale-105 hover:-translate-y-1"
               onClick={handleViewGallery}
+              type="button"
             >
               <Sparkles className="w-5 h-5 mr-2" />
               Открыть полную галерею

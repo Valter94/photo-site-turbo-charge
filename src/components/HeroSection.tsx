@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { useSiteSettings } from '@/hooks/useSiteSettings';
-import { Camera, Star, Award, Heart } from 'lucide-react';
+import { Camera, Star, Award, Heart, Mail, Phone } from 'lucide-react';
 
 const HeroSection = () => {
   const { data: settings } = useSiteSettings();
@@ -10,14 +10,38 @@ const HeroSection = () => {
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
   const handleBooking = () => {
-    const subject = 'Бронирование фотосессии';
-    const body = 'Здравствуйте, Ирина!\n\nХочу забронировать фотосессию:\n\nЖелаемая дата: [укажите дату]\nВремя: [укажите время]\nТип съемки: [свадебная/портретная/семейная/love story]\nЛокация: [укажите желаемую локацию]\nКоличество участников: [укажите количество]\nДополнительные пожелания: [опишите ваши идеи]\n\nМой контактный телефон: [укажите номер]\n\nС уважением,\n[Ваше имя]';
+    const subject = 'Бронирование фотосессии - Фотограф Ирина';
+    const body = `Здравствуйте, Ирина!
+
+Хочу забронировать фотосессию:
+
+📅 Желаемая дата: [укажите дату]
+🕐 Время: [укажите время]
+📸 Тип съемки: [свадебная/портретная/семейная/love story/корпоративная]
+📍 Локация: [укажите желаемую локацию или "на ваше усмотрение"]
+👥 Количество участников: [укажите количество]
+💰 Бюджет: [укажите примерный бюджет]
+
+✨ Дополнительные пожелания:
+[опишите ваши идеи, стиль съемки, особые моменты]
+
+📱 Мой контактный телефон: [укажите номер]
+
+С нетерпением жду нашей встречи!
+
+С уважением,
+[Ваше имя]`;
+    
     window.location.href = `mailto:bagreshevafoto@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
+  const handleCall = () => {
+    window.location.href = 'tel:+79991234567';
   };
 
   return (
@@ -34,72 +58,99 @@ const HeroSection = () => {
 
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
       
-      <div className="relative z-10 text-center text-white px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
-        <div className="mb-8 animate-fade-in">
-          {/* Фотография фотографа с анимацией */}
-          <div className="mb-8 relative">
-            <div className="relative mx-auto w-40 h-40 group">
-              <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-600 rounded-full animate-spin-slow opacity-75 blur-sm"></div>
-              <img
-                src="https://images.unsplash.com/photo-1494790108755-2616c6f24c34?w=400&h=400&fit=crop&auto=format"
-                alt="Фотограф Ирина"
-                className="relative w-40 h-40 rounded-full mx-auto object-cover border-4 border-white/30 shadow-2xl group-hover:scale-105 transition-all duration-500 hover-lift"
-              />
-              <div className="absolute -top-2 -right-2 bg-pink-500 rounded-full p-2 animate-bounce">
-                <Camera className="w-6 h-6 text-white" />
+      <div className="relative z-10 text-white px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Левая колонка - текст */}
+          <div className="text-center lg:text-left animate-fade-in">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight bg-gradient-to-r from-white via-pink-200 to-purple-200 bg-clip-text text-transparent animate-slide-up">
+              Фотограф Ирина
+            </h1>
+            
+            <h2 className="text-2xl md:text-3xl mb-6 text-pink-300 font-medium animate-slide-up animation-delay-200">
+              ✨ Превращаю моменты в вечные воспоминания ✨
+            </h2>
+            
+            <div className="max-w-2xl mb-8 animate-slide-up animation-delay-400">
+              <p className="text-xl md:text-2xl mb-6 text-gray-200 leading-relaxed">
+                🎯 <strong>Каждый кадр - это история вашей любви</strong>
+              </p>
+              <p className="text-lg leading-relaxed text-gray-300 mb-6">
+                За 5+ лет я создала тысячи незабываемых снимков для сотен счастливых пар и семей. 
+                Моя страсть - находить красоту в каждом мгновении и сохранять самые дорогие моменты вашей жизни.
+              </p>
+              <div className="flex flex-wrap justify-center lg:justify-start gap-3 mb-8">
+                <span className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium">💒 Свадебная магия</span>
+                <span className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium">💕 Love Story</span>
+                <span className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium">👨‍👩‍👧‍👦 Семейное счастье</span>
+                <span className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium">🎭 Портретное искусство</span>
               </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8 animate-scale-in animation-delay-600">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-8 py-4 text-lg font-semibold shadow-2xl transform transition-all duration-300 hover:scale-105 hover:-translate-y-1 border-0 rounded-full"
+                onClick={() => scrollToSection('portfolio')}
+              >
+                <Star className="w-5 h-5 mr-2" />
+                Посмотреть портфолио
+              </Button>
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-8 py-4 text-lg font-semibold shadow-2xl transform transition-all duration-300 hover:scale-105 hover:-translate-y-1 border-0 rounded-full"
+                onClick={handleBooking}
+              >
+                <Mail className="w-5 h-5 mr-2" />
+                Забронировать съемку
+              </Button>
+            </div>
+
+            <div className="flex justify-center lg:justify-start gap-4 animate-fade-in animation-delay-800">
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm rounded-full px-6"
+                onClick={handleCall}
+              >
+                <Phone className="w-4 h-4 mr-2" />
+                Позвонить
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm rounded-full px-6"
+                onClick={() => scrollToSection('pricing')}
+              >
+                <Heart className="w-4 h-4 mr-2" />
+                Узнать цены
+              </Button>
             </div>
           </div>
 
-          <h1 className="text-6xl md:text-8xl font-bold mb-6 leading-tight bg-gradient-to-r from-white via-pink-200 to-purple-200 bg-clip-text text-transparent animate-slide-up">
-            Фотограф Ирина
-          </h1>
-          
-          <h2 className="text-3xl md:text-4xl mb-6 text-pink-300 font-medium animate-slide-up animation-delay-200">
-            ✨ Создаю магию в каждом кадре ✨
-          </h2>
-          
-          <p className="text-xl md:text-2xl mb-6 text-gray-200 animate-slide-up animation-delay-400">
-            Профессиональная фотосъемка в Москве с опытом 5+ лет
-          </p>
-          
-          <div className="max-w-3xl mx-auto mb-8 animate-slide-up animation-delay-600">
-            <p className="text-lg leading-relaxed text-gray-300 mb-6">
-              🎯 <strong>Каждая фотография</strong> - это застывший момент счастья и красоты. 
-              Я превращаю ваши самые важные моменты в произведения искусства, которые будут 
-              радовать вас долгие годы.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4 text-sm">
-              <span className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">📸 Свадебная съемка</span>
-              <span className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">💕 Love Story</span>
-              <span className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">👨‍👩‍👧‍👦 Семейные фото</span>
-              <span className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">🎭 Портреты</span>
+          {/* Правая колонка - фотография */}
+          <div className="flex justify-center lg:justify-end animate-fade-in animation-delay-400">
+            <div className="relative group">
+              <div className="relative w-80 h-96 md:w-96 md:h-[480px]">
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-600 rounded-3xl animate-spin-slow opacity-75 blur-sm group-hover:blur-md transition-all duration-500"></div>
+                <img
+                  src="/public/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png"
+                  alt="Фотограф Ирина - профессиональная фотосъемка в Москве"
+                  className="relative w-full h-full rounded-3xl object-cover border-4 border-white/30 shadow-2xl group-hover:scale-105 transition-all duration-500 hover-lift"
+                />
+                <div className="absolute -top-4 -right-4 bg-pink-500 rounded-full p-3 animate-bounce shadow-xl">
+                  <Camera className="w-8 h-8 text-white" />
+                </div>
+                <div className="absolute -bottom-4 -left-4 bg-purple-500 rounded-full p-3 animate-pulse shadow-xl">
+                  <Star className="w-8 h-8 text-white fill-current" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
         
-        <div className="flex flex-col sm:flex-row gap-6 justify-center mb-12 animate-scale-in animation-delay-800">
-          <Button 
-            size="lg" 
-            className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-10 py-4 text-lg font-semibold shadow-2xl transform transition-all duration-300 hover:scale-105 hover:-translate-y-1 border-0 rounded-full"
-            onClick={() => scrollToSection('portfolio')}
-          >
-            <Star className="w-5 h-5 mr-2" />
-            Посмотреть портфолио
-          </Button>
-          <Button 
-            size="lg" 
-            variant="outline" 
-            className="border-2 border-white/50 text-white hover:bg-white hover:text-gray-900 px-10 py-4 text-lg font-semibold shadow-2xl transform transition-all duration-300 hover:scale-105 hover:-translate-y-1 backdrop-blur-sm bg-white/10 rounded-full"
-            onClick={() => scrollToSection('pricing')}
-          >
-            <Heart className="w-5 h-5 mr-2" />
-            Узнать цены
-          </Button>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-fade-in animation-delay-1000">
-          <div className="group">
+        {/* Статистика */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 animate-fade-in animation-delay-1000">
+          <div className="group text-center">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 hover:scale-105 hover:-translate-y-2 border border-white/20 shadow-xl">
               <div className="text-4xl font-bold text-pink-300 mb-2 group-hover:scale-110 transition-transform duration-300">5+</div>
               <p className="text-sm text-gray-300 flex items-center justify-center">
@@ -108,7 +159,7 @@ const HeroSection = () => {
               </p>
             </div>
           </div>
-          <div className="group">
+          <div className="group text-center">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 hover:scale-105 hover:-translate-y-2 border border-white/20 shadow-xl">
               <div className="text-4xl font-bold text-pink-300 mb-2 group-hover:scale-110 transition-transform duration-300">500+</div>
               <p className="text-sm text-gray-300 flex items-center justify-center">
@@ -117,7 +168,7 @@ const HeroSection = () => {
               </p>
             </div>
           </div>
-          <div className="group">
+          <div className="group text-center">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 hover:scale-105 hover:-translate-y-2 border border-white/20 shadow-xl">
               <div className="text-4xl font-bold text-pink-300 mb-2 group-hover:scale-110 transition-transform duration-300">48ч</div>
               <p className="text-sm text-gray-300 flex items-center justify-center">
@@ -127,17 +178,6 @@ const HeroSection = () => {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Floating action button */}
-      <div className="absolute bottom-10 right-10 animate-bounce">
-        <Button
-          size="icon"
-          className="w-16 h-16 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 shadow-2xl hover:scale-110 transition-all duration-300"
-          onClick={handleBooking}
-        >
-          <Camera className="w-8 h-8" />
-        </Button>
       </div>
     </section>
   );

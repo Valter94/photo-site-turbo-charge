@@ -9,11 +9,18 @@ export const useSiteSettings = () => {
       const { data, error } = await supabase
         .from('site_settings')
         .select('*')
-        .single();
+        .maybeSingle();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching site settings:', error);
+        throw error;
+      }
+      
+      console.log('Site settings fetched:', data);
       return data;
-    }
+    },
+    retry: 3,
+    staleTime: 5 * 60 * 1000, // 5 минут
   });
 };
 
@@ -26,7 +33,7 @@ export const useUpdateSiteSettings = () => {
         .from('site_settings')
         .upsert({
           ...settings,
-          contact_phone: '+7 (926) 256-35-50' // Обновляем номер телефона
+          updated_at: new Date().toISOString()
         })
         .select()
         .single();

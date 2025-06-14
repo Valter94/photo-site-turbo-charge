@@ -6,7 +6,8 @@ import { Star, Quote } from "lucide-react";
 
 const FloatingReviews = () => {
   const [currentReview, setCurrentReview] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
 
   const reviews = [
     {
@@ -44,23 +45,38 @@ const FloatingReviews = () => {
   ];
 
   useEffect(() => {
+    // Задержка перед показом первого отзыва (15 секунд)
+    const initialTimer = setTimeout(() => {
+      setHasStarted(true);
+      setIsVisible(true);
+    }, 15000);
+
+    return () => clearTimeout(initialTimer);
+  }, []);
+
+  useEffect(() => {
+    if (!hasStarted) return;
+
+    // Интервал между отзывами увеличен до 12 секунд
     const timer = setInterval(() => {
       setIsVisible(false);
       setTimeout(() => {
         setCurrentReview((prev) => (prev + 1) % reviews.length);
         setIsVisible(true);
-      }, 300);
-    }, 5000);
+      }, 500);
+    }, 12000);
 
     return () => clearInterval(timer);
-  }, [reviews.length]);
+  }, [hasStarted, reviews.length]);
+
+  if (!hasStarted || !isVisible) return null;
 
   const review = reviews[currentReview];
 
   return (
-    <div className="fixed bottom-24 right-6 z-40 hidden lg:block">
+    <div className="fixed bottom-32 right-6 z-40 hidden lg:block">
       <Card 
-        className={`w-80 bg-white/95 backdrop-blur-sm border-pink-200 shadow-xl transform transition-all duration-500 hover:scale-105 ${
+        className={`w-80 bg-white/95 backdrop-blur-sm border-pink-200 shadow-xl transform transition-all duration-700 hover:scale-105 ${
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
         }`}
       >

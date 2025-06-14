@@ -71,7 +71,7 @@ const ServicesVideoPresentation = () => {
       icon: "🚁",
       title: "Аэросъемка",
       description: "Съемка с дрона для особых моментов",
-      price: "от 10,000 ₽"
+      price: "В разработке"
     },
     {
       icon: "📱",

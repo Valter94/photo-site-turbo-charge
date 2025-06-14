@@ -1,4 +1,3 @@
-
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
 import StoryCarousel from "@/components/StoryCarousel";
@@ -11,6 +10,8 @@ import BookingForm from "@/components/BookingForm";
 import FAQSection from "@/components/FAQSection";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
+import LiveStats from "@/components/LiveStats";
+import FloatingReviews from "@/components/FloatingReviews";
 
 const Index = () => {
   return (
@@ -18,6 +19,7 @@ const Index = () => {
       <Navigation />
       <main>
         <HeroSection />
+        <LiveStats />
         <StoryCarousel />
         <ServicesVideoPresentation />
         <PortfolioSection />
@@ -31,6 +33,7 @@ const Index = () => {
       </main>
       <Footer />
       <ScrollToTop />
+      <FloatingReviews />
     </div>
   );
 };

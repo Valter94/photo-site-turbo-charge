@@ -15,13 +15,12 @@ import {
   MapPin, 
   MessageSquare,
   BarChart3,
-  Sparkles
+  Sparkles,
+  ExternalLink
 } from 'lucide-react';
 
 const VideoTutorials = () => {
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
 
   const tutorials = [
     {
@@ -32,7 +31,7 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/192fde74-a0e2-4178-9e1a-70253c938e8d.png',
       icon: <Camera className="w-5 h-5" />,
       category: 'Основы',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ' // Пример URL
+      videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
     },
     {
       id: 'photo-retouch',
@@ -42,7 +41,7 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png',
       icon: <Sparkles className="w-5 h-5" />,
       category: 'Обработка',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+      videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
     },
     {
       id: 'locations-manage',
@@ -52,7 +51,7 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/192fde74-a0e2-4178-9e1a-70253c938e8d.png',
       icon: <MapPin className="w-5 h-5" />,
       category: 'Настройки',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+      videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
     },
     {
       id: 'reviews-moderate',
@@ -62,7 +61,7 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png',
       icon: <MessageSquare className="w-5 h-5" />,
       category: 'Клиенты',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+      videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
     },
     {
       id: 'analytics-read',
@@ -72,7 +71,7 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/192fde74-a0e2-4178-9e1a-70253c938e8d.png',
       icon: <BarChart3 className="w-5 h-5" />,
       category: 'Аналитика',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+      videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
     },
     {
       id: 'site-settings',
@@ -82,19 +81,19 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png',
       icon: <Settings className="w-5 h-5" />,
       category: 'Настройки',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+      videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
     }
   ];
 
   const categories = [...new Set(tutorials.map(t => t.category))];
 
-  const togglePlay = (videoId: string) => {
-    if (activeVideo === videoId) {
-      setIsPlaying(!isPlaying);
-    } else {
-      setActiveVideo(videoId);
-      setIsPlaying(true);
-    }
+  const openVideoInNewTab = (videoUrl: string) => {
+    window.open(videoUrl, '_blank');
+  };
+
+  const getEmbedUrl = (url: string) => {
+    const videoId = url.split('v=')[1]?.split('&')[0];
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
   };
 
   return (
@@ -113,7 +112,7 @@ const VideoTutorials = () => {
           <div className="relative bg-black" style={{ paddingBottom: '56.25%' }}>
             <iframe
               className="absolute top-0 left-0 w-full h-full"
-              src={tutorials.find(t => t.id === activeVideo)?.videoUrl}
+              src={getEmbedUrl(tutorials.find(t => t.id === activeVideo)?.videoUrl || '')}
               title="Tutorial Video"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -134,16 +133,20 @@ const VideoTutorials = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setIsMuted(!isMuted)}
+                  onClick={() => {
+                    const tutorial = tutorials.find(t => t.id === activeVideo);
+                    if (tutorial) openVideoInNewTab(tutorial.videoUrl);
+                  }}
                 >
-                  {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Открыть в YouTube
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {/* Fullscreen logic */}}
+                  onClick={() => setActiveVideo(null)}
                 >
-                  <Maximize2 className="w-4 h-4" />
+                  Закрыть
                 </Button>
               </div>
             </div>
@@ -170,7 +173,6 @@ const VideoTutorials = () => {
                   className={`cursor-pointer transition-all hover:shadow-lg ${
                     activeVideo === tutorial.id ? 'ring-2 ring-pink-500' : ''
                   }`}
-                  onClick={() => togglePlay(tutorial.id)}
                 >
                   <div className="relative">
                     <img
@@ -180,11 +182,7 @@ const VideoTutorials = () => {
                     />
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                       <div className="bg-white/90 rounded-full p-3">
-                        {activeVideo === tutorial.id && isPlaying ? (
-                          <Pause className="w-6 h-6 text-pink-600" />
-                        ) : (
-                          <Play className="w-6 h-6 text-pink-600" />
-                        )}
+                        <Play className="w-6 h-6 text-pink-600" />
                       </div>
                     </div>
                     <div className="absolute top-2 right-2">
@@ -205,6 +203,23 @@ const VideoTutorials = () => {
                         <p className="text-gray-600 text-xs line-clamp-2">
                           {tutorial.description}
                         </p>
+                        <div className="flex items-center space-x-2 mt-3">
+                          <Button
+                            size="sm"
+                            onClick={() => setActiveVideo(tutorial.id)}
+                            className="flex-1 bg-pink-500 hover:bg-pink-600"
+                          >
+                            <Play className="w-4 h-4 mr-1" />
+                            Смотреть
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openVideoInNewTab(tutorial.videoUrl)}
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </CardContent>

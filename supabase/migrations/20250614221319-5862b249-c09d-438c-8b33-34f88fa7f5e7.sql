@@ -15,7 +15,7 @@ INSERT INTO site_settings (
   'https://images.unsplash.com/photo-1494790108755-2616c6f24c34?w=400&h=400&fit=crop&crop=face&auto=format&q=80',
   'Запечатлеваю моменты, которые останутся с вами навсегда',
   'Профессиональная фотография в Москве | Свадьбы • Love Story • Портреты • Семейные съемки',
-  'contact@photographer.ru',
+  'bagreshevafoto@gmail.com',
   '+7 (999) 123-45-67',
   'Москва'
 )

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,7 +33,7 @@ const PricingSection = () => {
 
   const getServiceCategory = (serviceType: string) => {
     if (serviceType.startsWith('wedding')) return 'Свадебная съемка';
-    if (['portrait', 'family', 'maternity'].includes(serviceType)) return 'Портретная съемка';
+    if (['portrait', 'family'].includes(serviceType)) return 'Портретная съемка';
     if (serviceType === 'lovestory') return 'Love Story';
     if (serviceType === 'corporate') return 'Корпоративная съемка';
     return 'Другие услуги';
@@ -67,8 +66,10 @@ const PricingSection = () => {
     );
   }
 
-  // Группируем услуги по категориям, исключая съемку новорожденных
-  const filteredPricing = pricing?.filter(service => service.service_type !== 'newborn') || [];
+  // Группируем услуги по категориям, исключая съемку новорожденных и материнства
+  const filteredPricing = pricing?.filter(service => 
+    service.service_type !== 'newborn' && service.service_type !== 'maternity'
+  ) || [];
   const groupedServices = filteredPricing.reduce((acc, service) => {
     const category = getServiceCategory(service.service_type);
     if (!acc[category]) {

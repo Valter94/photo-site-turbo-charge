@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,12 +41,6 @@ const ServicesVideoPresentation = () => {
       duration: 4500
     },
     {
-      title: "Материнство и новорожденные",
-      content: "Нежная съемка в ожидании малыша и первые дни жизни. Безопасная съемка новорожденных в студии и дома",
-      image: "https://images.unsplash.com/photo-1516627145497-ae4058c73e28?w=1200&h=800&fit=crop&auto=format&q=80",
-      duration: 4500
-    },
-    {
       title: "Дополнительные услуги",
       content: "Расширьте свой опыт с нашими дополнительными услугами",
       image: "https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=1200&h=800&fit=crop&auto=format&q=80",
@@ -56,12 +49,6 @@ const ServicesVideoPresentation = () => {
   ];
 
   const additionalServices = [
-    {
-      icon: "🎬",
-      title: "Видеосъемка",
-      description: "Создание cinematic роликов и клипов",
-      price: "от 15,000 ₽"
-    },
     {
       icon: "✨",
       title: "Ретушь и обработка",

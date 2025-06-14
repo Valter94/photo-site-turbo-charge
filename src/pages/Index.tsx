@@ -1,16 +1,35 @@
 
-// Remove non-existent Testimonials and ContactForm imports
+import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
 import StoryCarousel from "@/components/StoryCarousel";
 import PortfolioSection from "@/components/PortfolioSection";
+import LocationsSection from "@/components/LocationsSection";
+import PricingSection from "@/components/PricingSection";
+import ReviewsSection from "@/components/ReviewsSection";
+import BookingForm from "@/components/BookingForm";
+import FAQSection from "@/components/FAQSection";
+import Footer from "@/components/Footer";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const Index = () => {
   return (
-    <>
-      <HeroSection />
-      <StoryCarousel />
-      <PortfolioSection />
-    </>
+    <div className="min-h-screen bg-white">
+      <Navigation />
+      <main>
+        <HeroSection />
+        <StoryCarousel />
+        <PortfolioSection />
+        <LocationsSection />
+        <PricingSection />
+        <ReviewsSection />
+        <div id="booking">
+          <BookingForm />
+        </div>
+        <FAQSection />
+      </main>
+      <Footer />
+      <ScrollToTop />
+    </div>
   );
 };
 

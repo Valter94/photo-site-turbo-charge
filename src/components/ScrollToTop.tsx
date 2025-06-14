@@ -33,7 +33,7 @@ const ScrollToTop = () => {
   return (
     <Button
       onClick={scrollToTop}
-      className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white p-3 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 animate-bounce"
+      className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white p-3 rounded-full shadow-2xl hover:scale-110 transition-all duration-300"
       size="icon"
     >
       <ChevronUp className="h-6 w-6" />

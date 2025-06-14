@@ -37,6 +37,21 @@ const PricingSection = () => {
     return 'Другие услуги';
   };
 
+  // Функция для безопасного преобразования features из JSON
+  const getFeaturesArray = (features: any): string[] => {
+    if (!features) return [];
+    if (Array.isArray(features)) return features;
+    if (typeof features === 'string') {
+      try {
+        const parsed = JSON.parse(features);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  };
+
   if (isLoading) {
     return (
       <section id="pricing" className="py-20 bg-gray-50">
@@ -94,7 +109,7 @@ const PricingSection = () => {
                       <p className="font-semibold text-gray-900">{service.photos_count}</p>
                     </div>
                     <ul className="space-y-2">
-                      {service.features && Array.isArray(service.features) && service.features.map((feature, index) => (
+                      {getFeaturesArray(service.features).map((feature, index) => (
                         <li key={index} className="flex items-start space-x-2">
                           <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
                           <span className="text-sm text-gray-600">{feature}</span>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,29 +17,7 @@ import {
   Sparkles,
   Image
 } from 'lucide-react';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-} from 'chart.js';
-import { Line, Pie } from 'react-chartjs-2';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend
-);
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 import PortfolioImageManager from './PortfolioImageManager';
 import LocationsManager from './LocationsManager';
@@ -64,38 +43,21 @@ const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
     { label: "Заказы на этой неделе", value: "120" },
   ];
 
-  const lineChartData = {
-    labels: ['Янв', 'Фев', 'Март', 'Апр', 'Май', 'Июнь', 'Июль'],
-    datasets: [
-      {
-        label: 'Посещения сайта',
-        data: [65, 59, 80, 81, 56, 55, 40],
-        borderColor: 'rgb(255, 99, 132)',
-        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-      },
-    ],
-  };
+  const lineChartData = [
+    { name: 'Янв', visits: 65 },
+    { name: 'Фев', visits: 59 },
+    { name: 'Март', visits: 80 },
+    { name: 'Апр', visits: 81 },
+    { name: 'Май', visits: 56 },
+    { name: 'Июнь', visits: 55 },
+    { name: 'Июль', visits: 40 },
+  ];
 
-  const pieChartData = {
-    labels: ['Свадьбы', 'Портреты', 'Love Story'],
-    datasets: [
-      {
-        label: 'Распределение заказов',
-        data: [30, 40, 30],
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.2)',
-          'rgba(54, 162, 235, 0.2)',
-          'rgba(255, 206, 86, 0.2)',
-        ],
-        borderColor: [
-          'rgba(255, 99, 132, 1)',
-          'rgba(54, 162, 235, 1)',
-          'rgba(255, 206, 86, 1)',
-        ],
-        borderWidth: 1,
-      },
-    ],
-  };
+  const pieChartData = [
+    { name: 'Свадьбы', value: 30, color: '#ff6384' },
+    { name: 'Портреты', value: 40, color: '#36a2eb' },
+    { name: 'Love Story', value: 30, color: '#ffce56' },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -174,7 +136,16 @@ const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
                   <CardTitle>Посещения сайта</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Line data={lineChartData} />
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={lineChartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="visits" stroke="#ff6384" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </CardContent>
               </Card>
 
@@ -183,7 +154,25 @@ const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
                   <CardTitle>Распределение заказов</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Pie data={pieChartData} />
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={pieChartData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {pieChartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
                 </CardContent>
               </Card>
             </div>

@@ -12,7 +12,6 @@ import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 import LiveStats from "@/components/LiveStats";
 import FloatingReviews from "@/components/FloatingReviews";
-import BeforeAfterGallery from "@/components/BeforeAfterGallery";
 
 const Index = () => {
   return (
@@ -22,7 +21,6 @@ const Index = () => {
         <HeroSection />
         <LiveStats />
         <StoryCarousel />
-        <BeforeAfterGallery />
         <PortfolioSection />
         <LocationsSection />
         <PricingSection />

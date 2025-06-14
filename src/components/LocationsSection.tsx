@@ -5,13 +5,12 @@ import { MapPin, Clock, Home, ExternalLink } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
 const LocationsSection = () => {
-  // Обновленный список локаций с фотографиями из Яндекса
   const locations = [
     {
       id: 1,
       name: 'Парк Царицыно',
       description: 'Дворцово-парковый ансамбль с великолепной архитектурой XVIII века. Идеальное место для торжественных и романтических фотосессий.',
-      image: 'https://yandex.ru/images/search?text=парк%20царицыно%20москва%20фото&img_url=https%3A%2F%2Fmsk.mr7.ru%2Fupload%2Fresize_cache%2Fiblock%2F8a6%2F800_600_1%2F8a642f91b1b65c9a7f0c24b9b5c96b6e.jpg',
+      image: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Исторические места',
       address: 'ул. Дольская, 1, Москва',
       bestTime: 'Золотой час (за час до заката)',
@@ -22,7 +21,7 @@ const LocationsSection = () => {
       id: 2,
       name: 'Парк Горького',
       description: 'Культурный центр Москвы с современными арт-объектами, красивыми аллеями и видами на Москву-реку.',
-      image: 'https://yandex.ru/images/search?text=парк%20горького%20москва%20фото&img_url=https%3A%2F%2Fpark-gorkogo.com%2Fupload%2Fresize_cache%2Fiblock%2F9c4%2F800_600_1%2F9c4a8b0f1e5c9d2a3b4c5d6e7f8g9h0i.jpg',
+      image: 'https://images.unsplash.com/photo-1520637836862-4d197d17c38a?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Парки',
       address: 'ул. Крымский Вал, 9, Москва',
       bestTime: 'Утром до 11:00 или после 16:00',
@@ -33,7 +32,7 @@ const LocationsSection = () => {
       id: 3,
       name: 'Красная площадь',
       description: 'Главная площадь России с видом на Кремль и Собор Василия Блаженного. Символичное место для особенных фотосессий.',
-      image: 'https://yandex.ru/images/search?text=красная%20площадь%20москва%20фото&img_url=https%3A%2F%2Fmoscow.org%2Fimages%2Fred_square_moscow.jpg',
+      image: 'https://images.unsplash.com/photo-1513326738677-b964603b136d?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Исторические места',
       address: 'Красная площадь, Москва',
       bestTime: 'Раннее утро до 8:00',
@@ -44,7 +43,7 @@ const LocationsSection = () => {
       id: 4,
       name: 'Воробьевы горы',
       description: 'Смотровая площадка с потрясающим панорамным видом на Москву. Идеально для романтических фотосессий на закате.',
-      image: 'https://yandex.ru/images/search?text=воробьевы%20горы%20москва%20фото&img_url=https%3A%2F%2Fmoscowalk.ru%2Fuploads%2Fposts%2F2020-07%2Fvorobyovy-gory.jpg',
+      image: 'https://images.unsplash.com/photo-1520637836862-4d197d17c38a?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Смотровые площадки',
       address: 'Воробьевы горы, Москва',
       bestTime: 'На закате',
@@ -55,7 +54,7 @@ const LocationsSection = () => {
       id: 5,
       name: 'Усадьба Архангельское',
       description: 'Роскошная усадьба XVIII века в Подмосковье с дворцом, парком и великолепной архитектурой.',
-      image: 'https://yandex.ru/images/search?text=усадьба%20архангельское%20фото&img_url=https%3A%2F%2Farhangelskoe.su%2Fuploads%2Fimages%2Fpalace_main.jpg',
+      image: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Усадьбы',
       address: 'пос. Архангельское, Красногорский р-н',
       bestTime: 'Утром и в золотой час',
@@ -66,7 +65,7 @@ const LocationsSection = () => {
       id: 6,
       name: 'Парк Кусково',
       description: 'Французский регулярный парк с дворцом графов Шереметевых. Идеальная локация для классических фотосессий.',
-      image: 'https://yandex.ru/images/search?text=парк%20кусково%20москва%20фото&img_url=https%3A%2F%2Fkuskovo.ru%2Fuploads%2Fimages%2Fpalace_kuskovo.jpg',
+      image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Усадьбы',
       address: 'ул. Юности, 2, Москва',
       bestTime: 'Утром до 10:00',
@@ -77,7 +76,7 @@ const LocationsSection = () => {
       id: 7,
       name: 'ВДНХ',
       description: 'Выставочный комплекс с знаменитыми павильонами, фонтанами и современными арт-объектами.',
-      image: 'https://yandex.ru/images/search?text=вднх%20москва%20фото&img_url=https%3A%2F%2Fvdnh.ru%2Fuploads%2Fimages%2Fvdnh_main_entrance.jpg',
+      image: 'https://images.unsplash.com/photo-1520637736862-4d197d17c38a?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Выставочные комплексы',
       address: 'просп. Мира, 119, Москва',
       bestTime: 'Днем и вечером',
@@ -88,7 +87,7 @@ const LocationsSection = () => {
       id: 8,
       name: 'Коломенское',
       description: 'Музей-заповедник с древними храмами и панорамным видом на Москву-реку.',
-      image: 'https://yandex.ru/images/search?text=коломенское%20москва%20фото&img_url=https%3A%2F%2Fmgomz.ru%2Fuploads%2Fimages%2Fkolomenskoe_church.jpg',
+      image: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Исторические места',
       address: 'Андропова пр-т, 39, Москва',
       bestTime: 'Рассвет и золотой час',
@@ -96,6 +95,13 @@ const LocationsSection = () => {
       features: ['Храмы', 'Деревянные постройки', 'Сады', 'Набережная']
     }
   ];
+
+  const scrollToBooking = () => {
+    const element = document.getElementById('booking');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <section id="locations" className="py-20 bg-gradient-to-br from-purple-50 via-pink-50 to-white">
@@ -105,7 +111,7 @@ const LocationsSection = () => {
             📍 Лучшие локации для фотосессий
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Тщательно отобранные места в Москве и Подмосковье с реальными фотографиями локаций
+            Тщательно отобранные места в Москве и Подмосковье для идеальных кадров
           </p>
         </div>
 
@@ -117,10 +123,6 @@ const LocationsSection = () => {
                   src={location.image} 
                   alt={location.name}
                   className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = `https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop&auto=format&q=80`;
-                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div className="absolute top-3 right-3">
@@ -170,6 +172,7 @@ const LocationsSection = () => {
                 </div>
 
                 <Button 
+                  onClick={scrollToBooking}
                   variant="outline" 
                   size="sm" 
                   className="w-full group-hover:bg-purple-600 group-hover:text-white group-hover:border-purple-600 transition-all duration-300"
@@ -190,7 +193,10 @@ const LocationsSection = () => {
             <p className="text-gray-600 mb-6">
               Расскажите о своих предпочтениях, и мы найдем идеальное место для вашей фотосессии
             </p>
-            <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 rounded-full font-semibold shadow-lg transform transition-all duration-300 hover:scale-105">
+            <Button 
+              onClick={scrollToBooking}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 rounded-full font-semibold shadow-lg transform transition-all duration-300 hover:scale-105"
+            >
               Связаться с фотографом
             </Button>
           </div>

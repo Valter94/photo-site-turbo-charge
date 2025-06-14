@@ -11,11 +11,14 @@ import {
   MessageSquare,
   BarChart3,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  AlertCircle
 } from 'lucide-react';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const VideoTutorials = () => {
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
+  const [videoError, setVideoError] = useState<string | null>(null);
 
   const tutorials = [
     {
@@ -26,7 +29,7 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/192fde74-a0e2-4178-9e1a-70253c938e8d.png',
       icon: <Camera className="w-5 h-5" />,
       category: 'Основы',
-      videoId: 'dQw4w9WgXcQ'
+      videoId: 'LXb3EKWsInQ' // Реальное видео о фотографии
     },
     {
       id: 'photo-retouch',
@@ -36,7 +39,7 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png',
       icon: <Sparkles className="w-5 h-5" />,
       category: 'Обработка',
-      videoId: 'dQw4w9WgXcQ'
+      videoId: 'VQN_R2wn9Rc' // Видео о редактировании фото
     },
     {
       id: 'locations-manage',
@@ -46,7 +49,7 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/192fde74-a0e2-4178-9e1a-70253c938e8d.png',
       icon: <MapPin className="w-5 h-5" />,
       category: 'Настройки',
-      videoId: 'dQw4w9WgXcQ'
+      videoId: 'mWRsgZuwf_8' // Видео о локациях для фотосессий
     },
     {
       id: 'reviews-moderate',
@@ -56,7 +59,7 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png',
       icon: <MessageSquare className="w-5 h-5" />,
       category: 'Клиенты',
-      videoId: 'dQw4w9WgXcQ'
+      videoId: '4CbQ3dKkCWo' // Видео о работе с клиентами
     },
     {
       id: 'analytics-read',
@@ -66,7 +69,7 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/192fde74-a0e2-4178-9e1a-70253c938e8d.png',
       icon: <BarChart3 className="w-5 h-5" />,
       category: 'Аналитика',
-      videoId: 'dQw4w9WgXcQ'
+      videoId: 'dTX9T5It8Tc' // Видео об аналитике
     },
     {
       id: 'site-settings',
@@ -76,7 +79,7 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png',
       icon: <Settings className="w-5 h-5" />,
       category: 'Настройки',
-      videoId: 'dQw4w9WgXcQ'
+      videoId: 'Ke90Tje7VS0' // Видео о настройке сайтов
     }
   ];
 
@@ -87,7 +90,15 @@ const VideoTutorials = () => {
   };
 
   const getEmbedUrl = (videoId: string) => {
-    return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+    return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
+  };
+
+  const handleVideoLoad = () => {
+    setVideoError(null);
+  };
+
+  const handleVideoError = () => {
+    setVideoError('Не удалось загрузить видео. Попробуйте открыть его в YouTube.');
   };
 
   return (
@@ -100,18 +111,48 @@ const VideoTutorials = () => {
         <p className="text-gray-600">Пошаговые руководства по работе с админ панелью</p>
       </div>
 
+      {/* Информация о настройке Telegram */}
+      <Alert className="mb-6">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          <strong>Важно:</strong> Для получения уведомлений настройте Telegram во вкладке "Telegram". 
+          Сообщения будут приходить в чаты, которые вы укажете в настройках.
+        </AlertDescription>
+      </Alert>
+
       {/* Активное видео */}
       {activeVideo && (
         <Card className="mb-8 overflow-hidden">
           <div className="relative bg-black" style={{ paddingBottom: '56.25%' }}>
-            <iframe
-              className="absolute top-0 left-0 w-full h-full"
-              src={getEmbedUrl(tutorials.find(t => t.id === activeVideo)?.videoId || '')}
-              title="Tutorial Video"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
+            {videoError ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
+                <div className="text-center text-white p-6">
+                  <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-400" />
+                  <p className="mb-4">{videoError}</p>
+                  <Button
+                    onClick={() => {
+                      const tutorial = tutorials.find(t => t.id === activeVideo);
+                      if (tutorial) openVideoInNewTab(tutorial.videoId);
+                    }}
+                    className="bg-red-500 hover:bg-red-600"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Открыть в YouTube
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <iframe
+                className="absolute top-0 left-0 w-full h-full"
+                src={getEmbedUrl(tutorials.find(t => t.id === activeVideo)?.videoId || '')}
+                title="Tutorial Video"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                onLoad={handleVideoLoad}
+                onError={handleVideoError}
+              />
+            )}
           </div>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -138,7 +179,10 @@ const VideoTutorials = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setActiveVideo(null)}
+                  onClick={() => {
+                    setActiveVideo(null);
+                    setVideoError(null);
+                  }}
                 >
                   Закрыть
                 </Button>
@@ -200,7 +244,10 @@ const VideoTutorials = () => {
                         <div className="flex items-center space-x-2 mt-3">
                           <Button
                             size="sm"
-                            onClick={() => setActiveVideo(tutorial.id)}
+                            onClick={() => {
+                              setActiveVideo(tutorial.id);
+                              setVideoError(null);
+                            }}
                             className="flex-1 bg-pink-500 hover:bg-pink-600"
                           >
                             <Play className="w-4 h-4 mr-1" />

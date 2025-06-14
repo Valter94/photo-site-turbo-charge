@@ -5,12 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Play, 
-  Pause, 
-  Volume2, 
-  VolumeX, 
-  Maximize2, 
   Camera, 
-  Upload, 
   Settings, 
   MapPin, 
   MessageSquare,
@@ -31,7 +26,7 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/192fde74-a0e2-4178-9e1a-70253c938e8d.png',
       icon: <Camera className="w-5 h-5" />,
       category: 'Основы',
-      videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+      videoId: 'dQw4w9WgXcQ'
     },
     {
       id: 'photo-retouch',
@@ -41,7 +36,7 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png',
       icon: <Sparkles className="w-5 h-5" />,
       category: 'Обработка',
-      videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+      videoId: 'dQw4w9WgXcQ'
     },
     {
       id: 'locations-manage',
@@ -51,7 +46,7 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/192fde74-a0e2-4178-9e1a-70253c938e8d.png',
       icon: <MapPin className="w-5 h-5" />,
       category: 'Настройки',
-      videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+      videoId: 'dQw4w9WgXcQ'
     },
     {
       id: 'reviews-moderate',
@@ -61,7 +56,7 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png',
       icon: <MessageSquare className="w-5 h-5" />,
       category: 'Клиенты',
-      videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+      videoId: 'dQw4w9WgXcQ'
     },
     {
       id: 'analytics-read',
@@ -71,7 +66,7 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/192fde74-a0e2-4178-9e1a-70253c938e8d.png',
       icon: <BarChart3 className="w-5 h-5" />,
       category: 'Аналитика',
-      videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+      videoId: 'dQw4w9WgXcQ'
     },
     {
       id: 'site-settings',
@@ -81,19 +76,18 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png',
       icon: <Settings className="w-5 h-5" />,
       category: 'Настройки',
-      videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+      videoId: 'dQw4w9WgXcQ'
     }
   ];
 
   const categories = [...new Set(tutorials.map(t => t.category))];
 
-  const openVideoInNewTab = (videoUrl: string) => {
-    window.open(videoUrl, '_blank');
+  const openVideoInNewTab = (videoId: string) => {
+    window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
   };
 
-  const getEmbedUrl = (url: string) => {
-    const videoId = url.split('v=')[1]?.split('&')[0];
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+  const getEmbedUrl = (videoId: string) => {
+    return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
   };
 
   return (
@@ -112,7 +106,7 @@ const VideoTutorials = () => {
           <div className="relative bg-black" style={{ paddingBottom: '56.25%' }}>
             <iframe
               className="absolute top-0 left-0 w-full h-full"
-              src={getEmbedUrl(tutorials.find(t => t.id === activeVideo)?.videoUrl || '')}
+              src={getEmbedUrl(tutorials.find(t => t.id === activeVideo)?.videoId || '')}
               title="Tutorial Video"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -135,7 +129,7 @@ const VideoTutorials = () => {
                   size="sm"
                   onClick={() => {
                     const tutorial = tutorials.find(t => t.id === activeVideo);
-                    if (tutorial) openVideoInNewTab(tutorial.videoUrl);
+                    if (tutorial) openVideoInNewTab(tutorial.videoId);
                   }}
                 >
                   <ExternalLink className="w-4 h-4 mr-2" />
@@ -215,7 +209,7 @@ const VideoTutorials = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => openVideoInNewTab(tutorial.videoUrl)}
+                            onClick={() => openVideoInNewTab(tutorial.videoId)}
                           >
                             <ExternalLink className="w-4 h-4" />
                           </Button>

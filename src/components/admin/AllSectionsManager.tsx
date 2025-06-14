@@ -1,96 +1,40 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Settings, MessageSquare, Bell } from 'lucide-react';
 import SiteSettingsManager from './SiteSettingsManager';
-import PortfolioManager from './PortfolioManager';
-import LocationsManager from './LocationsManager';
-import ReviewsManager from './ReviewsManager';
-import PricingManager from './PricingManager';
-import ExportManager from './ExportManager';
+import TelegramSettings from './TelegramSettings';
+import SiteAnalyticsDashboard from './SiteAnalyticsDashboard';
 
 const AllSectionsManager = () => {
   return (
     <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Панель управления сайтом</h1>
-        <p className="text-gray-600">Полное управление всеми разделами вашего сайта</p>
-      </div>
-
-      <Tabs defaultValue="settings" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 mb-8">
-          <TabsTrigger value="settings">Настройки</TabsTrigger>
-          <TabsTrigger value="portfolio">Портфолио</TabsTrigger>
-          <TabsTrigger value="locations">Локации</TabsTrigger>
-          <TabsTrigger value="reviews">Отзывы</TabsTrigger>
-          <TabsTrigger value="pricing">Цены</TabsTrigger>
-          <TabsTrigger value="export">Экспорт</TabsTrigger>
+      <Tabs defaultValue="site" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="site" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Настройки сайта
+          </TabsTrigger>
+          <TabsTrigger value="telegram" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Telegram
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <Bell className="h-4 w-4" />
+            Аналитика
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="settings">
-          <Card>
-            <CardHeader>
-              <CardTitle>Настройки сайта</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <SiteSettingsManager />
-            </CardContent>
-          </Card>
+        <TabsContent value="site" className="space-y-4">
+          <SiteSettingsManager />
         </TabsContent>
 
-        <TabsContent value="portfolio">
-          <Card>
-            <CardHeader>
-              <CardTitle>Управление портфолио</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PortfolioManager />
-            </CardContent>
-          </Card>
+        <TabsContent value="telegram" className="space-y-4">
+          <TelegramSettings />
         </TabsContent>
 
-        <TabsContent value="locations">
-          <Card>
-            <CardHeader>
-              <CardTitle>Управление локациями</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <LocationsManager />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="reviews">
-          <Card>
-            <CardHeader>
-              <CardTitle>Управление отзывами</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ReviewsManager />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="pricing">
-          <Card>
-            <CardHeader>
-              <CardTitle>Управление ценами</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PricingManager />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="export">
-          <Card>
-            <CardHeader>
-              <CardTitle>Экспорт данных</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ExportManager />
-            </CardContent>
-          </Card>
+        <TabsContent value="analytics" className="space-y-4">
+          <SiteAnalyticsDashboard />
         </TabsContent>
       </Tabs>
     </div>

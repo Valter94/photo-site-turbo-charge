@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -26,10 +27,24 @@ interface UserSession {
   step: string
   data: any
   type: 'portfolio' | 'location'
+  created_at: number
 }
 
-// Храним сессии пользователей в памяти
+// Храним сессии пользователей в памяти с таймстампами
 const userSessions = new Map<number, UserSession>()
+
+// Очищаем старые сессии (старше 30 минут)
+const cleanOldSessions = () => {
+  const now = Date.now()
+  const thirtyMinutes = 30 * 60 * 1000
+  
+  for (const [userId, session] of userSessions.entries()) {
+    if (now - session.created_at > thirtyMinutes) {
+      userSessions.delete(userId)
+      console.log(`🧹 Удалена старая сессия для пользователя ${userId}`)
+    }
+  }
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -37,6 +52,9 @@ serve(async (req) => {
   }
 
   try {
+    // Очищаем старые сессии при каждом запросе
+    cleanOldSessions()
+
     // Проверяем наличие всех необходимых переменных окружения
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
@@ -188,8 +206,11 @@ serve(async (req) => {
         userSessions.set(userId, {
           step: 'waiting_photo',
           data: {},
-          type: type
+          type: type,
+          created_at: Date.now()
         })
+        
+        console.log(`📝 Создана сессия для пользователя ${userId}:`, type)
         
         await editMessage(
           `📸 <b>Шаг 1: Отправьте фото</b>\n\n` +
@@ -204,6 +225,8 @@ serve(async (req) => {
           session.step = 'waiting_description'
           userSessions.set(userId, session)
           
+          console.log(`📝 Обновлена сессия пользователя ${userId}: выбрана категория ${category}`)
+          
           await editMessage(
             `📝 <b>Шаг 3: Описание</b>\n\n` +
             `✅ Категория: <b>${category}</b>\n` +
@@ -213,6 +236,7 @@ serve(async (req) => {
         }
       } else if (data === 'cancel') {
         userSessions.delete(userId)
+        console.log(`❌ Отменена сессия пользователя ${userId}`)
         await editMessage('❌ <b>Операция отменена</b>')
       } else if (data === 'stats') {
         try {
@@ -349,6 +373,7 @@ serve(async (req) => {
 
       // Обработка сессий пользователя
       const session = userSessions.get(userId)
+      console.log(`🔍 Проверка сессии для пользователя ${userId}:`, session ? `${session.type} - ${session.step}` : 'нет сессии')
       
       if (photo && photo.length > 0) {
         if (session && session.step === 'waiting_photo') {
@@ -358,21 +383,31 @@ serve(async (req) => {
           session.step = 'waiting_title'
           userSessions.set(userId, session)
           
+          console.log(`📸 Сохранено фото для пользователя ${userId}: ${largestPhoto.file_id}`)
+          
           await sendMessage(
             `✅ <b>Фото получено!</b>\n\n` +
             `📝 <b>Шаг 2: Название</b>\n\n` +
             `Отправьте название для этого ${session.type === 'portfolio' ? 'фото' : 'места'}:`
           )
         } else {
+          console.log(`❓ Фото получено без активной сессии от пользователя ${userId}`)
           await sendMessage(
-            `❓ <b>Не понимаю, что делать с фото</b>\n\n` +
-            `Сначала выберите действие из меню /start`
+            `❓ <b>Чтобы добавить фото, начните с команды /start</b>\n\n` +
+            `Выберите "📸 Добавить в портфолио" или "📍 Добавить локацию", а затем отправьте фото.`,
+            {
+              inline_keyboard: [
+                [
+                  { text: '🚀 Открыть меню', callback_data: 'start' }
+                ]
+              ]
+            }
           )
         }
         return new Response('OK', { headers: corsHeaders })
       }
 
-      if (!session) {
+      if (!session && !text.startsWith('/')) {
         await sendMessage(
           `👋 <b>Привет!</b>\n\n` +
           `Для начала работы нажмите /start или выберите действие:`,
@@ -388,12 +423,14 @@ serve(async (req) => {
       }
 
       // Обработка текста в зависимости от шага
-      if (session.step === 'waiting_title') {
+      if (session && session.step === 'waiting_title') {
         session.data.title = text
         
         if (session.type === 'portfolio') {
           session.step = 'choosing_category'
           userSessions.set(userId, session)
+          
+          console.log(`📝 Получено название для портфолио от пользователя ${userId}: ${text}`)
           
           await sendMessage(
             `📝 <b>Шаг 3: Выберите категорию</b>\n\n` +
@@ -423,14 +460,18 @@ serve(async (req) => {
           session.step = 'waiting_description'
           userSessions.set(userId, session)
           
+          console.log(`📝 Получено название для локации от пользователя ${userId}: ${text}`)
+          
           await sendMessage(
             `📝 <b>Шаг 3: Описание локации</b>\n\n` +
             `📍 Название: <b>${text}</b>\n\n` +
             `Отправьте описание места (адрес, особенности, лучшее время для съемки):`
           )
         }
-      } else if (session.step === 'waiting_description') {
+      } else if (session && session.step === 'waiting_description') {
         session.data.description = text
+        
+        console.log(`📝 Получено описание от пользователя ${userId}: ${text}`)
         
         // Теперь обрабатываем фото и сохраняем в базу
         try {
@@ -482,6 +523,8 @@ serve(async (req) => {
               throw insertError
             }
 
+            console.log(`✅ Добавлено в портфолио от пользователя ${userId}`)
+
             await sendMessage(
               `✅ <b>Фото успешно добавлено в портфолио!</b>\n\n` +
               `📷 Название: ${session.data.title}\n` +
@@ -504,6 +547,8 @@ serve(async (req) => {
               throw insertError
             }
 
+            console.log(`✅ Добавлена локация от пользователя ${userId}`)
+
             await sendMessage(
               `✅ <b>Локация успешно добавлена!</b>\n\n` +
               `📍 Название: ${session.data.title}\n` +
@@ -513,6 +558,7 @@ serve(async (req) => {
           }
           
           userSessions.delete(userId)
+          console.log(`🗑️ Удалена сессия пользователя ${userId} после успешного завершения`)
           
         } catch (error) {
           console.error('❌ Ошибка обработки:', error)

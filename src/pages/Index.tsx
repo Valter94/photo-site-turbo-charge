@@ -1,12 +1,13 @@
-import Hero from "@/components/Hero";
+import HeroSection from "@/components/HeroSection";
+import StoryCarousel from "@/components/StoryCarousel";
 import PortfolioSection from "@/components/PortfolioSection";
 import Testimonials from "@/components/Testimonials";
 import ContactForm from "@/components/ContactForm";
-import StoryCarousel from "@/components/StoryCarousel";
+
 const Index = () => {
   return (
     <>
-      <Hero />
+      <HeroSection />
       <StoryCarousel />
       <PortfolioSection />
       <Testimonials />
@@ -14,4 +15,5 @@ const Index = () => {
     </>
   );
 };
+
 export default Index;

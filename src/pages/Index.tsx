@@ -2,6 +2,7 @@
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
 import StoryCarousel from "@/components/StoryCarousel";
+import ServicesVideoPresentation from "@/components/ServicesVideoPresentation";
 import AIVideoGenerator from "@/components/AIVideoGenerator";
 import PortfolioSection from "@/components/PortfolioSection";
 import LocationsSection from "@/components/LocationsSection";
@@ -19,6 +20,7 @@ const Index = () => {
       <main>
         <HeroSection />
         <StoryCarousel />
+        <ServicesVideoPresentation />
         <section className="py-16 bg-gradient-to-br from-pink-50 to-purple-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">

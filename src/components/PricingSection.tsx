@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,8 +10,13 @@ const PricingSection = () => {
   const { data: pricing, isLoading } = usePricing();
   const { data: additionalServices, isLoading: isLoadingServices } = useAdditionalServices();
 
+  // Добавляем подробные логи для отладки
+  console.log("=== PRICING SECTION DEBUG ===");
+  console.log("Pricing data:", pricing);
+  console.log("Pricing loading state:", isLoading);
   console.log("Additional services data:", additionalServices);
   console.log("Additional services loading state:", isLoadingServices);
+  console.log("Additional services length:", additionalServices?.length);
 
   const scrollToBooking = () => {
     const element = document.getElementById('booking');
@@ -192,8 +196,8 @@ const PricingSection = () => {
           </div>
         ))}
 
-        {/* Дополнительные услуги */}
-        {!isLoadingServices && additionalServices && additionalServices.length > 0 && (
+        {/* Дополнительные услуги с улучшенной отладкой */}
+        {additionalServices && additionalServices.length > 0 ? (
           <div className="mt-16 animate-scale-in animation-delay-400">
             <h3 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
               ✨ Дополнительные услуги
@@ -215,12 +219,20 @@ const PricingSection = () => {
               ))}
             </div>
           </div>
-        )}
-
-        {/* Показать если нет дополнительных услуг */}
-        {!isLoadingServices && (!additionalServices || additionalServices.length === 0) && (
-          <div className="mt-16 text-center">
-            <p className="text-gray-500 text-lg">Дополнительные услуги скоро будут добавлены</p>
+        ) : (
+          <div className="mt-16 animate-scale-in animation-delay-400">
+            <h3 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+              ✨ Дополнительные услуги
+            </h3>
+            <div className="text-center p-8 bg-white/50 rounded-lg border-2 border-dashed border-pink-200">
+              <Sparkles className="w-16 h-16 text-pink-300 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg mb-2">
+                {isLoadingServices ? 'Загружаем дополнительные услуги...' : 'Дополнительные услуги скоро будут добавлены'}
+              </p>
+              <p className="text-sm text-gray-400">
+                Следите за обновлениями или свяжитесь с нами для индивидуального предложения
+              </p>
+            </div>
           </div>
         )}
 

@@ -11,14 +11,14 @@ import {
   MessageSquare,
   BarChart3,
   Sparkles,
-  ExternalLink,
+  Pause,
   AlertCircle
 } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const VideoTutorials = () => {
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
-  const [videoError, setVideoError] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const tutorials = [
     {
@@ -29,7 +29,23 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/192fde74-a0e2-4178-9e1a-70253c938e8d.png',
       icon: <Camera className="w-5 h-5" />,
       category: 'Основы',
-      videoId: 'LXb3EKWsInQ' // Реальное видео о фотографии
+      content: `
+        <h3>Шаги для загрузки фотографий:</h3>
+        <ol>
+          <li>Перейдите в раздел "Портфолио" в админ панели</li>
+          <li>Нажмите кнопку "Добавить фото"</li>
+          <li>Выберите файлы с компьютера</li>
+          <li>Заполните описание и теги</li>
+          <li>Выберите категорию съемки</li>
+          <li>Нажмите "Сохранить"</li>
+        </ol>
+        <p><strong>Рекомендации:</strong></p>
+        <ul>
+          <li>Используйте качественные изображения (минимум 1920x1080)</li>
+          <li>Добавляйте описательные теги</li>
+          <li>Группируйте фото по категориям</li>
+        </ul>
+      `
     },
     {
       id: 'photo-retouch',
@@ -39,7 +55,23 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png',
       icon: <Sparkles className="w-5 h-5" />,
       category: 'Обработка',
-      videoId: 'VQN_R2wn9Rc' // Видео о редактировании фото
+      content: `
+        <h3>Инструменты обработки:</h3>
+        <ol>
+          <li>Откройте изображение в редакторе</li>
+          <li>Используйте автокоррекцию для базовой обработки</li>
+          <li>Настройте яркость и контрастность</li>
+          <li>Примените цветовую коррекцию</li>
+          <li>Добавьте резкость при необходимости</li>
+          <li>Сохраните обработанное изображение</li>
+        </ol>
+        <p><strong>Полезные советы:</strong></p>
+        <ul>
+          <li>Не переусердствуйте с фильтрами</li>
+          <li>Сохраняйте оригиналы</li>
+          <li>Используйте пакетную обработку для серий</li>
+        </ul>
+      `
     },
     {
       id: 'locations-manage',
@@ -49,7 +81,23 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/192fde74-a0e2-4178-9e1a-70253c938e8d.png',
       icon: <MapPin className="w-5 h-5" />,
       category: 'Настройки',
-      videoId: 'mWRsgZuwf_8' // Видео о локациях для фотосессий
+      content: `
+        <h3>Работа с локациями:</h3>
+        <ol>
+          <li>Перейдите в раздел "Локации"</li>
+          <li>Нажмите "Добавить локацию"</li>
+          <li>Укажите название и адрес</li>
+          <li>Загрузите фотографии места</li>
+          <li>Добавьте описание и особенности</li>
+          <li>Укажите доступность и стоимость</li>
+        </ol>
+        <p><strong>Важные моменты:</strong></p>
+        <ul>
+          <li>Проверяйте разрешения на съемку</li>
+          <li>Указывайте время доступности</li>
+          <li>Добавляйте контакты администрации</li>
+        </ul>
+      `
     },
     {
       id: 'reviews-moderate',
@@ -59,7 +107,22 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png',
       icon: <MessageSquare className="w-5 h-5" />,
       category: 'Клиенты',
-      videoId: '4CbQ3dKkCWo' // Видео о работе с клиентами
+      content: `
+        <h3>Модерация отзывов:</h3>
+        <ol>
+          <li>Откройте раздел "Отзывы"</li>
+          <li>Просмотрите новые отзывы</li>
+          <li>Проверьте содержание на соответствие правилам</li>
+          <li>Одобрите или отклоните отзыв</li>
+          <li>При необходимости добавьте ответ</li>
+        </ol>
+        <p><strong>Критерии модерации:</strong></p>
+        <ul>
+          <li>Отсутствие нецензурной лексики</li>
+          <li>Конструктивность отзыва</li>
+          <li>Соответствие действительности</li>
+        </ul>
+      `
     },
     {
       id: 'analytics-read',
@@ -69,7 +132,22 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/192fde74-a0e2-4178-9e1a-70253c938e8d.png',
       icon: <BarChart3 className="w-5 h-5" />,
       category: 'Аналитика',
-      videoId: 'dTX9T5It8Tc' // Видео об аналитике
+      content: `
+        <h3>Основные метрики:</h3>
+        <ol>
+          <li>Посещаемость сайта</li>
+          <li>Конверсия заявок</li>
+          <li>Популярные страницы</li>
+          <li>Географическое распределение</li>
+          <li>Устройства пользователей</li>
+        </ol>
+        <p><strong>Как использовать данные:</strong></p>
+        <ul>
+          <li>Анализируйте тренды по месяцам</li>
+          <li>Отслеживайте источники трафика</li>
+          <li>Оптимизируйте популярные страницы</li>
+        </ul>
+      `
     },
     {
       id: 'site-settings',
@@ -79,27 +157,42 @@ const VideoTutorials = () => {
       thumbnail: '/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png',
       icon: <Settings className="w-5 h-5" />,
       category: 'Настройки',
-      videoId: 'Ke90Tje7VS0' // Видео о настройке сайтов
+      content: `
+        <h3>Настройки сайта:</h3>
+        <ol>
+          <li>Перейдите в "Настройки сайта"</li>
+          <li>Обновите контактную информацию</li>
+          <li>Измените описание услуг</li>
+          <li>Настройте социальные сети</li>
+          <li>Обновите цены и пакеты</li>
+        </ol>
+        <p><strong>Рекомендации:</strong></p>
+        <ul>
+          <li>Регулярно обновляйте информацию</li>
+          <li>Проверяйте актуальность цен</li>
+          <li>Добавляйте новые услуги</li>
+        </ul>
+      `
     }
   ];
 
   const categories = [...new Set(tutorials.map(t => t.category))];
 
-  const openVideoInNewTab = (videoId: string) => {
-    window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+  const handlePlayVideo = (tutorialId: string) => {
+    setActiveVideo(tutorialId);
+    setIsPlaying(true);
   };
 
-  const getEmbedUrl = (videoId: string) => {
-    return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
+  const handlePauseVideo = () => {
+    setIsPlaying(false);
   };
 
-  const handleVideoLoad = () => {
-    setVideoError(null);
+  const closeVideo = () => {
+    setActiveVideo(null);
+    setIsPlaying(false);
   };
 
-  const handleVideoError = () => {
-    setVideoError('Не удалось загрузить видео. Попробуйте открыть его в YouTube.');
-  };
+  const activeTutorial = tutorials.find(t => t.id === activeVideo);
 
   return (
     <div className="space-y-6">
@@ -121,74 +214,52 @@ const VideoTutorials = () => {
       </Alert>
 
       {/* Активное видео */}
-      {activeVideo && (
+      {activeVideo && activeTutorial && (
         <Card className="mb-8 overflow-hidden">
-          <div className="relative bg-black" style={{ paddingBottom: '56.25%' }}>
-            {videoError ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
-                <div className="text-center text-white p-6">
-                  <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-400" />
-                  <p className="mb-4">{videoError}</p>
-                  <Button
-                    onClick={() => {
-                      const tutorial = tutorials.find(t => t.id === activeVideo);
-                      if (tutorial) openVideoInNewTab(tutorial.videoId);
-                    }}
-                    className="bg-red-500 hover:bg-red-600"
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Открыть в YouTube
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <iframe
-                className="absolute top-0 left-0 w-full h-full"
-                src={getEmbedUrl(tutorials.find(t => t.id === activeVideo)?.videoId || '')}
-                title="Tutorial Video"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                onLoad={handleVideoLoad}
-                onError={handleVideoError}
-              />
-            )}
-          </div>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6">
+            <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-semibold text-lg">
-                  {tutorials.find(t => t.id === activeVideo)?.title}
+                <h3 className="font-semibold text-lg text-gray-900">
+                  {activeTutorial.title}
                 </h3>
                 <p className="text-gray-600">
-                  {tutorials.find(t => t.id === activeVideo)?.description}
+                  {activeTutorial.description}
                 </p>
               </div>
               <div className="flex items-center space-x-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    const tutorial = tutorials.find(t => t.id === activeVideo);
-                    if (tutorial) openVideoInNewTab(tutorial.videoId);
-                  }}
+                  onClick={isPlaying ? handlePauseVideo : () => setIsPlaying(true)}
                 >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Открыть в YouTube
+                  {isPlaying ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
+                  {isPlaying ? 'Пауза' : 'Воспроизвести'}
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    setActiveVideo(null);
-                    setVideoError(null);
-                  }}
+                  onClick={closeVideo}
                 >
                   Закрыть
                 </Button>
               </div>
             </div>
-          </CardContent>
+            
+            {/* Встроенный контент */}
+            <div className="bg-white rounded-lg p-6 shadow-sm">
+              {isPlaying ? (
+                <div 
+                  className="prose max-w-none"
+                  dangerouslySetInnerHTML={{ __html: activeTutorial.content }}
+                />
+              ) : (
+                <div className="text-center py-12 text-gray-500">
+                  <Play className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                  <p>Нажмите "Воспроизвести" чтобы посмотреть инструкцию</p>
+                </div>
+              )}
+            </div>
+          </div>
         </Card>
       )}
 
@@ -235,32 +306,20 @@ const VideoTutorials = () => {
                         {tutorial.icon}
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-sm mb-1 line-clamp-2">
+                        <h3 className="font-semibold text-sm mb-1">
                           {tutorial.title}
                         </h3>
-                        <p className="text-gray-600 text-xs line-clamp-2">
+                        <p className="text-gray-600 text-xs mb-3">
                           {tutorial.description}
                         </p>
-                        <div className="flex items-center space-x-2 mt-3">
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setActiveVideo(tutorial.id);
-                              setVideoError(null);
-                            }}
-                            className="flex-1 bg-pink-500 hover:bg-pink-600"
-                          >
-                            <Play className="w-4 h-4 mr-1" />
-                            Смотреть
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openVideoInNewTab(tutorial.videoId)}
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </Button>
-                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => handlePlayVideo(tutorial.id)}
+                          className="w-full bg-pink-500 hover:bg-pink-600"
+                        >
+                          <Play className="w-4 h-4 mr-1" />
+                          Смотреть
+                        </Button>
                       </div>
                     </div>
                   </CardContent>

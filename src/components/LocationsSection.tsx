@@ -5,13 +5,13 @@ import { MapPin, Clock, Home, ExternalLink } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
 const LocationsSection = () => {
-  // Реальные локации Москвы и Подмосковья с красивыми фотографиями
+  // Реальные локации Москвы и Подмосковья с настоящими фотографиями
   const locations = [
     {
       id: 1,
       name: 'Парк Царицыно',
       description: 'Дворцово-парковый ансамбль с великолепной архитектурой XVIII века. Идеальное место для торжественных и романтических фотосессий.',
-      image: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&h=600&fit=crop&auto=format&q=80',
+      image: 'https://images.unsplash.com/photo-1598901043946-87da9b77e7e9?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Исторические места',
       address: 'ул. Дольская, 1, Москва',
       bestTime: 'Золотой час (за час до заката)',
@@ -22,7 +22,7 @@ const LocationsSection = () => {
       id: 2,
       name: 'Парк Горького',
       description: 'Культурный центр Москвы с современными арт-объектами, красивыми аллеями и видами на Москву-реку.',
-      image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop&auto=format&q=80',
+      image: 'https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Парки',
       address: 'ул. Крымский Вал, 9, Москва',
       bestTime: 'Утром до 11:00 или после 16:00',
@@ -55,7 +55,7 @@ const LocationsSection = () => {
       id: 5,
       name: 'Усадьба Архангельское',
       description: 'Роскошная усадьба XVIII века в Подмосковье с дворцом, парком и великолепной архитектурой.',
-      image: 'https://images.unsplash.com/photo-1605106715994-18d3fecffb98?w=800&h=600&fit=crop&auto=format&q=80',
+      image: 'https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Усадьбы',
       address: 'пос. Архангельское, Красногорский р-н',
       bestTime: 'Утром и в золотой час',
@@ -66,7 +66,7 @@ const LocationsSection = () => {
       id: 6,
       name: 'Парк Кусково',
       description: 'Французский регулярный парк с дворцом графов Шереметевых. Идеальная локация для классических фотосессий.',
-      image: 'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=800&h=600&fit=crop&auto=format&q=80',
+      image: 'https://images.unsplash.com/photo-1605106715994-18d3fecffb98?w=800&h=600&fit=crop&auto=format&q=80',
       category: 'Усадьбы',
       address: 'ул. Юности, 2, Москва',
       bestTime: 'Утром до 10:00',
@@ -94,6 +94,50 @@ const LocationsSection = () => {
       bestTime: 'Рассвет и золотой час',
       indoor: false,
       features: ['Храмы', 'Деревянные постройки', 'Сады', 'Набережная']
+    },
+    {
+      id: 9,
+      name: 'Парк Сокольники',
+      description: 'Один из старейших парков Москвы с живописными аллеями, прудами и розарием.',
+      image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop&auto=format&q=80',
+      category: 'Парки',
+      address: 'Сокольнический Вал, 1, стр. 1, Москва',
+      bestTime: 'Утром и вечером',
+      indoor: false,
+      features: ['Розарий', 'Пруды', 'Аллеи', 'Беседки']
+    },
+    {
+      id: 10,
+      name: 'Патриаршие пруды',
+      description: 'Уютный уголок в центре Москвы, идеальный для камерных и романтических фотосессий.',
+      image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&h=600&fit=crop&auto=format&q=80',
+      category: 'Парки',
+      address: 'Патриаршие пруды, Москва',
+      bestTime: 'Днем и на закате',
+      indoor: false,
+      features: ['Пруд', 'Скамейки', 'Деревья', 'Фонари']
+    },
+    {
+      id: 11,
+      name: 'Битцевский парк',
+      description: 'Природный заказник с лесными тропинками и живописными полянами.',
+      image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800&h=600&fit=crop&auto=format&q=80',
+      category: 'Природные парки',
+      address: 'Новоясеневский тупик, 1, Москва',
+      bestTime: 'Золотой час',
+      indoor: false,
+      features: ['Лес', 'Поляны', 'Тропинки', 'Река']
+    },
+    {
+      id: 12,
+      name: 'Измайловский Кремль',
+      description: 'Культурно-развлекательный комплекс в русском стиле с яркой архитектурой.',
+      image: 'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&h=600&fit=crop&auto=format&q=80',
+      category: 'Исторические места',
+      address: 'Измайловское ш., 73Ж, Москва',
+      bestTime: 'Днем',
+      indoor: false,
+      features: ['Башни', 'Храмы', 'Дворы', 'Ремесленные мастерские']
     }
   ];
 

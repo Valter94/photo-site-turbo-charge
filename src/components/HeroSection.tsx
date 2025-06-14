@@ -37,7 +37,7 @@ const HeroSection = () => {
 С уважением,
 [Ваше имя]`;
     
-    window.location.href = `mailto:bagreshevafoto@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:irina.photo@email.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   const handleCall = () => {
@@ -90,19 +90,19 @@ const HeroSection = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8 animate-scale-in animation-delay-600">
               <Button 
                 size="lg" 
-                className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-8 py-4 text-lg font-semibold shadow-2xl transform transition-all duration-300 hover:scale-105 hover:-translate-y-1 border-0 rounded-full"
+                className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold px-8 py-4 text-lg shadow-2xl transform transition-all duration-300 hover:scale-105 hover:-translate-y-1 border-0 rounded-full"
                 onClick={() => scrollToSection('portfolio')}
               >
-                <Star className="w-5 h-5 mr-2" />
-                Посмотреть мои работы
+                <Star className="w-5 h-5 mr-2 text-white" />
+                <span className="text-white font-bold">Посмотреть мои работы</span>
               </Button>
               <Button 
                 size="lg" 
-                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-8 py-4 text-lg font-semibold shadow-2xl transform transition-all duration-300 hover:scale-105 hover:-translate-y-1 border-0 rounded-full"
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold px-8 py-4 text-lg shadow-2xl transform transition-all duration-300 hover:scale-105 hover:-translate-y-1 border-0 rounded-full"
                 onClick={handleBooking}
               >
-                <Mail className="w-5 h-5 mr-2" />
-                Забронировать съемку
+                <Mail className="w-5 h-5 mr-2 text-white" />
+                <span className="text-white font-bold">Забронировать съемку</span>
               </Button>
             </div>
 
@@ -110,20 +110,20 @@ const HeroSection = () => {
               <Button
                 variant="outline"
                 size="lg"
-                className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm rounded-full px-6"
+                className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm rounded-full px-6 font-bold"
                 onClick={handleCall}
               >
-                <Phone className="w-4 h-4 mr-2" />
-                Позвонить сейчас
+                <Phone className="w-4 h-4 mr-2 text-white" />
+                <span className="text-white font-bold">Позвонить сейчас</span>
               </Button>
               <Button
                 variant="outline"
                 size="lg"
-                className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm rounded-full px-6"
+                className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm rounded-full px-6 font-bold"
                 onClick={() => scrollToSection('pricing')}
               >
-                <Heart className="w-4 h-4 mr-2" />
-                Узнать цены
+                <Heart className="w-4 h-4 mr-2 text-white" />
+                <span className="text-white font-bold">Узнать цены</span>
               </Button>
             </div>
           </div>

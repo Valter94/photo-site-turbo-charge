@@ -1,6 +1,7 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export interface PortfolioItem {
   id: string;
@@ -21,7 +22,7 @@ const mockPortfolioData: PortfolioItem[] = [
     id: '1',
     title: 'Свадьба Анны и Михаила',
     category: 'wedding',
-    image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop&auto=format',
+    image_url: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800&h=600&fit=crop&auto=format',
     description: 'Нежная свадебная церемония в парке Сокольники',
     location: 'Парк Сокольники',
     client_name: 'Анна и Михаил',
@@ -32,7 +33,7 @@ const mockPortfolioData: PortfolioItem[] = [
     id: '2',
     title: 'Love Story Елены и Дмитрия',
     category: 'lovestory',
-    image_url: 'https://images.unsplash.com/photo-1529634597196-0d99a7cc2e84?w=800&h=600&fit=crop&auto=format',
+    image_url: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&h=600&fit=crop&auto=format',
     description: 'Романтическая прогулка по Патриаршим прудам',
     location: 'Патриаршие пруды',
     client_name: 'Елена и Дмитрий',
@@ -43,7 +44,7 @@ const mockPortfolioData: PortfolioItem[] = [
     id: '3',
     title: 'Семейная фотосессия Петровых',
     category: 'family',
-    image_url: 'https://images.unsplash.com/photo-1511895426328-dc8714aecd2e?w=800&h=600&fit=crop&auto=format',
+    image_url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop&auto=format',
     description: 'Счастливая семья с детьми в домашней обстановке',
     location: 'Студия',
     client_name: 'Семья Петровых',
@@ -54,7 +55,7 @@ const mockPortfolioData: PortfolioItem[] = [
     id: '4',
     title: 'Портрет Марии',
     category: 'portrait',
-    image_url: 'https://images.unsplash.com/photo-1494790108755-2616c6f24c34?w=800&h=600&fit=crop&auto=format',
+    image_url: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=800&h=600&fit=crop&auto=format',
     description: 'Элегантный женский портрет в студийных условиях',
     location: 'Студия Loft',
     client_name: 'Мария С.',
@@ -65,7 +66,7 @@ const mockPortfolioData: PortfolioItem[] = [
     id: '5',
     title: 'Корпоративная съемка IT-компании',
     category: 'corporate',
-    image_url: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=600&fit=crop&auto=format',
+    image_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop&auto=format',
     description: 'Профессиональные портреты команды',
     location: 'Москва-Сити',
     client_name: 'TechCorp',
@@ -87,7 +88,7 @@ const mockPortfolioData: PortfolioItem[] = [
     id: '7',
     title: 'Материнство',
     category: 'maternity',
-    image_url: 'https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=800&h=600&fit=crop&auto=format',
+    image_url: 'https://images.unsplash.com/photo-1516627145497-ae4058c73e28?w=800&h=600&fit=crop&auto=format',
     description: 'Нежная фотосессия будущей мамы',
     location: 'Студия',
     client_name: 'Екатерина Н.',
@@ -120,7 +121,7 @@ const mockPortfolioData: PortfolioItem[] = [
     id: '10',
     title: 'Бизнес-портреты',
     category: 'corporate',
-    image_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop&auto=format',
+    image_url: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=600&fit=crop&auto=format',
     description: 'Профессиональные портреты для корпоративного сайта',
     location: 'Офис',
     client_name: 'Алексей К.',
@@ -168,5 +169,68 @@ export const usePortfolio = () => {
       // Если нет данных в базе, возвращаем mock данные
       return data && data.length > 0 ? data : mockPortfolioData;
     },
+  });
+};
+
+export const useUpdatePortfolio = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (portfolioData: any) => {
+      const { data, error } = await supabase
+        .from('portfolio')
+        .update(portfolioData)
+        .eq('id', portfolioData.id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['portfolio'] });
+      toast({
+        title: "Успешно",
+        description: "Фотография обновлена",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить фотографию",
+        variant: "destructive"
+      });
+    }
+  });
+};
+
+export const useDeletePortfolio = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('portfolio')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['portfolio'] });
+      toast({
+        title: "Успешно",
+        description: "Фотография удалена",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить фотографию",
+        variant: "destructive"
+      });
+    }
   });
 };

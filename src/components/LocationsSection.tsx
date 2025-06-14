@@ -40,7 +40,7 @@ const LocationsSection = () => {
       address: 'Воробьёвы горы, Москва',
       best_time: '17:00-20:00 (закат)',
       indoor: false,
-      image_url: 'https://images.unsplash.com/photo-1520637836862-4d197d17c0a a?w=600&h=400&fit=crop&auto=format',
+      image_url: 'https://images.unsplash.com/photo-1520637836862-4d197d17c0aa?w=600&h=400&fit=crop&auto=format',
       category: 'Смотровые площадки'
     },
     {
@@ -86,7 +86,17 @@ const LocationsSection = () => {
   const handleBooking = () => {
     const subject = 'Бронирование фотосессии';
     const body = 'Здравствуйте, Ирина!\n\nХочу забронировать фотосессию:\n\nЖелаемая локация: [укажите локацию]\nДата и время: [укажите предпочтительные даты]\nТип съемки: [свадебная/портретная/семейная/love story]\nКоличество участников: [укажите количество]\nДополнительные пожелания: [опишите ваши идеи]\n\nМой контактный телефон: [укажите номер]\n\nС уважением,\n[Ваше имя]';
-    window.location.href = `mailto:bagreshevafoto@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:irina.bagresheva@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
+  // Функция для получения категории локации
+  const getLocationCategory = (location: any) => {
+    // Для данных из базы
+    if (location.location_categories) {
+      return location.location_categories.name;
+    }
+    // Для моковых данных
+    return location.category;
   };
 
   if (locationsLoading || categoriesLoading) {
@@ -107,10 +117,10 @@ const LocationsSection = () => {
 
   const filteredLocations = selectedCategory === 'all' 
     ? displayLocations 
-    : displayLocations?.filter(location => 
-        location.category === selectedCategory || 
-        (location.location_categories && location.location_categories.name === selectedCategory)
-      );
+    : displayLocations?.filter(location => {
+        const categoryName = getLocationCategory(location);
+        return categoryName === selectedCategory;
+      });
 
   return (
     <section id="locations" className="py-20 bg-white">
@@ -133,8 +143,8 @@ const LocationsSection = () => {
             {displayCategories?.map((category) => (
               <Button
                 key={category.id}
-                variant={selectedCategory === category.name || selectedCategory === category.id ? 'default' : 'outline'}
-                onClick={() => setSelectedCategory(category.name || category.id)}
+                variant={selectedCategory === category.name ? 'default' : 'outline'}
+                onClick={() => setSelectedCategory(category.name)}
                 className="mb-2"
               >
                 {category.name}
@@ -158,9 +168,9 @@ const LocationsSection = () => {
                   <div className="flex justify-between items-start">
                     <h3 className="text-xl font-bold text-gray-900">{location.name}</h3>
                     <div className="flex gap-1">
-                      {(location.category || (location.location_categories && location.location_categories.name)) && (
+                      {getLocationCategory(location) && (
                         <Badge variant="secondary" className="text-xs">
-                          {location.category || location.location_categories.name}
+                          {getLocationCategory(location)}
                         </Badge>
                       )}
                       {location.indoor && (

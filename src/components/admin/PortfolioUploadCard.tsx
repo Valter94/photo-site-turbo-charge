@@ -7,108 +7,86 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Plus } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useCreatePortfolio } from '@/hooks/usePortfolio';
 import ImageUpload from './ImageUpload';
 
 const PortfolioUploadCard = () => {
-  const [newItem, setNewItem] = useState({
+  const [formData, setFormData] = useState({
     title: '',
     category: '',
     description: '',
     location: '',
     client_name: '',
     shoot_date: '',
-    is_featured: false,
-    image_url: ''
+    image_url: '',
+    is_featured: false
   });
-  const [uploading, setUploading] = useState(false);
-  const { toast } = useToast();
+
+  const createPortfolio = useCreatePortfolio();
 
   const categories = [
     { value: 'wedding', label: 'Свадебная съемка' },
     { value: 'portrait', label: 'Портретная съемка' },
     { value: 'family', label: 'Семейная фотосессия' },
     { value: 'lovestory', label: 'Love Story' },
-    { value: 'corporate', label: 'Корпоративная съемка' }
+    { value: 'corporate', label: 'Корпоративная съемка' },
+    { value: 'maternity', label: 'Материнство' }
   ];
-
-  const handleImageUpload = (url: string) => {
-    setNewItem({ ...newItem, image_url: url });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!newItem.title || !newItem.category || !newItem.image_url) {
-      toast({
-        title: "Ошибка",
-        description: "Заполните все обязательные поля",
-        variant: "destructive"
-      });
+    if (!formData.title || !formData.category || !formData.image_url) {
       return;
     }
 
-    setUploading(true);
-    
     try {
-      const { error } = await supabase
-        .from('portfolio')
-        .insert([newItem]);
-
-      if (error) throw error;
-
-      toast({
-        title: "Успешно",
-        description: "Фотография добавлена в портфолио",
-      });
-
+      await createPortfolio.mutateAsync(formData);
+      
       // Сброс формы
-      setNewItem({
+      setFormData({
         title: '',
         category: '',
         description: '',
         location: '',
         client_name: '',
         shoot_date: '',
-        is_featured: false,
-        image_url: ''
+        image_url: '',
+        is_featured: false
       });
     } catch (error) {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось добавить фотографию",
-        variant: "destructive"
-      });
-    } finally {
-      setUploading(false);
+      console.error('Error creating portfolio item:', error);
     }
+  };
+
+  const handleImageUpload = (url: string) => {
+    setFormData({ ...formData, image_url: url });
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
+        <CardTitle className="flex items-center gap-2">
           <Plus className="h-5 w-5" />
-          <span>Добавить новую фотографию</span>
+          Добавить новую фотографию
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            value={newItem.title}
-            onChange={(e) => setNewItem({...newItem, title: e.target.value})}
-            placeholder="Название *"
+            placeholder="Название фотографии"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             required
           />
           
-          <Select
-            value={newItem.category}
-            onValueChange={(value) => setNewItem({...newItem, category: value})}
+          <Select 
+            value={formData.category} 
+            onValueChange={(value) => setFormData({ ...formData, category: value })}
             required
           >
             <SelectTrigger>
-              <SelectValue placeholder="Выберите категорию *" />
+              <SelectValue placeholder="Выберите категорию" />
             </SelectTrigger>
             <SelectContent>
               {categories.map((cat) => (
@@ -120,41 +98,41 @@ const PortfolioUploadCard = () => {
           </Select>
 
           <Textarea
-            value={newItem.description}
-            onChange={(e) => setNewItem({...newItem, description: e.target.value})}
-            placeholder="Описание"
+            placeholder="Описание фотографии"
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             rows={3}
           />
 
           <Input
-            value={newItem.location}
-            onChange={(e) => setNewItem({...newItem, location: e.target.value})}
-            placeholder="Локация"
+            placeholder="Локация съемки"
+            value={formData.location}
+            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
           />
 
           <Input
-            value={newItem.client_name}
-            onChange={(e) => setNewItem({...newItem, client_name: e.target.value})}
             placeholder="Имя клиента"
+            value={formData.client_name}
+            onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
           />
 
           <Input
             type="date"
-            value={newItem.shoot_date}
-            onChange={(e) => setNewItem({...newItem, shoot_date: e.target.value})}
             placeholder="Дата съемки"
+            value={formData.shoot_date}
+            onChange={(e) => setFormData({ ...formData, shoot_date: e.target.value })}
           />
 
           <div className="flex items-center space-x-2">
             <Switch
-              checked={newItem.is_featured}
-              onCheckedChange={(checked) => setNewItem({...newItem, is_featured: checked})}
+              checked={formData.is_featured}
+              onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })}
             />
-            <label className="text-sm">Рекомендуемая</label>
+            <label className="text-sm font-medium">Рекомендуемая фотография</label>
           </div>
 
           <ImageUpload
-            currentImage={newItem.image_url}
+            currentImage={formData.image_url}
             onImageUploaded={handleImageUpload}
             folder="portfolio"
           />
@@ -162,9 +140,9 @@ const PortfolioUploadCard = () => {
           <Button 
             type="submit" 
             className="w-full"
-            disabled={uploading || !newItem.title || !newItem.category || !newItem.image_url}
+            disabled={createPortfolio.isPending || !formData.title || !formData.category || !formData.image_url}
           >
-            {uploading ? 'Добавление...' : 'Добавить в портфолио'}
+            {createPortfolio.isPending ? 'Добавление...' : 'Добавить в портфолио'}
           </Button>
         </form>
       </CardContent>

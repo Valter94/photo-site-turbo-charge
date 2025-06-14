@@ -14,6 +14,12 @@ const HeroSection = () => {
     }
   };
 
+  const handleBooking = () => {
+    const subject = 'Бронирование фотосессии';
+    const body = 'Здравствуйте, Ирина!\n\nХочу забронировать фотосессию:\n\nЖелаемая дата: [укажите дату]\nВремя: [укажите время]\nТип съемки: [свадебная/портретная/семейная/love story]\nЛокация: [укажите желаемую локацию]\nКоличество участников: [укажите количество]\nДополнительные пожелания: [опишите ваши идеи]\n\nМой контактный телефон: [укажите номер]\n\nС уважением,\n[Ваше имя]';
+    window.location.href = `mailto:bagreshevafoto@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Анимированный градиентный фон */}
@@ -35,7 +41,7 @@ const HeroSection = () => {
             <div className="relative mx-auto w-40 h-40 group">
               <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-600 rounded-full animate-spin-slow opacity-75 blur-sm"></div>
               <img
-                src="/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png"
+                src="https://images.unsplash.com/photo-1494790108755-2616c6f24c34?w=400&h=400&fit=crop&auto=format"
                 alt="Фотограф Ирина"
                 className="relative w-40 h-40 rounded-full mx-auto object-cover border-4 border-white/30 shadow-2xl group-hover:scale-105 transition-all duration-500 hover-lift"
               />
@@ -128,7 +134,7 @@ const HeroSection = () => {
         <Button
           size="icon"
           className="w-16 h-16 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 shadow-2xl hover:scale-110 transition-all duration-300"
-          onClick={() => scrollToSection('booking')}
+          onClick={handleBooking}
         >
           <Camera className="w-8 h-8" />
         </Button>

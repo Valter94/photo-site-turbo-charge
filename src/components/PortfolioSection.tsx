@@ -10,105 +10,10 @@ const PortfolioSection = () => {
   const { data: portfolio, isLoading } = usePortfolio();
   const navigate = useNavigate();
 
-  // Обновленные реальные примеры фотографий 2025 года с московскими локациями
-  const mockPortfolio = [
-    {
-      id: '1',
-      title: 'Сказочная свадьба в Царицыно',
-      category: 'wedding',
-      image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop&auto=format',
-      description: 'Романтическая церемония в царском парке с изысканной архитектурой XVIII века',
-      location: 'Музей-заповедник Царицыно',
-      is_featured: true,
-      client_name: 'Анна и Михаил',
-      shoot_date: '2024-09-15',
-      created_at: '2024-09-15'
-    },
-    {
-      id: '2',
-      title: 'Love Story на набережной Москвы-реки',
-      category: 'lovestory',
-      image_url: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=800&h=600&fit=crop&auto=format',
-      description: 'Нежная прогулка влюбленных с видом на сталинские высотки и современные небоскребы',
-      location: 'Воробьевы горы, набережная',
-      is_featured: true,
-      client_name: 'Елена и Дмитрий',
-      shoot_date: '2024-08-20',
-      created_at: '2024-08-20'
-    },
-    {
-      id: '3',
-      title: 'Стильные портреты в Artplay',
-      category: 'portrait',
-      image_url: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=800&h=600&fit=crop&auto=format',
-      description: 'Современная портретная съемка в креативном пространстве с индустриальным дизайном',
-      location: 'Дизайн-завод Artplay',
-      is_featured: true,
-      client_name: 'Мария',
-      shoot_date: '2024-10-10',
-      created_at: '2024-10-10'
-    },
-    {
-      id: '4',
-      title: 'Семейное счастье в Сокольниках',
-      category: 'family',
-      image_url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop&auto=format',
-      description: 'Теплые семейные моменты среди золотой осенней листвы в старейшем парке Москвы',
-      location: 'Парк Сокольники',
-      is_featured: true,
-      client_name: 'Семья Петровых',
-      shoot_date: '2024-10-05',
-      created_at: '2024-10-05'
-    },
-    {
-      id: '5',
-      title: 'Деловые портреты в Москва-Сити',
-      category: 'corporate',
-      image_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop&auto=format',
-      description: 'Профессиональная корпоративная съемка на фоне футуристических небоскребов',
-      location: 'ММДЦ Москва-Сити',
-      is_featured: false,
-      client_name: 'ООО "Инновации"',
-      shoot_date: '2024-11-12',
-      created_at: '2024-11-12'
-    },
-    {
-      id: '6',
-      title: 'Утренняя церемония в Коломенском',
-      category: 'wedding',
-      image_url: 'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&h=600&fit=crop&auto=format',
-      description: 'Величественная свадьба с панорамным видом на Москву и древние храмы',
-      location: 'Музей-заповедник Коломенское',
-      is_featured: true,
-      client_name: 'Ольга и Сергей',
-      shoot_date: '2024-07-28',
-      created_at: '2024-07-28'
-    },
-    {
-      id: '7',
-      title: 'Романтика на Крымском мосту',
-      category: 'lovestory',
-      image_url: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=800&h=600&fit=crop&auto=format',
-      description: 'Вечерняя съемка с захватывающими видами на центр Москвы и подсветку мостов',
-      location: 'Крымский мост, Парк Горького',
-      is_featured: true,
-      client_name: 'Виктория и Артем',
-      shoot_date: '2024-09-22',
-      created_at: '2024-09-22'
-    },
-    {
-      id: '8',
-      title: 'Материнство в Ботаническом саду',
-      category: 'maternity',
-      image_url: 'https://images.unsplash.com/photo-1516627145497-ae4058c73e28?w=800&h=600&fit=crop&auto=format',
-      description: 'Нежная съемка ожидания малыша среди экзотических растений и оранжерей',
-      location: 'Главный ботанический сад РАН',
-      is_featured: true,
-      client_name: 'Алина',
-      shoot_date: '2024-08-15',
-      created_at: '2024-08-15'
-    }
-  ];
+  const handleViewGallery = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate('/gallery');
+  };
 
   if (isLoading) {
     return (
@@ -131,7 +36,7 @@ const PortfolioSection = () => {
   }
 
   // Используем базу данных если есть, иначе моковые данные
-  const displayPortfolio = portfolio && portfolio.length > 0 ? portfolio : mockPortfolio;
+  const displayPortfolio = portfolio || [];
   
   // Показываем только 8 лучших работ на главной странице
   const featuredPortfolio = displayPortfolio
@@ -197,7 +102,7 @@ const PortfolioSection = () => {
             </p>
             <Button 
               className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg transform transition-all duration-300 hover:scale-105 hover:-translate-y-1"
-              onClick={() => navigate('/gallery')}
+              onClick={handleViewGallery}
             >
               <Sparkles className="w-5 h-5 mr-2" />
               Открыть полную галерею

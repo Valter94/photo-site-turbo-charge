@@ -11,7 +11,7 @@ const LocationsSection = () => {
   const { data: categories, isLoading: categoriesLoading } = useLocationCategories();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  // Реальные локации с красивыми фотографиями
+  // Обновленные реальные локации с красивыми фотографиями
   const mockLocations = [
     {
       id: '1',
@@ -72,6 +72,26 @@ const LocationsSection = () => {
       indoor: false,
       image_url: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600&h=400&fit=crop&auto=format',
       category: 'Городская архитектура'
+    },
+    {
+      id: '7',
+      name: 'Царицыно',
+      description: 'Музей-заповедник с дворцовым комплексом XVIII века. Роскошные интерьеры и парковые ансамбли.',
+      address: 'Дольская ул., 1, Москва',
+      best_time: '10:00-16:00 (естественное освещение)',
+      indoor: false,
+      image_url: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=600&h=400&fit=crop&auto=format',
+      category: 'Исторические места'
+    },
+    {
+      id: '8',
+      name: 'Коломенское',
+      description: 'Древняя царская резиденция с церквями и музеями. Живописные виды на Москву-реку.',
+      address: 'Андропова пр-т, 39, Москва',
+      best_time: '11:00-15:00, 17:00-19:00',
+      indoor: false,
+      image_url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400&fit=crop&auto=format',
+      category: 'Исторические места'
     }
   ];
 
@@ -86,7 +106,7 @@ const LocationsSection = () => {
   const handleBooking = () => {
     const subject = 'Бронирование фотосессии';
     const body = 'Здравствуйте, Ирина!\n\nХочу забронировать фотосессию:\n\nЖелаемая локация: [укажите локацию]\nДата и время: [укажите предпочтительные даты]\nТип съемки: [свадебная/портретная/семейная/love story]\nКоличество участников: [укажите количество]\nДополнительные пожелания: [опишите ваши идеи]\n\nМой контактный телефон: [укажите номер]\n\nС уважением,\n[Ваше имя]';
-    window.location.href = `mailto:irina.bagresheva@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:bagreshevafoto@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   // Функция для получения категории локации

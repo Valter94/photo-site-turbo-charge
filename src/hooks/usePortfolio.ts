@@ -16,94 +16,94 @@ export interface PortfolioItem {
   created_at?: string;
 }
 
-// Моковые данные для портфолио с красивыми изображениями
+// Обновленные моковые данные с разнообразными красивыми фотографиями
 const mockPortfolioData: PortfolioItem[] = [
   {
     id: '1',
-    title: 'Свадьба Анны и Михаила',
+    title: 'Романтическая свадьба в Царицыно',
     category: 'wedding',
-    image_url: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800&h=600&fit=crop&auto=format',
-    description: 'Нежная свадебная церемония в парке Сокольники',
-    location: 'Парк Сокольники',
+    image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop&auto=format',
+    description: 'Сказочная церемония в царском парке с изысканной архитектурой',
+    location: 'Музей-заповедник Царицыно',
     client_name: 'Анна и Михаил',
-    shoot_date: '2024-08-15',
+    shoot_date: '2024-09-15',
     is_featured: true
   },
   {
     id: '2',
-    title: 'Love Story Елены и Дмитрия',
+    title: 'Love Story на набережной',
     category: 'lovestory',
-    image_url: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&h=600&fit=crop&auto=format',
-    description: 'Романтическая прогулка по Патриаршим прудам',
-    location: 'Патриаршие пруды',
+    image_url: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=800&h=600&fit=crop&auto=format',
+    description: 'Нежная прогулка влюбленных с видом на город',
+    location: 'Воробьевы горы',
     client_name: 'Елена и Дмитрий',
-    shoot_date: '2024-07-20',
+    shoot_date: '2024-08-20',
     is_featured: true
   },
   {
     id: '3',
-    title: 'Семейная фотосессия Петровых',
-    category: 'family',
-    image_url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop&auto=format',
-    description: 'Счастливая семья с детьми в домашней обстановке',
-    location: 'Студия',
-    client_name: 'Семья Петровых',
-    shoot_date: '2024-09-10',
-    is_featured: false
+    title: 'Элегантный портрет',
+    category: 'portrait',
+    image_url: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=800&h=600&fit=crop&auto=format',
+    description: 'Стильная портретная съемка в креативном пространстве',
+    location: 'Дизайн-завод Artplay',
+    client_name: 'Мария',
+    shoot_date: '2024-10-10',
+    is_featured: true
   },
   {
     id: '4',
-    title: 'Портрет Марии',
-    category: 'portrait',
-    image_url: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=800&h=600&fit=crop&auto=format',
-    description: 'Элегантный женский портрет в студийных условиях',
-    location: 'Студия Loft',
-    client_name: 'Мария С.',
-    shoot_date: '2024-06-05',
+    title: 'Семейное счастье',
+    category: 'family',
+    image_url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop&auto=format',
+    description: 'Теплые семейные моменты среди осенней природы',
+    location: 'Парк Сокольники',
+    client_name: 'Семья Петровых',
+    shoot_date: '2024-10-05',
     is_featured: true
   },
   {
     id: '5',
-    title: 'Корпоративная съемка IT-компании',
+    title: 'Корпоративные портреты',
     category: 'corporate',
     image_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop&auto=format',
-    description: 'Профессиональные портреты команды',
+    description: 'Профессиональная съемка на фоне современной архитектуры',
     location: 'Москва-Сити',
-    client_name: 'TechCorp',
-    shoot_date: '2024-05-18',
+    client_name: 'ООО "Инновации"',
+    shoot_date: '2024-11-12',
     is_featured: false
   },
   {
     id: '6',
-    title: 'Свадьба на Красной площади',
+    title: 'Свадьба в историческом стиле',
     category: 'wedding',
     image_url: 'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&h=600&fit=crop&auto=format',
-    description: 'Торжественная церемония в самом сердце Москвы',
-    location: 'Красная площадь',
-    client_name: 'Ольга и Александр',
-    shoot_date: '2024-04-22',
+    description: 'Торжественная церемония с панорамным видом на Москву',
+    location: 'Коломенское',
+    client_name: 'Ольга и Сергей',
+    shoot_date: '2024-07-28',
     is_featured: true
   },
   {
     id: '7',
-    title: 'Материнство',
-    category: 'maternity',
-    image_url: 'https://images.unsplash.com/photo-1516627145497-ae4058c73e28?w=800&h=600&fit=crop&auto=format',
-    description: 'Нежная фотосессия будущей мамы',
-    location: 'Студия',
-    client_name: 'Екатерина Н.',
-    shoot_date: '2024-03-15',
-    is_featured: false
+    title: 'Вечерняя романтика',
+    category: 'lovestory',
+    image_url: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=800&h=600&fit=crop&auto=format',
+    description: 'Романтическая съемка с видом на центр города',
+    location: 'Крымский мост',
+    client_name: 'Виктория и Артем',
+    shoot_date: '2024-09-22',
+    is_featured: true
   },
   {
     id: '8',
-    title: 'Романтика на Воробьевых горах',
-    category: 'lovestory',
-    image_url: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=800&h=600&fit=crop&auto=format',
-    description: 'Love story с панорамным видом на Москву',
-    location: 'Воробьевы горы',
-    client_name: 'Виктория и Павел',
-    shoot_date: '2024-10-01',
+    title: 'Ожидание чуда',
+    category: 'maternity',
+    image_url: 'https://images.unsplash.com/photo-1516627145497-ae4058c73e28?w=800&h=600&fit=crop&auto=format',
+    description: 'Нежная съемка будущей мамы в природной обстановке',
+    location: 'Ботанический сад',
+    client_name: 'Алина',
+    shoot_date: '2024-08-15',
     is_featured: true
   },
   {
@@ -111,19 +111,19 @@ const mockPortfolioData: PortfolioItem[] = [
     title: 'Детский портрет',
     category: 'portrait',
     image_url: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800&h=600&fit=crop&auto=format',
-    description: 'Искренние эмоции маленькой модели',
-    location: 'Парк',
-    client_name: 'София М.',
+    description: 'Искренние эмоции маленькой модели в парке',
+    location: 'Сокольники',
+    client_name: 'София',
     shoot_date: '2024-09-25',
     is_featured: false
   },
   {
     id: '10',
-    title: 'Бизнес-портреты',
+    title: 'Бизнес-съемка',
     category: 'corporate',
     image_url: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=600&fit=crop&auto=format',
     description: 'Профессиональные портреты для корпоративного сайта',
-    location: 'Офис',
+    location: 'Деловой центр',
     client_name: 'Алексей К.',
     shoot_date: '2024-08-30',
     is_featured: false
@@ -133,7 +133,7 @@ const mockPortfolioData: PortfolioItem[] = [
     title: 'Свадебные детали',
     category: 'wedding',
     image_url: 'https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?w=800&h=600&fit=crop&auto=format',
-    description: 'Нежные детали свадебного дня',
+    description: 'Изысканные детали свадебного торжества',
     location: 'Загородный клуб',
     client_name: 'Анастасия и Игорь',
     shoot_date: '2024-07-12',
@@ -141,13 +141,46 @@ const mockPortfolioData: PortfolioItem[] = [
   },
   {
     id: '12',
-    title: 'Творческий портрет',
+    title: 'Художественный портрет',
     category: 'portrait',
     image_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&h=600&fit=crop&auto=format',
-    description: 'Художественный портрет с игрой света и тени',
+    description: 'Творческий портрет с игрой света и тени',
     location: 'Студия',
     client_name: 'Дарья Л.',
     shoot_date: '2024-06-20',
+    is_featured: true
+  },
+  {
+    id: '13',
+    title: 'Городская love story',
+    category: 'lovestory',
+    image_url: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&h=600&fit=crop&auto=format',
+    description: 'Стильная съемка в городской среде',
+    location: 'Патриаршие пруды',
+    client_name: 'Максим и Юлия',
+    shoot_date: '2024-06-30',
+    is_featured: true
+  },
+  {
+    id: '14',
+    title: 'Семейная идиллия',
+    category: 'family',
+    image_url: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800&h=600&fit=crop&auto=format',
+    description: 'Счастливые моменты большой семьи',
+    location: 'Парк Горького',
+    client_name: 'Семья Смирновых',
+    shoot_date: '2024-05-18',
+    is_featured: false
+  },
+  {
+    id: '15',
+    title: 'Весенняя свадьба',
+    category: 'wedding',
+    image_url: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800&h=600&fit=crop&auto=format',
+    description: 'Нежная церемония в цветущем саду',
+    location: 'Аптекарский огород',
+    client_name: 'Екатерина и Павел',
+    shoot_date: '2024-05-25',
     is_featured: true
   }
 ];
@@ -229,6 +262,39 @@ export const useDeletePortfolio = () => {
       toast({
         title: "Ошибка",
         description: "Не удалось удалить фотографию",
+        variant: "destructive"
+      });
+    }
+  });
+};
+
+export const useCreatePortfolio = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (portfolioData: Omit<PortfolioItem, 'id' | 'created_at'>) => {
+      const { data, error } = await supabase
+        .from('portfolio')
+        .insert(portfolioData)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['portfolio'] });
+      toast({
+        title: "Успешно",
+        description: "Фотография добавлена в портфолио",
+      });
+    },
+    onError: (error) => {
+      console.error('Create portfolio error:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось добавить фотографию",
         variant: "destructive"
       });
     }

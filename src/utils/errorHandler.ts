@@ -14,7 +14,26 @@ export class ErrorHandler {
 
   // Обработка ошибок изображений
   handleImageError = (event: Event, fallbackUrl?: string) => {
+    // Проверяем, что event и target существуют
+    if (!event || !event.target) {
+      console.warn('Image error event or target is null');
+      return;
+    }
+
     const img = event.target as HTMLImageElement;
+    
+    // Проверяем, что это действительно элемент изображения
+    if (!img || img.tagName !== 'IMG') {
+      console.warn('Event target is not an image element');
+      return;
+    }
+
+    // Проверяем, что dataset существует
+    if (!img.dataset) {
+      console.warn('Image element dataset is null');
+      return;
+    }
+
     if (!img.dataset.errorHandled) {
       img.dataset.errorHandled = 'true';
       

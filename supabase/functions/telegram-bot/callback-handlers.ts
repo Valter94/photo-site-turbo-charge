@@ -1,9 +1,10 @@
+
 import { createBotMonitor } from './bot-monitor.ts'
 import { createLogger } from './logger.ts'
-import { getSession, setSession, deleteSession } from './enhanced-session-manager.ts'
+// УДАЛЁН СТАРЫЙ: import { getSession, setSession, deleteSession } from './enhanced-session-manager.ts'
 
 export const createCallbackHandlers = (deps: any) => {
-  const { telegramAPI, supabase, menuHandlers, portfolioHandlers, locationsHandlers, botMonitor } = deps
+  const { telegramAPI, menuHandlers, portfolioHandlers, locationsHandlers, botMonitor } = deps
   const logger = createLogger('CallbackHandlers')
 
   return async function handleCallbackQuery({ callbackQuery, chatId, userId, messageId }: any) {
@@ -17,9 +18,9 @@ export const createCallbackHandlers = (deps: any) => {
 
       // --- Стандартные callback...
       if (data?.startsWith('add_')) {
-        deleteSession(userId)
+        deps.deleteSession(userId)
         const type = data.split('_')[1] as 'portfolio' | 'location'
-        setSession(userId, {
+        deps.setSession(userId, {
           step: 'waiting_photo',
           data: {},
           type,
@@ -43,7 +44,7 @@ export const createCallbackHandlers = (deps: any) => {
 
       // --- Категория портфолио (после названия) ---
       else if (data?.startsWith('portfolio_cat_')) {
-        const session = getSession(userId)
+        const session = deps.getSession(userId)
         if (session && session.type === 'portfolio' && session.step === 'choosing_category') {
           const categoryMap: { [key: string]: string } = {
             'wedding': 'Свадебная фотосессия',
@@ -55,7 +56,7 @@ export const createCallbackHandlers = (deps: any) => {
           const category = data.replace('portfolio_cat_', '')
           session.data.category = category
           session.step = 'waiting_description'
-          setSession(userId, session)
+          deps.setSession(userId, session)
           await telegramAPI.editMessage(
             chatId,
             messageId,
@@ -69,7 +70,7 @@ export const createCallbackHandlers = (deps: any) => {
           )
           return
         } else {
-          deleteSession(userId)
+          deps.deleteSession(userId)
           await telegramAPI.editMessage(chatId, messageId, '❌ Ошибка сессии. Начните заново:', menuHandlers.getMainMenu())
           return
         }
@@ -159,7 +160,7 @@ export const createCallbackHandlers = (deps: any) => {
       }
       // Cancel
       else if (data === 'cancel') {
-        deleteSession(userId)
+        deps.deleteSession(userId)
         await telegramAPI.editMessage(
           chatId,
           messageId,
@@ -188,3 +189,4 @@ export const createCallbackHandlers = (deps: any) => {
     }
   }
 }
+

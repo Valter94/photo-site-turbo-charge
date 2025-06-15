@@ -92,7 +92,7 @@ const Index = () => {
 
   return (
     <HelmetProvider>
-      <div className={wrapperMinHeightClass} style={{ minHeight: '100vh' }}>
+      <div className={wrapperMinHeightClass} style={{ minHeight: '100vh', display:"flex", flexDirection:"column" }}>
         <SEOHead />
         <Analytics />
         <Navigation />

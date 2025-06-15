@@ -1,33 +1,27 @@
 
-import React from 'react';
+// Карточка отзыва с поддержкой фото и кастомным отображением ошибок.
+import React from "react";
+import OptimizedImage from "./OptimizedImage";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, Quote } from 'lucide-react';
-import OptimizedImage from './OptimizedImage';
-import { serviceTypeName } from '@/lib/serviceTypes';
+import { Star, Quote } from "lucide-react";
+import { serviceTypeName } from "@/lib/serviceTypes";
 
 type Review = {
   id: string;
   name: string;
   rating: number;
   comment: string;
-  service_type: string;
-  created_at: string;
+  service_type?: string;
+  created_at?: string;
   photo_url?: string;
 };
 
-interface ReviewCardProps {
-  review: Review;
-}
-
 const renderStars = (rating: number) =>
   Array.from({ length: 5 }, (_, i) => (
-    <Star
-      key={i}
-      className={`h-4 w-4 ${i < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
-    />
+    <Star key={i} className={`h-4 w-4 ${i < rating ? "text-yellow-400 fill-current" : "text-gray-300"}`} />
   ));
 
-const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => (
+const ReviewCard: React.FC<{ review: Review }> = ({ review }) => (
   <Card className="h-full flex flex-col">
     <CardContent className="p-6 flex flex-col h-full">
       {/* Фото отзыва сверху, если есть */}
@@ -54,13 +48,10 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => (
           <p className="text-sm text-gray-500">{serviceTypeName(review.service_type)}</p>
         )}
         <p className="text-xs text-gray-400">
-          {review.created_at
-            ? new Date(review.created_at).toLocaleDateString('ru-RU')
-            : ""}
+          {review.created_at ? new Date(review.created_at).toLocaleDateString("ru-RU") : ""}
         </p>
       </div>
     </CardContent>
   </Card>
 );
-
 export default ReviewCard;

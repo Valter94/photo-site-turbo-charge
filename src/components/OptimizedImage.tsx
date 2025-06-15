@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 
 interface OptimizedImageProps {
@@ -61,14 +62,15 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     src.includes('api.telegram.org/file/bot');
 
   if (isTelegramPhoto) {
-    console.log('[OptimizedImage] Отображается Telegram-фото:', src);
+    console.log('[OptimizedImage] 🟠 Telegram-фото детектировано (не подвергается оптимизации!):', src);
   }
 
   const createOptimizedUrl = (
     url: string,
     format: 'webp' | 'avif' | 'jpeg' = 'webp'
   ) => {
-    if (isSupabaseImage || isTelegramPhoto) return url; // Telegram-фотки — не трогаем!
+    // НЕ преобразовывать ссылки Telegram/bucket!
+    if (isSupabaseImage || isTelegramPhoto) return url;
     if (url?.includes('unsplash.com')) {
       const params = new URLSearchParams();
       if (width) params.append('w', width.toString());
@@ -100,6 +102,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
             <source srcSet={webpSrc} type="image/webp" />
           </>
         )}
+        {/* Telegram/Storage/Unsplash — обычное изображение */}
         <img
           src={src}
           alt={alt}
@@ -132,3 +135,4 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
 };
 
 export default OptimizedImage;
+

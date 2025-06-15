@@ -1,3 +1,4 @@
+
 import { Suspense, lazy, useEffect, useState } from 'react';
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
@@ -97,23 +98,24 @@ const Index = () => {
 
   return (
     <HelmetProvider>
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white flex flex-col">
         <SEOHead />
         <Analytics />
         <Navigation />
-        <main>
+        <main className="flex-grow">
           <div id="hero">
             <HeroSection />
           </div>
           {/* ПЕРЕД ПОРТФОЛИО! */}
           <LiveSiteActivity recentActivity={recentActivity} />
           {/* Галерея и портфолио */}
-          <div id="gallery">
+          {/* Вместо отдельной страницы Gallery вставляем сразу сюда */}
+          <div id="portfolio_and_gallery">
+            <Suspense fallback={<SectionLoader />}>
+              <PortfolioSection />
+            </Suspense>
             <Gallery />
           </div>
-          <Suspense fallback={<SectionLoader />}>
-            <PortfolioSection />
-          </Suspense>
           {/* Блок достижений */}
           <AchievementsBadges />
           {/* После портфолио ... другие секции */}
@@ -140,7 +142,7 @@ const Index = () => {
             <FAQSection />
           </Suspense>
         </main>
-        {/* Footer только здесь! НЕ переносим выше */}
+        {/* Footer только в самом конце, после всех секций */}
         <Suspense fallback={<div className="h-32 bg-gray-100"></div>}>
           <Footer />
         </Suspense>
@@ -154,3 +156,4 @@ const Index = () => {
 };
 
 export default Index;
+

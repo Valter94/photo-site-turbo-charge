@@ -1,264 +1,215 @@
+
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Check, Camera, Heart, Users, Star, Crown, Sparkles } from 'lucide-react';
 import { usePricing } from '@/hooks/usePricing';
-import { useAdditionalServices } from '@/hooks/useAdditionalServices';
-import { Check, Star, Sparkles, Clock, Image, Award } from 'lucide-react';
 
 const PricingSection = () => {
   const { data: pricing, isLoading } = usePricing();
-  const { data: additionalServices, isLoading: isLoadingServices } = useAdditionalServices();
 
-  // Добавляем подробные логи для отладки
-  console.log("=== PRICING SECTION DEBUG ===");
-  console.log("Pricing data:", pricing);
-  console.log("Pricing loading state:", isLoading);
-  console.log("Additional services data:", additionalServices);
-  console.log("Additional services loading state:", isLoadingServices);
-  console.log("Additional services length:", additionalServices?.length);
+  const defaultPricing = [
+    {
+      id: '1',
+      service_type: 'portrait',
+      price: 8000,
+      duration_hours: 1,
+      photos_count: '30-40',
+      locations_count: '1',
+      features: [
+        'Индивидуальная портретная съемка',
+        'Профессиональная обработка',
+        'Готовые фото в течение 3 дней',
+        'Онлайн-галерея для скачивания'
+      ],
+      is_active: true
+    },
+    {
+      id: '2',
+      service_type: 'family',
+      price: 12000,
+      duration_hours: 2,
+      photos_count: '50-70',
+      locations_count: '1-2',
+      features: [
+        'Семейная фотосессия',
+        'Работа с детьми любого возраста',
+        'Естественные эмоции и улыбки',
+        'Быстрая обработка фотографий'
+      ],
+      is_active: true,
+      popular: true
+    },
+    {
+      id: '3',
+      service_type: 'lovestory',
+      price: 15000,
+      duration_hours: 2,
+      photos_count: '80-100',
+      locations_count: '2-3',
+      features: [
+        'Романтическая съемка для пары',
+        'Несколько локаций на выбор',
+        'Создание истории любви в кадрах',
+        'Индивидуальный подход к каждой паре'
+      ],
+      is_active: true
+    },
+    {
+      id: '4',
+      service_type: 'wedding',
+      price: 35000,
+      duration_hours: 8,
+      photos_count: '200+',
+      locations_count: 'без ограничений',
+      features: [
+        'Полный день свадебной съемки',
+        'Репортажная и постановочная съемка',
+        'Съемка церемонии и банкета',
+        'Экспресс-обработка лучших кадров'
+      ],
+      is_active: true,
+      premium: true
+    }
+  ];
+
+  const serviceIcons = {
+    portrait: Camera,
+    family: Users,
+    lovestory: Heart,
+    wedding: Crown
+  };
+
+  const serviceNames = {
+    portrait: 'Портретная съемка',
+    family: 'Семейная съемка',
+    lovestory: 'Love Story',
+    wedding: 'Свадебная съемка'
+  };
+
+  const displayPricing = pricing && pricing.length > 0 
+    ? pricing.filter(p => p.is_active) 
+    : defaultPricing;
 
   const scrollToBooking = () => {
-    const element = document.getElementById('booking');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+    const bookingElement = document.getElementById('booking');
+    if (bookingElement) {
+      bookingElement.scrollIntoView({ behavior: 'smooth' });
     }
-  };
-
-  const getServiceTypeName = (serviceType: string) => {
-    const serviceTypes = {
-      'wedding_preparations': 'Утренние сборы невесты',
-      'wedding_ceremony': 'Церемония и банкет',
-      'wedding_full_day': 'Полный свадебный день',
-      'lovestory': 'Love Story съемка',
-      'portrait': 'Портретная съемка',
-      'family': 'Семейная фотосессия',
-      'maternity': 'Съемка беременности',
-      'corporate': 'Корпоративная съемка'
-    };
-    return serviceTypes[serviceType] || serviceType;
-  };
-
-  const getServiceCategory = (serviceType: string) => {
-    if (serviceType.startsWith('wedding')) return 'Свадебная съемка';
-    if (['portrait', 'family'].includes(serviceType)) return 'Портретная съемка';
-    if (serviceType === 'lovestory') return 'Love Story';
-    if (serviceType === 'corporate') return 'Корпоративная съемка';
-    return 'Другие услуги';
-  };
-
-  const getFeaturesArray = (features: any): string[] => {
-    if (!features) return [];
-    if (Array.isArray(features)) return features;
-    if (typeof features === 'string') {
-      try {
-        const parsed = JSON.parse(features);
-        return Array.isArray(parsed) ? parsed : [];
-      } catch {
-        return [];
-      }
-    }
-    return [];
   };
 
   if (isLoading) {
     return (
-      <section id="pricing" className="py-20 bg-gradient-to-br from-gray-50 to-pink-50">
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="animate-pulse space-y-4">
-              <div className="h-8 bg-gradient-to-r from-pink-200 to-purple-200 rounded w-64 mx-auto"></div>
-              <div className="h-4 bg-gradient-to-r from-pink-100 to-purple-100 rounded w-96 mx-auto"></div>
-            </div>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Загрузка...</h2>
           </div>
         </div>
       </section>
     );
   }
 
-  const filteredPricing = pricing?.filter(service => 
-    service.service_type !== 'newborn' && service.service_type !== 'maternity'
-  ) || [];
-  const groupedServices = filteredPricing.reduce((acc, service) => {
-    const category = getServiceCategory(service.service_type);
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(service);
-    return acc;
-  }, {} as Record<string, typeof pricing>) || {};
-
   return (
-    <section id="pricing" className="py-20 bg-gradient-to-br from-white via-pink-50/30 to-purple-50/30 relative overflow-hidden">
-      {/* Декоративные элементы */}
-      <div className="absolute top-10 right-10 w-32 h-32 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
-      <div className="absolute bottom-20 left-10 w-40 h-40 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center mb-16 animate-fade-in">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full mb-6 animate-bounce">
-            <Award className="w-8 h-8 text-white" />
-          </div>
-          
-          <h2 className="text-5xl font-bold bg-gradient-to-r from-gray-900 via-pink-600 to-purple-600 bg-clip-text text-transparent mb-6">
-            ✨ Цены и пакеты услуг
-          </h2>
-          
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-6 leading-relaxed">
-            💎 <strong>Профессиональная фотосъемка с опытом 5+ лет</strong>
+    <section id="pricing" className="py-20 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">Стоимость услуг</h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Выберите подходящий пакет для вашей фотосессии. Все цены указаны с учетом профессиональной обработки
           </p>
-          
-          <div className="max-w-4xl mx-auto">
-            <p className="text-lg text-gray-500 mb-6">
-              Каждая съемка - это уникальная история, которую я помогу рассказать через объектив. 
-              Выберите идеальный пакет для ваших самых важных моментов жизни.
-            </p>
-            
-            <div className="flex flex-wrap justify-center gap-3 mb-8">
-              <span className="bg-gradient-to-r from-pink-100 to-rose-100 text-pink-700 px-4 py-2 rounded-full text-sm font-medium">
-                <Sparkles className="w-4 h-4 inline mr-1" />
-                Лучшие цены в Москве
-              </span>
-              <span className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 px-4 py-2 rounded-full text-sm font-medium">
-                ⚡ Быстрая обработка
-              </span>
-              <span className="bg-gradient-to-r from-rose-100 to-pink-100 text-rose-700 px-4 py-2 rounded-full text-sm font-medium">
-                🎁 Бонусы в подарок
-              </span>
-            </div>
-          </div>
         </div>
 
-        {Object.entries(groupedServices).map(([category, services]) => (
-          <div key={category} className="mb-16 animate-slide-up animation-delay-200">
-            <h3 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-              {category}
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {services.map((service) => (
-                <Card key={service.id} className="relative hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-white/80 backdrop-blur-md border border-pink-100 overflow-hidden group">
-                  {service.service_type === 'wedding_full_day' && (
-                    <div className="absolute -top-2 -right-2 z-10">
-                      <Badge className="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-3 py-1 rounded-full shadow-lg">
-                        <Star className="w-3 h-3 mr-1" />
-                        Популярный
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {displayPricing.map((plan) => {
+            const IconComponent = serviceIcons[plan.service_type as keyof typeof serviceIcons] || Camera;
+            const serviceName = serviceNames[plan.service_type as keyof typeof serviceNames] || plan.service_type;
+
+            return (
+              <Card 
+                key={plan.id} 
+                className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
+                  plan.popular ? 'ring-2 ring-pink-500 shadow-xl' : 'hover:shadow-lg'
+                } ${plan.premium ? 'bg-gradient-to-br from-purple-50 to-pink-50' : 'bg-white'}`}
+              >
+                {plan.popular && (
+                  <div className="absolute top-0 left-0 w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white text-center py-2 text-sm font-semibold">
+                    <Star className="inline w-4 h-4 mr-1" />
+                    Популярный выбор
+                  </div>
+                )}
+                
+                {plan.premium && (
+                  <div className="absolute top-0 left-0 w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center py-2 text-sm font-semibold">
+                    <Sparkles className="inline w-4 h-4 mr-1" />
+                    Премиум пакет
+                  </div>
+                )}
+
+                <CardContent className={`p-4 ${plan.popular || plan.premium ? 'pt-12' : 'pt-6'}`}>
+                  <div className="text-center mb-4">
+                    <div className={`inline-flex p-3 rounded-full mb-3 ${
+                      plan.premium ? 'bg-purple-100' : 'bg-pink-100'
+                    }`}>
+                      <IconComponent className={`w-6 h-6 ${
+                        plan.premium ? 'text-purple-600' : 'text-pink-600'
+                      }`} />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">{serviceName}</h3>
+                    <div className="mb-2">
+                      <span className="text-2xl font-bold text-gray-900">
+                        {plan.price.toLocaleString('ru-RU')} ₽
+                      </span>
+                    </div>
+                    <div className="flex justify-center gap-2 text-xs text-gray-600 mb-3">
+                      <Badge variant="outline" className="text-xs px-2 py-1">
+                        {plan.duration_hours}ч
+                      </Badge>
+                      <Badge variant="outline" className="text-xs px-2 py-1">
+                        {plan.photos_count} фото
                       </Badge>
                     </div>
-                  )}
-                  
-                  {/* Декоративный градиент */}
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-500 via-purple-500 to-rose-500"></div>
-                  
-                  <CardHeader className="text-center pb-4">
-                    <CardTitle className="text-xl font-bold text-gray-900 mb-2">
-                      {getServiceTypeName(service.service_type)}
-                    </CardTitle>
-                    <div className="space-y-2">
-                      <div className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
-                        {service.price.toLocaleString('ru-RU')} ₽
-                      </div>
-                      <div className="flex items-center justify-center gap-4 text-sm text-gray-600">
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4 text-pink-500" />
-                          {service.duration_hours} {service.duration_hours === 1 ? 'час' : service.duration_hours < 5 ? 'часа' : 'часов'}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Image className="w-4 h-4 text-pink-500" />
-                          {service.photos_count}
-                        </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent className="space-y-4">
-                    <ul className="space-y-3">
-                      {getFeaturesArray(service.features).map((feature, index) => (
-                        <li key={index} className="flex items-start space-x-3">
-                          <div className="flex-shrink-0 w-5 h-5 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full flex items-center justify-center mt-0.5">
-                            <Check className="w-3 h-3 text-white" />
-                          </div>
-                          <span className="text-sm text-gray-700 leading-relaxed">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    
-                    <Button 
-                      className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold py-3 rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl group-hover:shadow-pink-500/25"
-                      onClick={scrollToBooking}
-                    >
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Забронировать съемку
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        ))}
+                  </div>
 
-        {/* Дополнительные услуги с улучшенной отладкой */}
-        {additionalServices && additionalServices.length > 0 ? (
-          <div className="mt-16 animate-scale-in animation-delay-400">
-            <h3 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-              ✨ Дополнительные услуги
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {additionalServices.map((service) => (
-                <Card key={service.id} className="text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white/80 backdrop-blur-md border border-pink-100 group">
-                  <CardContent className="p-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full flex items-center justify-center mx-auto mb-4 transform transition-transform duration-300 group-hover:scale-110">
-                      <Sparkles className="w-6 h-6 text-white" />
-                    </div>
-                    <h4 className="font-semibold text-gray-900 mb-2">{service.name}</h4>
-                    <p className="text-sm text-gray-600 mb-3">{service.description}</p>
-                    <div className="text-lg font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
-                      {service.price ? `${service.price.toLocaleString('ru-RU')} ₽` : 'По договоренности'}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="mt-16 animate-scale-in animation-delay-400">
-            <h3 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-              ✨ Дополнительные услуги
-            </h3>
-            <div className="text-center p-8 bg-white/50 rounded-lg border-2 border-dashed border-pink-200">
-              <Sparkles className="w-16 h-16 text-pink-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg mb-2">
-                {isLoadingServices ? 'Загружаем дополнительные услуги...' : 'Дополнительные услуги скоро будут добавлены'}
-              </p>
-              <p className="text-sm text-gray-400">
-                Следите за обновлениями или свяжитесь с нами для индивидуального предложения
-              </p>
-            </div>
-          </div>
-        )}
+                  <div className="space-y-2 mb-4">
+                    {(plan.features as string[]).map((feature, index) => (
+                      <div key={index} className="flex items-start space-x-2">
+                        <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-xs text-gray-700 leading-tight">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
 
-        {/* Преимущества */}
-        <div className="mt-16 animate-fade-in animation-delay-600">
-          <Card className="bg-gradient-to-r from-pink-500 to-rose-500 text-white border-0 shadow-2xl">
-            <CardContent className="p-8">
-              <h3 className="text-3xl font-bold text-center mb-8">
-                🌟 Почему выбирают меня?
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                <div className="transform transition-transform duration-300 hover:scale-105">
-                  <div className="text-4xl font-bold mb-2">5+</div>
-                  <p className="text-pink-100">лет опыта в фотографии</p>
-                </div>
-                <div className="transform transition-transform duration-300 hover:scale-105">
-                  <div className="text-4xl font-bold mb-2">500+</div>
-                  <p className="text-pink-100">счастливых клиентов</p>
-                </div>
-                <div className="transform transition-transform duration-300 hover:scale-105">
-                  <div className="text-4xl font-bold mb-2">48ч</div>
-                  <p className="text-pink-100">быстрая обработка фото</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                  <Button
+                    onClick={scrollToBooking}
+                    className={`w-full transition-all duration-300 text-sm py-2 ${
+                      plan.popular
+                        ? 'bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white shadow-lg'
+                        : plan.premium
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg'
+                        : 'bg-white border-2 border-pink-500 text-pink-600 hover:bg-pink-50'
+                    }`}
+                  >
+                    Забронировать
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        <div className="mt-12 text-center">
+          <p className="text-gray-600 mb-4">
+            Нужен индивидуальный пакет? Свяжитесь со мной для обсуждения деталей
+          </p>
+          <Button 
+            variant="outline" 
+            onClick={scrollToBooking}
+            className="border-pink-500 text-pink-600 hover:bg-pink-50"
+          >
+            Индивидуальная консультация
+          </Button>
         </div>
       </div>
     </section>

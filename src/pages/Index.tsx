@@ -11,6 +11,7 @@ import { HelmetProvider } from 'react-helmet-async';
 const PortfolioSection = lazy(() => import("@/components/PortfolioSection"));
 const LocationsSection = lazy(() => import("@/components/LocationsSection"));
 const PricingSection = lazy(() => import("@/components/PricingSection"));
+const AdditionalServicesSection = lazy(() => import("@/components/AdditionalServicesSection"));
 const ReviewsSection = lazy(() => import("@/components/ReviewsSection"));
 const EnhancedBookingCalendar = lazy(() => import("@/components/EnhancedBookingCalendar"));
 const FAQSection = lazy(() => import("@/components/FAQSection"));
@@ -51,6 +52,10 @@ const Index = () => {
           
           <Suspense fallback={<SectionLoader />}>
             <PricingSection />
+          </Suspense>
+          
+          <Suspense fallback={<SectionLoader />}>
+            <AdditionalServicesSection />
           </Suspense>
           
           <Suspense fallback={<SectionLoader />}>

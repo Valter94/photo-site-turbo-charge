@@ -45,11 +45,11 @@ const FloatingReviews = () => {
   ];
 
   useEffect(() => {
-    // Увеличиваем задержку перед показом первого отзыва до 30 секунд
+    // Показ первого отзыва через 10 минут
     const initialTimer = setTimeout(() => {
       setHasStarted(true);
       setIsVisible(true);
-    }, 30000);
+    }, 600000); // 10 минут = 600000 мс
 
     return () => clearTimeout(initialTimer);
   }, []);
@@ -57,14 +57,14 @@ const FloatingReviews = () => {
   useEffect(() => {
     if (!hasStarted) return;
 
-    // Увеличиваем интервал между отзывами до 25 секунд
+    // Интервал между отзывами - 10 минут
     const timer = setInterval(() => {
       setIsVisible(false);
       setTimeout(() => {
         setCurrentReview((prev) => (prev + 1) % reviews.length);
         setIsVisible(true);
       }, 500);
-    }, 25000);
+    }, 600000); // 10 минут = 600000 мс
 
     return () => clearInterval(timer);
   }, [hasStarted, reviews.length]);

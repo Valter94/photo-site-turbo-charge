@@ -24,8 +24,10 @@ interface GalleryGridCardProps {
   isLiked: boolean;
   onLike: (e: React.MouseEvent) => void;
   onDownload: (e: React.MouseEvent) => void;
-  onView: (e: React.MouseEvent) => void;
+  onView: (e: React.MouseEvent | undefined) => void; // Обновим сигнатуру для совместимости
   onClick: () => void;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
 }
 
 const GalleryGridCard: React.FC<GalleryGridCardProps> = ({
@@ -36,10 +38,14 @@ const GalleryGridCard: React.FC<GalleryGridCardProps> = ({
   onDownload,
   onView,
   onClick,
+  onMouseEnter,
+  onMouseLeave,
 }) => (
   <Card
     className="overflow-hidden group cursor-pointer transition-all duration-500 transform hover:-translate-y-3 hover:shadow-2xl bg-white/90 backdrop-blur-sm border-0 shadow-lg hover:shadow-pink-200/50"
     onClick={onClick}
+    onMouseEnter={onMouseEnter}
+    onMouseLeave={onMouseLeave}
   >
     <div className="relative h-80 overflow-hidden rounded-t-lg">
       <OptimizedImage

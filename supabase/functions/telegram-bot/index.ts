@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { TelegramUpdate } from './types.ts'
@@ -322,7 +323,7 @@ serve(async (req) => {
       // Изменение фото локации
       else if (data === 'change_location_photo') {
         try {
-          const result = await locationsHandlers.getLocationPhotoChangeList()
+          const result = await locationsHandlers.getLocationChangePhotoList()
           await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
         } catch (error) {
           logger.error('Error getting location photo change list', error)
@@ -351,6 +352,40 @@ serve(async (req) => {
             ]
           }
         )
+      }
+      // Удаление локации - список
+      else if (data === 'delete_location') {
+        try {
+          const result = await locationsHandlers.getDeleteLocationList()
+          await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
+        } catch (error) {
+          logger.error('Error getting delete location list', error)
+          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения списка локаций</b>')
+        }
+      }
+      // Подтверждение удаления локации
+      else if (data?.startsWith('delete_location_')) {
+        const locationId = data.replace('delete_location_', '')
+        
+        try {
+          const result = await locationsHandlers.getLocationInfo(locationId)
+          await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
+        } catch (error) {
+          logger.error('Error getting location info', error)
+          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения информации о локации</b>')
+        }
+      }
+      // Окончательное удаление локации
+      else if (data?.startsWith('confirm_delete_location_')) {
+        const locationId = data.replace('confirm_delete_location_', '')
+        
+        try {
+          const result = await locationsHandlers.deleteLocation(locationId)
+          await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
+        } catch (error) {
+          logger.error('Error deleting location', error)
+          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка при удалении локации</b>')
+        }
       }
       // Видео-инструкции и помощь
       else if (data === 'help' || data === 'video_instructions') {

@@ -138,6 +138,7 @@ const Index = () => {
             <FAQSection />
           </Suspense>
         </main>
+        {/* Футер строго в самом низу */}
         <Suspense fallback={<div className="h-32 bg-gray-100"></div>}>
           <Footer />
         </Suspense>

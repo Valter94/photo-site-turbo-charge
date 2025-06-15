@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -7,15 +6,12 @@ import GalleryHeader from '@/components/gallery/GalleryHeader';
 import GalleryFilters from '@/components/gallery/GalleryFilters';
 import GalleryResults from '@/components/gallery/GalleryResults';
 import GalleryGridSection from '@/components/gallery/GalleryGridSection';
+import { ALL_SERVICE_TYPES } from '@/lib/serviceTypes';
 
 // Определения категорий для фильтров
 const categories = [
   { id: 'all', name: 'Все работы' },
-  { id: 'wedding', name: 'Свадьбы' },
-  { id: 'lovestory', name: 'Love Story' },
-  { id: 'portrait', name: 'Портреты' },
-  { id: 'family', name: 'Семейные' },
-  { id: 'corporate', name: 'Корпоративные' }
+  ...ALL_SERVICE_TYPES.map(t => ({ id: t.value, name: t.label })),
 ];
 
 const Gallery = () => {
@@ -106,4 +102,3 @@ const Gallery = () => {
 };
 
 export default Gallery;
-

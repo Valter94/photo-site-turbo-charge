@@ -1,14 +1,7 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { usePricing } from '@/hooks/usePricing';
 import { Button } from '@/components/ui/button';
-
-const serviceNamesRu: Record<string, string> = {
-  portrait: 'Портретная съёмка',
-  family: 'Семейная фотосессия',
-  lovestory: 'Love Story',
-  wedding: 'Свадебная фотосессия',
-  corporate: 'Корпоративная съёмка',
-};
+import { serviceTypeName } from '@/lib/serviceTypes';
 
 const defaultPricing = [
   {
@@ -71,16 +64,14 @@ const defaultPricing = [
   },
 ];
 
-const getRussianName = (type: string) => serviceNamesRu[type] || type;
-
 const PricingSection = () => {
   const { data: pricing, isLoading } = usePricing();
 
-  // Используем только русские названия и группируем по категориям
+  // Группируем по категориям — используем русские имена
   const grouped = React.useMemo(() => {
     const groups: { [cat: string]: any[] } = {};
     (pricing || defaultPricing).forEach((plan) => {
-      const category = getRussianName(plan.service_type);
+      const category = serviceTypeName(plan.service_type);
       if (!groups[category]) groups[category] = [];
       groups[category].push(plan);
     });
@@ -150,11 +141,11 @@ const PriceLineDetail = ({ plan }: { plan: any }) => {
       onBlur={() => setOpen(false)}
     >
       <div className="flex flex-col flex-1">
-        <span className="font-semibold text-gray-900">{plan.title ?? getRussianName(plan.service_type)}</span>
+        <span className="font-semibold text-gray-900">{plan.title ?? serviceTypeName(plan.service_type)}</span>
         {open && (
           <div className="absolute z-10 left-0 top-full mt-2 w-full bg-white rounded-lg shadow-xl p-4 border border-pink-100 animate-fade-in">
             <div className="text-gray-900 mb-1 font-semibold text-lg">
-              {plan.title ?? getRussianName(plan.service_type)}
+              {plan.title ?? serviceTypeName(plan.service_type)}
             </div>
             <div className="text-gray-600 text-sm mb-2">{plan.description}</div>
             <ul className="mb-2 pl-4 list-disc space-y-1">

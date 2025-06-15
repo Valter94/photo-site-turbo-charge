@@ -37,6 +37,8 @@ export const processPhoto = async (deps: any, { message, chatId, userId }: any) 
   // Запросить ссылку на файл Telegram
   const botToken = deps.botToken;
   let fileUrl: string | null = null;
+  let screenshotPreview: any = null;
+  let screenshotError: string | null = null;
 
   try {
     const fileId = largestPhoto.file_id;
@@ -46,19 +48,40 @@ export const processPhoto = async (deps: any, { message, chatId, userId }: any) 
       fileUrl = `https://api.telegram.org/file/bot${botToken}/${fileInfo.result.file_path}`;
       console.log('[processPhoto] Получен fileUrl для скрина:', fileUrl);
 
-      // Получить скриншот через сервис (например, превью ценной части фото или поста)
+      // Получить скриншот через сервис
       if (screenshotService) {
-        const screen = await screenshotService.takeScreenshot(fileUrl);
-        if (screen) {
-          // Отправить скрин обратно пользователю
-          await telegramAPI.sendPhoto(chatId, screen, "📸 Ваш превью-скриншот (предпросмотр):");
-        } else {
+        try {
+          screenshotPreview = await screenshotService.takeScreenshot(fileUrl);
+          if (screenshotPreview && typeof screenshotPreview === "string") {
+            // Отправить ссылку на скриншот
+            await telegramAPI.sendPhoto(
+              chatId,
+              screenshotPreview,
+              "📸 Ваш превью-скриншот (предпросмотр):"
+            );
+            console.log("[processPhoto] Скриншот успешно отправлен в чат:", screenshotPreview);
+          } else if (screenshotPreview instanceof Uint8Array) {
+            // Отправить буфер (альтернативно)
+            await telegramAPI.sendPhoto(
+              chatId,
+              screenshotPreview,
+              "📸 Ваш превью-скриншот (предпросмотр):"
+            );
+            console.log("[processPhoto] Скриншот (Uint8Array) отправлен.");
+          } else {
+            screenshotError = "Screenshot not available";
+          }
+        } catch (err) {
+          screenshotError = "Ошибка screenshotService: " + err?.message;
+        }
+        if (screenshotError) {
           await telegramAPI.sendMessage(chatId, "Не удалось сгенерировать скриншот, но фото принято!");
+          console.warn("[processPhoto] Ошибка генерации скриншота:", screenshotError);
         }
       }
     }
   } catch (err) {
-    console.log('[processPhoto] Не удалось получить ссылку на файл Telegram или создать скрин:', err);
+    console.log('[processPhoto] Не удалось получить fileUrl или создать скрин:', err);
     await telegramAPI.sendMessage(chatId, "Ошибка при создании скрина, фото принято!");
   }
 
@@ -66,7 +89,7 @@ export const processPhoto = async (deps: any, { message, chatId, userId }: any) 
 
   await telegramAPI.sendMessage(
     chatId,
-    `✅ <b>Фото получено!</b>\n\n<b>Шаг 2: Введите название</b>\nОтправьте название (3-100 символов):`,
+    `✅ <b>Фото получено!</b>\n\n<b>Шаг 2: Введите название</b>\nОтправьте название (3–100 символов):`,
     {
       inline_keyboard: [[{ text: '❌ Отмена', callback_data: 'cancel' }]]
     }

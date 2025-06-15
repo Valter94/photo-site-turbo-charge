@@ -38,18 +38,18 @@ const FloatingReviews = () => {
       name: "Дмитрий Козлов",
       avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&auto=format&q=80",
       rating: 5,
-      text: "Корпоративная съемка прошла идеально! Рекомендую всем! 💼",
-      service: "Корпоративная съемка",
+      text: "Портретная съемка прошла идеально! Рекомендую всем! 📸",
+      service: "Портретная съемка",
       date: "2 недели назад"
     }
   ];
 
   useEffect(() => {
-    // Задержка перед показом первого отзыва (15 секунд)
+    // Увеличиваем задержку перед показом первого отзыва до 30 секунд
     const initialTimer = setTimeout(() => {
       setHasStarted(true);
       setIsVisible(true);
-    }, 15000);
+    }, 30000);
 
     return () => clearTimeout(initialTimer);
   }, []);
@@ -57,14 +57,14 @@ const FloatingReviews = () => {
   useEffect(() => {
     if (!hasStarted) return;
 
-    // Интервал между отзывами увеличен до 12 секунд
+    // Увеличиваем интервал между отзывами до 25 секунд
     const timer = setInterval(() => {
       setIsVisible(false);
       setTimeout(() => {
         setCurrentReview((prev) => (prev + 1) % reviews.length);
         setIsVisible(true);
       }, 500);
-    }, 12000);
+    }, 25000);
 
     return () => clearInterval(timer);
   }, [hasStarted, reviews.length]);

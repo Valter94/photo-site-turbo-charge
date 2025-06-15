@@ -4,18 +4,13 @@ import { TelegramUpdate } from './types.ts'
 import { cleanOldSessions, getSession, setSession, deleteSession } from './session-manager.ts'
 import { createTelegramAPI } from './telegram-api.ts'
 import { createMenuHandlers } from './menu-handlers.ts'
-import { createPortfolioHandlers } from './portfolio-handlers.ts'
-import { createPricingHandlers } from './pricing-handlers.ts'
-import { createServicesHandlers } from './services-handlers.ts'
-import { createLocationsHandlers } from './locations-handlers.ts'
-import { createTutorialHandlers } from './tutorial-handlers.ts'
-import { createPhotoProcessingHandlers } from './photo-processing-handlers.ts'
-import { createScreenshotService } from './screenshot-service.ts'
-import { ensureStorageBucket } from './storage-setup.ts'
+import { createEnhancedPortfolioHandlers } from './enhanced-portfolio-handlers.ts'
+import { getSession, setSession, deleteSession, cleanOldSessions } from './enhanced-session-manager.ts'
 import { createLogger } from './logger.ts'
 import { createBotMonitor } from './bot-monitor.ts'
 import { createCacheManager } from './cache-manager.ts'
 import { validators } from './validators.ts'
+import { progressTracker } from './progress-tracker.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -30,8 +25,11 @@ serve(async (req) => {
   }
 
   try {
-    cleanOldSessions()
-
+    // Периодическая очистка сессий
+    cleanOldSessions();
+    
+    const { message, callback_query } = await req.json();
+    
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
@@ -53,7 +51,7 @@ serve(async (req) => {
     const telegramAPI = createTelegramAPI(botToken)
     const screenshotService = createScreenshotService()
     const menuHandlers = createMenuHandlers(supabase)
-    const portfolioHandlers = createPortfolioHandlers(supabase)
+    const portfolioHandlers = createEnhancedPortfolioHandlers(supabase)
     const pricingHandlers = createPricingHandlers(supabase)
     const servicesHandlers = createServicesHandlers(supabase)
     const locationsHandlers = createLocationsHandlers(supabase)

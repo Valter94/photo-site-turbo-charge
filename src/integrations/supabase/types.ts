@@ -433,6 +433,24 @@ export type Database = {
         }
         Relationships: []
       }
+      telegram_sessions: {
+        Row: {
+          session_data: Json
+          updated_at: string
+          user_id: number
+        }
+        Insert: {
+          session_data: Json
+          updated_at?: string
+          user_id: number
+        }
+        Update: {
+          session_data?: Json
+          updated_at?: string
+          user_id?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

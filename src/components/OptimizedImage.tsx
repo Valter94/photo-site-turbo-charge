@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 
 interface OptimizedImageProps {
@@ -90,7 +89,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         </div>
       )}
       <picture>
-        {/* Только если НЕ Telegram/Not Supabase — используем srsset (иначе <img> только) */}
+        {/* Только если НЕ Supabase/Telegram — используем source для webp/avif */}
         {!(isSupabaseImage || isTelegramPhoto) && (
           <>
             <source srcSet={avifSrc} type="image/avif" />

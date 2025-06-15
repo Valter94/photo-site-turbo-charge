@@ -105,7 +105,7 @@ const Index = () => {
           <div id="hero">
             <HeroSection />
           </div>
-          {/* Поднимаем сюда LiveSiteActivity */}
+          {/* ПЕРЕД ПОРТФОЛИО! */}
           <LiveSiteActivity recentActivity={recentActivity} />
           {/* Галерея и портфолио */}
           <div id="gallery">
@@ -114,9 +114,9 @@ const Index = () => {
           <Suspense fallback={<SectionLoader />}>
             <PortfolioSection />
           </Suspense>
-          {/* Достижения сразу после портфолио */}
+          {/* Блок достижений */}
           <AchievementsBadges />
-          {/* Больше не отображаем LiveStats */}
+          {/* После портфолио ... другие секции */}
           <Suspense fallback={<SectionLoader />}>
             <LocationsSection />
           </Suspense>

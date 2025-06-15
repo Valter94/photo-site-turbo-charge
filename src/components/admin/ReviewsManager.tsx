@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Trash2, Edit, Save, X, Plus, Star } from 'lucide-react';
 import { useReviews, useUpdateReview, useDeleteReview } from '@/hooks/useReviews';
 import { useToast } from '@/hooks/use-toast';
+import { serviceTypeName } from "@/lib/serviceTypes";
 
 const ReviewsManager = () => {
   const { data: reviews } = useReviews();
@@ -20,11 +20,11 @@ const ReviewsManager = () => {
   const { toast } = useToast();
 
   const serviceTypes = [
-    { value: 'wedding', label: 'Свадьба' },
-    { value: 'lovestory', label: 'Love Story' },
-    { value: 'portrait', label: 'Портрет' },
-    { value: 'family', label: 'Семейная съемка' },
-    { value: 'corporate', label: 'Корпоративная съемка' }
+    { value: 'wedding', label: serviceTypeName('wedding') },
+    { value: 'lovestory', label: serviceTypeName('lovestory') },
+    { value: 'portrait', label: serviceTypeName('portrait') },
+    { value: 'family', label: serviceTypeName('family') },
+    { value: 'corporate', label: serviceTypeName('corporate') }
   ];
 
   const handleEdit = (item: any) => {
@@ -216,7 +216,7 @@ const ReviewsManager = () => {
                   
                   {item.service_type && (
                     <Badge variant="outline">
-                      {serviceTypes.find(s => s.value === item.service_type)?.label}
+                      {serviceTypeName(item.service_type)}
                     </Badge>
                   )}
                   

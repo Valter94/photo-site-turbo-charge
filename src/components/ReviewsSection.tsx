@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Star, Quote, Mail } from 'lucide-react';
 import { useReviews } from '@/hooks/useReviews';
 import { useToast } from '@/hooks/use-toast';
+import { serviceTypeName } from "@/lib/serviceTypes";
 
 // Простая функция для email, имени и текста
 const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -275,8 +276,8 @@ ${formData.comment}
         {/* Отзывы */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {displayReviews.map((review) => (
-            <Card key={review.id} className="h-full">
-              <CardContent className="p-6 h-full flex flex-col">
+            <Card key={review.id} className="h-full flex flex-col">
+              <CardContent className="p-6 flex flex-col h-full">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-1">
                     {renderStars(review.rating)}
@@ -288,13 +289,15 @@ ${formData.comment}
                   "{review.comment}"
                 </p>
                 
-                <div className="border-t pt-4">
+                <div className="border-t pt-4 mt-auto">
                   <p className="font-semibold text-gray-900">{review.name}</p>
                   {review.service_type && (
-                    <p className="text-sm text-gray-500">{review.service_type}</p>
+                    <p className="text-sm text-gray-500">{serviceTypeName(review.service_type)}</p>
                   )}
                   <p className="text-xs text-gray-400">
-                    {new Date(review.created_at).toLocaleDateString('ru-RU')}
+                    {review.created_at
+                      ? new Date(review.created_at).toLocaleDateString('ru-RU')
+                      : ""}
                   </p>
                 </div>
               </CardContent>

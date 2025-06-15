@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Plus } from 'lucide-react';
@@ -14,9 +13,7 @@ const PricingManager = () => {
   const { addNewPricing, addNewService } = usePricingActions();
 
   const serviceTypes = [
-    { value: 'wedding_preparations', label: 'Утренние сборы' },
-    { value: 'wedding_ceremony', label: 'Церемония и банкет' },
-    { value: 'wedding_full_day', label: 'Полный свадебный день' },
+    { value: 'wedding', label: 'Свадебная съемка' },
     { value: 'lovestory', label: 'Love Story' },
     { value: 'portrait', label: 'Портретная съемка' },
     { value: 'family', label: 'Семейная фотосессия' },

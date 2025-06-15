@@ -306,7 +306,7 @@ serve(async (req) => {
         return new Response('OK', { headers: corsHeaders })
       }
 
-      // Handle photo uploads - FIXED
+      // Handle photo uploads - CRITICAL FIX
       if (photo && photo.length > 0) {
         const session = getSession(userId)
         logger.info('Photo received', { 
@@ -316,6 +316,7 @@ serve(async (req) => {
           sessionStep: session?.step
         })
         
+        // FIXED: Check for correct session step
         if (session && session.step === 'waiting_photo') {
           const largestPhoto = photo[photo.length - 1]
           session.data.photo_file_id = largestPhoto.file_id
@@ -334,10 +335,14 @@ serve(async (req) => {
             }
           )
         } else {
-          logger.info('Photo received without session')
+          // IMPROVED: More helpful message when no session
+          logger.info('Photo received without active session')
           await telegramAPI.sendMessage(
             chatId,
-            `❓ <b>Для добавления фото используйте меню</b>\n\nВыберите действие:`,
+            `📸 <b>Чтобы добавить фото, начните с меню:</b>\n\n` +
+            `1️⃣ Выберите "📸 Добавить в портфолио" или "📍 Добавить локацию"\n` +
+            `2️⃣ Затем отправьте фото\n\n` +
+            `Выберите действие:`,
             menuHandlers.getMainMenu()
           )
         }

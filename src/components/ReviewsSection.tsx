@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,11 @@ import { Star, Quote, Mail } from 'lucide-react';
 import { useReviews } from '@/hooks/useReviews';
 import { useToast } from '@/hooks/use-toast';
 
+// Простая функция для email, имени и текста
+const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const validateName = (name: string) => name.length >= 2 && name.length <= 40;
+const validateComment = (comment: string) => comment.length >= 10 && comment.length <= 600;
+
 const ReviewsSection = () => {
   const { data: reviews, isLoading } = useReviews();
   const { toast } = useToast();
@@ -18,8 +22,9 @@ const ReviewsSection = () => {
     email: '',
     rating: '',
     comment: '',
-    service_type: ''
+    service_type: '',
   });
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   // Моковые отзывы с РАЗНЫМИ датами
   const mockReviews = [
@@ -73,13 +78,24 @@ const ReviewsSection = () => {
     }
   ];
 
+  // Валидация перед отправкой
+  const validateForm = () => {
+    const errs: { [key: string]: string } = {};
+    if (!validateName(formData.name)) errs.name = "Имя должно быть от 2 до 40 символов";
+    if (!validateEmail(formData.email)) errs.email = "Введите корректный email";
+    if (!formData.rating) errs.rating = "Пожалуйста, выберите оценку";
+    if (!formData.comment || !validateComment(formData.comment)) errs.comment = "Комментарий должен быть от 10 до 600 символов";
+    return errs;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.name || !formData.email || !formData.rating || !formData.comment) {
+    const errs = validateForm();
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) {
       toast({
-        title: "Ошибка",
-        description: "Пожалуйста, заполните все обязательные поля",
+        title: "Проверьте форму",
+        description: Object.values(errs).join(". "),
         variant: "destructive"
       });
       return;
@@ -111,6 +127,7 @@ ${formData.comment}
       service_type: ''
     });
     setShowForm(false);
+    setErrors({});
 
     toast({
       title: "Спасибо!",
@@ -145,7 +162,7 @@ ${formData.comment}
   const displayReviews = reviews && reviews.length > 0 ? reviews.filter(r => r.is_approved) : mockReviews;
 
   return (
-    <section id="reviews" className="py-20 bg-gray-50">
+    <section id="reviews" className="py-20 bg-gray-50 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">Отзывы клиентов</h2>
@@ -174,6 +191,7 @@ ${formData.comment}
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
+                    aria-invalid={!!errors.name}
                   />
                   <Input
                     type="email"
@@ -181,15 +199,19 @@ ${formData.comment}
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
+                    aria-invalid={!!errors.email}
                   />
                 </div>
+                {(errors.name || errors.email) && (
+                  <div className="text-xs text-red-500">{errors.name || errors.email}</div>
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Select
                     value={formData.rating}
                     onValueChange={(value) => setFormData({ ...formData, rating: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger aria-invalid={!!errors.rating}>
                       <SelectValue placeholder="Оценка" />
                     </SelectTrigger>
                     <SelectContent>
@@ -217,6 +239,9 @@ ${formData.comment}
                     </SelectContent>
                   </Select>
                 </div>
+                {errors.rating && (
+                  <div className="text-xs text-red-500">{errors.rating}</div>
+                )}
 
                 <Textarea
                   placeholder="Расскажите о своих впечатлениях..."
@@ -224,7 +249,11 @@ ${formData.comment}
                   onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
                   rows={4}
                   required
+                  aria-invalid={!!errors.comment}
                 />
+                {errors.comment && (
+                  <div className="text-xs text-red-500">{errors.comment}</div>
+                )}
 
                 <div className="flex gap-4">
                   <Button type="submit" className="bg-pink-600 hover:bg-pink-700">
@@ -281,6 +310,16 @@ ${formData.comment}
           </div>
         )}
       </div>
+
+      {/* Floating CTA button for mobile */}
+      <Button
+        onClick={() => setShowForm(true)}
+        className="fixed bottom-6 right-6 z-50 bg-pink-600 hover:bg-pink-700 text-white block md:hidden rounded-full shadow-lg px-4 py-3"
+        style={{ minWidth: 56, minHeight: 56 }}
+        aria-label="Оставить отзыв"
+      >
+        <Mail className="w-5 h-5" />
+      </Button>
     </section>
   );
 };

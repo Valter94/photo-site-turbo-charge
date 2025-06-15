@@ -1,3 +1,4 @@
+
 import { Suspense, lazy, useEffect, useState } from 'react';
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
@@ -6,7 +7,6 @@ import Analytics from "@/components/Analytics";
 import ScrollToTop from "@/components/ScrollToTop";
 import { HelmetProvider } from 'react-helmet-async';
 
-// Ленивая загрузка компонентов
 const PortfolioSection = lazy(() => import("@/components/PortfolioSection"));
 const LocationsSection = lazy(() => import("@/components/LocationsSection"));
 const PricingSection = lazy(() => import("@/components/PricingSection"));
@@ -17,16 +17,15 @@ const FAQSection = lazy(() => import("@/components/FAQSection"));
 const Footer = lazy(() => import("@/components/Footer"));
 const FloatingReviews = lazy(() => import("@/components/FloatingReviews"));
 import Gallery from "./Gallery";
-
-// Импорт новых компонентов LiveSiteActivity и AchievementsBadges
-import LiveStats from "@/components/LiveStats";
 import LiveSiteActivity from "@/components/LiveSiteActivity";
 import AchievementsBadges from "@/components/AchievementsBadges";
 
-// Добавим логику получения recentActivity прямо здесь, чтобы передать в LiveSiteActivity
 import { usePricing } from '@/hooks/usePricing';
 import { usePortfolio } from '@/hooks/usePortfolio';
 import { useReviews } from '@/hooks/useReviews';
+
+// Footer внизу даже если мало секций
+const wrapperMinHeightClass = "min-h-screen flex flex-col bg-white";
 
 const SectionLoader = () => (
   <div className="w-full h-64 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-pulse rounded-lg">
@@ -35,7 +34,6 @@ const SectionLoader = () => (
 );
 
 const Index = () => {
-  // Live activity logic (переносим из LiveStats)
   const { data: pricing } = usePricing();
   const { data: portfolio } = usePortfolio();
   const { data: reviews } = useReviews();
@@ -43,7 +41,6 @@ const Index = () => {
 
   useEffect(() => {
     if (!pricing || pricing.length === 0) return;
-
     const serviceNames = pricing.map(service => {
       const serviceTypes = {
         'wedding_preparations': 'утренние сборы',
@@ -56,9 +53,7 @@ const Index = () => {
       };
       return serviceTypes[service.service_type] || 'фотосессию';
     });
-
     const names = ['Анна', 'Михаил', 'Елена', 'Дмитрий', 'Ольга', 'Александр', 'Мария', 'Владимир', 'Наталья', 'Сергей'];
-    
     const generateActivities = () => {
       const activities = [];
       if (portfolio && portfolio.length > 0) {
@@ -97,14 +92,12 @@ const Index = () => {
 
   return (
     <HelmetProvider>
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className={wrapperMinHeightClass} style={{ minHeight: '100vh' }}>
         <SEOHead />
         <Analytics />
         <Navigation />
         <main className="flex-grow">
-          <div id="hero">
-            <HeroSection />
-          </div>
+          <div id="hero"><HeroSection /></div>
           <LiveSiteActivity recentActivity={recentActivity} />
           <div id="portfolio_and_gallery">
             <Suspense fallback={<SectionLoader />}>

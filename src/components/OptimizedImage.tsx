@@ -38,12 +38,17 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const handleImageError = useCallback(
     (event: React.SyntheticEvent<HTMLImageElement>) => {
       setImageError(true);
-      if (fallbackUrl) {
+      // переключить на fallbackUrl если есть
+      if (fallbackUrl && (event.target as HTMLImageElement).src !== fallbackUrl) {
         (event.target as HTMLImageElement).src = fallbackUrl;
+        console.warn('[OptimizedImage] Сработал fallbackUrl:', fallbackUrl);
+      } else {
+        (event.target as HTMLImageElement).src = "/placeholder.svg";
+        console.warn('[OptimizedImage] fallback не помог — ставим placeholder');
       }
-      // Подробно логируем ошибку для Telegram фото
+      // Подробнее логируем ошибку
       if (src && (src.includes('api.telegram.org/file/bot') || src.includes('supabase.co'))) {
-        console.error('[OptimizedImage] ❌ Элемент с src не загрузился:', src);
+        console.error('[OptimizedImage] ❌ Не отображается фото (Telegram/Supabase):', src);
       }
     },
     [fallbackUrl, src]
@@ -66,13 +71,14 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     src.includes('api.telegram.org/file/bot');
 
   if (isTelegramPhoto) {
-    console.log('[OptimizedImage] 🟠 Telegram-фото:', src);
+    console.log('[OptimizedImage] Telegram-фото, src:', src);
   }
 
   const createOptimizedUrl = (
     url: string,
     format: 'webp' | 'avif' | 'jpeg' = 'webp'
   ) => {
+    // Не трансформировать Telegram/Supabase ссылки!
     if (isSupabaseImage || isTelegramPhoto) return url;
     if (url?.includes('unsplash.com')) {
       const params = new URLSearchParams();
@@ -98,13 +104,13 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         </div>
       )}
       <picture>
+        {/* Только если НЕ Supabase/Telegram — используем modern src */}
         {!(isSupabaseImage || isTelegramPhoto) && (
           <>
             <source srcSet={avifSrc} type="image/avif" />
             <source srcSet={webpSrc} type="image/webp" />
           </>
         )}
-        {/* Telegram/Storage/Unsplash — обычное изображение */}
         <img
           src={src}
           alt={alt}
@@ -128,13 +134,24 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
           <div className="text-gray-400 text-center">
             <div className="text-2xl mb-2">📷</div>
-            <div className="text-sm">Изображение недоступно</div>
-            {/* Подсказка для Telegram фото */}
-            {isTelegramPhoto && (
-              <div className="text-xs mt-2 text-red-400">
-                Telegram ссылки часто недоступны, загрузите фото на сайт напрямую.
-              </div>
-            )}
+            <div className="text-sm">
+              Изображение недоступно<br/>
+              {isTelegramPhoto && (
+                <span className="block text-xs mt-2 text-red-400">
+                  Telegram-фото не доступны навсегда.<br/>Загрузите фото напрямую или используйте Supabase-хранилище для долговременного доступа.
+                </span>
+              )}
+              {!isTelegramPhoto && isSupabaseImage && (
+                <span className="block text-xs mt-2 text-amber-600">
+                  Проверьте права на файл Supabase Storage.<br/>Файл может быть удалён или приватен.
+                </span>
+              )}
+              {!isTelegramPhoto && !isSupabaseImage && (
+                <span className="block text-xs mt-2">
+                  Ошибка при загрузке изображения.
+                </span>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -143,3 +160,4 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
 };
 
 export default OptimizedImage;
+

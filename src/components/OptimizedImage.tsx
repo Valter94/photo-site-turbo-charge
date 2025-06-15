@@ -57,13 +57,15 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   }
 
   const isSupabaseImage = src.includes('supabase.co') || src.includes('ojrekbttkriwwyaupbox');
-  const isTelegramPhoto = src.startsWith('https://api.telegram.org/file/bot');
+  const isTelegramPhoto =
+    src.startsWith('https://api.telegram.org/file/bot') ||
+    src.includes('api.telegram.org/file/bot');
 
   const createOptimizedUrl = (
     url: string,
     format: 'webp' | 'avif' | 'jpeg' = 'webp'
   ) => {
-    if (isSupabaseImage || isTelegramPhoto) return url;
+    if (isSupabaseImage || isTelegramPhoto) return url; // Telegram-фотки — не трогаем!
     if (url?.includes('unsplash.com')) {
       const params = new URLSearchParams();
       if (width) params.append('w', width.toString());
@@ -88,6 +90,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         </div>
       )}
       <picture>
+        {/* Только если НЕ Telegram/Not Supabase — используем srsset (иначе <img> только) */}
         {!(isSupabaseImage || isTelegramPhoto) && (
           <>
             <source srcSet={avifSrc} type="image/avif" />

@@ -1,4 +1,3 @@
-
 import { Suspense, lazy, useEffect, useState } from 'react';
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
@@ -106,19 +105,18 @@ const Index = () => {
           <div id="hero">
             <HeroSection />
           </div>
-          {/* Галерея */}
+          {/* Поднимаем сюда LiveSiteActivity */}
+          <LiveSiteActivity recentActivity={recentActivity} />
+          {/* Галерея и портфолио */}
           <div id="gallery">
             <Gallery />
           </div>
-          {/* Портфолио — далее сразу "живые" секции */}
           <Suspense fallback={<SectionLoader />}>
             <PortfolioSection />
           </Suspense>
-          <LiveSiteActivity recentActivity={recentActivity} />
+          {/* Достижения сразу после портфолио */}
           <AchievementsBadges />
-          <Suspense fallback={<SectionLoader />}>
-            <LiveStats />
-          </Suspense>
+          {/* Больше не отображаем LiveStats */}
           <Suspense fallback={<SectionLoader />}>
             <LocationsSection />
           </Suspense>

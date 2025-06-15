@@ -1,13 +1,12 @@
-
 import React, { useMemo } from 'react';
 import { usePricing } from '@/hooks/usePricing';
 import { Button } from '@/components/ui/button';
 
 const serviceNamesRu: Record<string, string> = {
   portrait: 'Портретная съёмка',
-  family: 'Семейная съёмка',
+  family: 'Семейная фотосессия',
   lovestory: 'Love Story',
-  wedding: 'Свадебная съёмка',
+  wedding: 'Свадебная фотосессия',
   corporate: 'Корпоративная съёмка',
 };
 
@@ -77,21 +76,16 @@ const getRussianName = (type: string) => serviceNamesRu[type] || type;
 const PricingSection = () => {
   const { data: pricing, isLoading } = usePricing();
 
-  const displayPricing = useMemo(
-    () =>
-      (pricing && pricing.length > 0 ? pricing : defaultPricing).filter((p) => p.is_active),
-    [pricing]
-  );
-
-  // Группируем по категориям
-  const grouped = useMemo(() => {
+  // Используем только русские названия и группируем по категориям
+  const grouped = React.useMemo(() => {
     const groups: { [cat: string]: any[] } = {};
-    displayPricing.forEach((plan) => {
-      if (!groups[plan.service_type]) groups[plan.service_type] = [];
-      groups[plan.service_type].push(plan);
+    (pricing || defaultPricing).forEach((plan) => {
+      const category = getRussianName(plan.service_type);
+      if (!groups[category]) groups[category] = [];
+      groups[category].push(plan);
     });
     return groups;
-  }, [displayPricing]);
+  }, [pricing]);
 
   if (isLoading) {
     return (
@@ -111,16 +105,16 @@ const PricingSection = () => {
         <div className="text-center mb-8">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">Цены на фотосессии</h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Выберите подходящий формат. Раскрывайте детали — они появятся по клику или наведению!
+            Все цены поделены по категориям. Детали по клику или наведению!
           </p>
         </div>
         <div className="divide-y">
           {Object.keys(grouped).map((cat) => (
             <div key={cat} className="py-8">
-              <div className="text-xl font-bold text-pink-600 mb-2">{getRussianName(cat)}</div>
+              <div className="text-xl font-bold text-pink-600 mb-2">{cat}</div>
               <ul>
-                {grouped[cat].map((plan) => (
-                  <PriceLineDetail key={plan.id} plan={plan} />
+                {grouped[cat].map((plan, idx) => (
+                  <PriceLineDetail key={plan.id || idx} plan={plan} />
                 ))}
               </ul>
             </div>
@@ -156,11 +150,11 @@ const PriceLineDetail = ({ plan }: { plan: any }) => {
       onBlur={() => setOpen(false)}
     >
       <div className="flex flex-col flex-1">
-        <span className="font-semibold text-gray-900">{plan.title ?? plan.service_type}</span>
+        <span className="font-semibold text-gray-900">{plan.title ?? getRussianName(plan.service_type)}</span>
         {open && (
           <div className="absolute z-10 left-0 top-full mt-2 w-full bg-white rounded-lg shadow-xl p-4 border border-pink-100 animate-fade-in">
             <div className="text-gray-900 mb-1 font-semibold text-lg">
-              {plan.title ?? plan.service_type}
+              {plan.title ?? getRussianName(plan.service_type)}
             </div>
             <div className="text-gray-600 text-sm mb-2">{plan.description}</div>
             <ul className="mb-2 pl-4 list-disc space-y-1">

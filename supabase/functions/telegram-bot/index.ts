@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { TelegramUpdate } from './types.ts'
@@ -6,6 +5,10 @@ import { cleanOldSessions, getSession, setSession, deleteSession } from './sessi
 import { createTelegramAPI } from './telegram-api.ts'
 import { createMenuHandlers } from './menu-handlers.ts'
 import { createPortfolioHandlers } from './portfolio-handlers.ts'
+import { createPricingHandlers } from './pricing-handlers.ts'
+import { createServicesHandlers } from './services-handlers.ts'
+import { createLocationsHandlers } from './locations-handlers.ts'
+import { createTutorialHandlers } from './tutorial-handlers.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,14 +27,6 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
 
-    console.log('🔍 Environment check:', {
-      hasSupabaseUrl: !!supabaseUrl,
-      hasServiceKey: !!supabaseServiceKey,
-      hasBotToken: !!botToken,
-      supabaseUrl: supabaseUrl,
-      botTokenStart: botToken ? botToken.substring(0, 10) + '...' : 'none'
-    })
-
     if (!supabaseUrl || !supabaseServiceKey || !botToken) {
       console.error('❌ Missing environment variables')
       return new Response('Configuration error', { 
@@ -44,6 +39,10 @@ serve(async (req) => {
     const telegramAPI = createTelegramAPI(botToken)
     const menuHandlers = createMenuHandlers(supabase)
     const portfolioHandlers = createPortfolioHandlers(supabase)
+    const pricingHandlers = createPricingHandlers(supabase)
+    const servicesHandlers = createServicesHandlers(supabase)
+    const locationsHandlers = createLocationsHandlers(supabase)
+    const tutorialHandlers = createTutorialHandlers(supabase, telegramAPI)
 
     let update: TelegramUpdate
     try {
@@ -70,11 +69,10 @@ serve(async (req) => {
       userId = callbackQuery.from.id
       messageId = callbackQuery.message.message_id
     } else {
-      console.log('⚠️ Получено обновление без message или callback_query')
       return new Response('OK', { headers: corsHeaders })
     }
 
-    // Обработка callback'ов от кнопок
+    // Обработка callback'ов
     if (callbackQuery) {
       await telegramAPI.answerCallback(callbackQuery.id)
       const data = callbackQuery.data
@@ -82,6 +80,9 @@ serve(async (req) => {
 
       // Основные действия добавления
       if (data?.startsWith('add_')) {
+        // Удаляем предыдущую сессию перед созданием новой
+        deleteSession(userId)
+        
         const type = data.split('_')[1] as 'portfolio' | 'location'
         setSession(userId, {
           step: 'waiting_photo',
@@ -90,15 +91,54 @@ serve(async (req) => {
           created_at: Date.now()
         })
         
-        console.log(`📝 Создана сессия для пользователя ${userId}:`, type)
+        console.log(`📝 Создана НОВАЯ сессия для пользователя ${userId}:`, type)
         
         await telegramAPI.editMessage(
           chatId,
           messageId!,
           `📸 <b>Шаг 1: Отправьте фото</b>\n\n` +
           `${type === 'portfolio' ? '🎨 Добавляем в портфолио' : '📍 Добавляем локацию'}\n\n` +
-          `Просто отправьте фото, которое хотите добавить.`
+          `Просто отправьте фото, которое хотите добавить.`,
+          {
+            inline_keyboard: [
+              [{ text: '❌ Отмена', callback_data: 'cancel' }]
+            ]
+          }
         )
+      }
+      // Управление ценами
+      else if (data === 'manage_pricing') {
+        try {
+          const result = await pricingHandlers.getPricingList()
+          await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
+        } catch (error) {
+          console.error('❌ Ошибка получения цен:', error)
+          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения списка цен</b>')
+        }
+      }
+      // Управление услугами
+      else if (data === 'manage_services') {
+        try {
+          const result = await servicesHandlers.getServicesList()
+          await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
+        } catch (error) {
+          console.error('❌ Ошибка получения услуг:', error)
+          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения списка услуг</b>')
+        }
+      }
+      // Управление локациями
+      else if (data === 'manage_locations') {
+        try {
+          const result = await locationsHandlers.getLocationsList()
+          await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
+        } catch (error) {
+          console.error('❌ Ошибка получения локаций:', error)
+          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения списка локаций</b>')
+        }
+      }
+      // Видео-инструкции
+      else if (data === 'help') {
+        await tutorialHandlers.sendTutorialVideo(chatId)
       }
       // Управление портфолио
       else if (data === 'manage_portfolio') {
@@ -167,12 +207,25 @@ serve(async (req) => {
       else if (data === 'cancel') {
         deleteSession(userId)
         console.log(`❌ Отменена сессия пользователя ${userId}`)
-        await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Операция отменена</b>')
+        await telegramAPI.editMessage(
+          chatId, 
+          messageId!, 
+          '❌ <b>Операция отменена</b>\n\nВыберите действие:', 
+          menuHandlers.getMainMenu()
+        )
       }
       // Выбор категории портфолио
       else if (data?.startsWith('cat_')) {
         const session = getSession(userId)
         if (session && session.step === 'choosing_category') {
+          const categoryMap: { [key: string]: string } = {
+            'wedding': 'Свадьба',
+            'lovestory': 'Love Story',
+            'portrait': 'Портрет',
+            'family': 'Семья',
+            'corporate': 'Корпоратив'
+          }
+          
           const category = data.replace('cat_', '')
           session.data.category = category
           session.step = 'waiting_description'
@@ -184,9 +237,14 @@ serve(async (req) => {
             chatId,
             messageId!,
             `📝 <b>Шаг 3: Описание</b>\n\n` +
-            `✅ Категория: <b>${category}</b>\n` +
+            `✅ Категория: <b>${categoryMap[category] || category}</b>\n` +
             `🖼 Название: <b>${session.data.title}</b>\n\n` +
-            `Теперь отправьте описание для фото:`
+            `Теперь отправьте описание для фото:`,
+            {
+              inline_keyboard: [
+                [{ text: '❌ Отмена', callback_data: 'cancel' }]
+              ]
+            }
           )
         }
       }
@@ -209,8 +267,8 @@ serve(async (req) => {
         try {
           await telegramAPI.sendMessage(
             chatId,
-            `🤖 <b>Добро пожаловать в расширенную панель управления!</b>\n\n` +
-            `Теперь вы можете управлять всем сайтом через бота:`,
+            `🤖 <b>Добро пожаловать в панель управления сайтом!</b>\n\n` +
+            `Управляйте всем контентом через удобный интерфейс:`,
             menuHandlers.getMainMenu()
           )
         } catch (error) {
@@ -247,19 +305,20 @@ serve(async (req) => {
             chatId,
             `✅ <b>Фото получено!</b>\n\n` +
             `📝 <b>Шаг 2: Название</b>\n\n` +
-            `Отправьте название для этого ${session.type === 'portfolio' ? 'фото' : 'места'}:`
+            `Отправьте название для этого ${session.type === 'portfolio' ? 'фото' : 'места'}:`,
+            {
+              inline_keyboard: [
+                [{ text: '❌ Отмена', callback_data: 'cancel' }]
+              ]
+            }
           )
         } else {
           console.log(`❓ Фото получено без активной сессии от пользователя ${userId}`)
           await telegramAPI.sendMessage(
             chatId,
-            `❓ <b>Чтобы добавить фото, начните с команды /start</b>\n\n` +
-            `Выберите "📸 Добавить в портфолио" или "📍 Добавить локацию", а затем отправьте фото.`,
-            {
-              inline_keyboard: [
-                [{ text: '🚀 Открыть меню', callback_data: 'start' }]
-              ]
-            }
+            `❓ <b>Чтобы добавить фото, используйте меню</b>\n\n` +
+            `Выберите "📸 Добавить в портфолио" или "📍 Добавить локацию":`,
+            menuHandlers.getMainMenu()
           )
         }
         return new Response('OK', { headers: corsHeaders })
@@ -272,13 +331,9 @@ serve(async (req) => {
       if (!session && !text.startsWith('/')) {
         await telegramAPI.sendMessage(
           chatId,
-          `👋 <b>Добро пожаловать в панель управления сайтом!</b>\n\n` +
-          `Для начала работы нажмите /start или выберите действие:`,
-          {
-            inline_keyboard: [
-              [{ text: '🚀 Начать', callback_data: 'start' }]
-            ]
-          }
+          `👋 <b>Добро пожаловать!</b>\n\n` +
+          `Выберите действие для управления сайтом:`,
+          menuHandlers.getMainMenu()
         )
         return new Response('OK', { headers: corsHeaders })
       }
@@ -311,7 +366,12 @@ serve(async (req) => {
             chatId,
             `📝 <b>Шаг 3: Описание локации</b>\n\n` +
             `📍 Название: <b>${text}</b>\n\n` +
-            `Отправьте описание места (адрес, особенности, лучшее время для съемки):`
+            `Отправьте описание места (адрес, особенности, лучшее время для съемки):`,
+            {
+              inline_keyboard: [
+                [{ text: '❌ Отмена', callback_data: 'cancel' }]
+              ]
+            }
           )
         }
       }
@@ -372,15 +432,24 @@ serve(async (req) => {
               throw insertError
             }
 
+            const categoryNames: { [key: string]: string } = {
+              'wedding': 'Свадьба',
+              'lovestory': 'Love Story',
+              'portrait': 'Портрет',
+              'family': 'Семья',
+              'corporate': 'Корпоратив'
+            }
+
             console.log(`✅ Добавлено в портфолио от пользователя ${userId}`)
 
             await telegramAPI.sendMessage(
               chatId,
               `✅ <b>Фото успешно добавлено в портфолио!</b>\n\n` +
               `📷 Название: ${session.data.title}\n` +
-              `🏷 Категория: ${session.data.category}\n` +
+              `🏷 Категория: ${categoryNames[session.data.category] || session.data.category}\n` +
               `📝 Описание: ${session.data.description}\n\n` +
-              `🌐 Фото появится на сайте через несколько минут.`
+              `🌐 Фото появится на сайте через несколько минут.`,
+              menuHandlers.getMainMenu()
             )
           } else {
             // Добавляем локацию
@@ -404,7 +473,8 @@ serve(async (req) => {
               `✅ <b>Локация успешно добавлена!</b>\n\n` +
               `📍 Название: ${session.data.title}\n` +
               `📝 Описание: ${session.data.description}\n\n` +
-              `🌐 Локация появится на сайте через несколько минут.`
+              `🌐 Локация появится на сайте через несколько минут.`,
+              menuHandlers.getMainMenu()
             )
           }
           
@@ -413,7 +483,11 @@ serve(async (req) => {
           
         } catch (error) {
           console.error('❌ Ошибка обработки:', error)
-          await telegramAPI.sendMessage(chatId, `❌ Ошибка при сохранении: ${error.message}`)
+          await telegramAPI.sendMessage(
+            chatId, 
+            `❌ Ошибка при сохранении: ${error.message}`,
+            menuHandlers.getMainMenu()
+          )
           deleteSession(userId)
         }
       }

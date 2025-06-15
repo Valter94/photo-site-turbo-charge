@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,7 +24,7 @@ const BookingForm = () => {
   const { data: locations } = useLocations();
   const { data: pricing } = usePricing();
 
-  // Перевод типов съемки на русский
+  // Перевод типов съемки на русский (убрали newborn и corporate)
   const serviceTypeTranslations: { [key: string]: string } = {
     'wedding_preparations': 'Утренние сборы',
     'wedding_ceremony': 'Церемония и банкет',
@@ -34,8 +33,6 @@ const BookingForm = () => {
     'portrait': 'Портретная съемка',
     'family': 'Семейная фотосессия',
     'maternity': 'Съемка беременности',
-    'newborn': 'Съемка новорожденного',
-    'corporate': 'Корпоративная съемка',
     'event': 'Съемка мероприятий'
   };
 
@@ -168,7 +165,10 @@ const BookingForm = () => {
                     <SelectValue placeholder="Выберите тип съемки" />
                   </SelectTrigger>
                   <SelectContent>
-                    {pricing?.map((service) => (
+                    {pricing?.filter(service => 
+                      service.service_type !== 'newborn' && 
+                      service.service_type !== 'corporate'
+                    ).map((service) => (
                       <SelectItem key={service.id} value={service.service_type}>
                         {serviceTypeTranslations[service.service_type] || service.service_type}
                       </SelectItem>

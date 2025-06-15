@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,7 +32,7 @@ const EnhancedBookingCalendar = () => {
   const { data: locations } = useLocations();
   const { data: pricing } = usePricing();
 
-  // Перевод типов съемки на русский
+  // Перевод типов съемки на русский (убрали newborn и corporate)
   const serviceTypeTranslations: { [key: string]: string } = {
     'wedding_preparations': 'Утренние сборы',
     'wedding_ceremony': 'Церемония и банкет', 
@@ -42,8 +41,6 @@ const EnhancedBookingCalendar = () => {
     'portrait': 'Портретная съемка',
     'family': 'Семейная фотосессия',
     'maternity': 'Съемка беременности',
-    'newborn': 'Съемка новорожденного',
-    'corporate': 'Корпоративная съемка',
     'event': 'Съемка мероприятий'
   };
 
@@ -243,7 +240,10 @@ const EnhancedBookingCalendar = () => {
                           <SelectValue placeholder="Выберите тип фотосессии" />
                         </SelectTrigger>
                         <SelectContent>
-                          {pricing?.map((service) => (
+                          {pricing?.filter(service => 
+                            service.service_type !== 'newborn' && 
+                            service.service_type !== 'corporate'
+                          ).map((service) => (
                             <SelectItem key={service.id} value={service.service_type}>
                               <div className="flex justify-between items-center w-full">
                                 <span>{serviceTypeTranslations[service.service_type] || service.service_type}</span>

@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { TelegramUpdate } from './types.ts'
@@ -124,7 +123,7 @@ serve(async (req) => {
           }
         )
       }
-      // Выбор категории портфолио
+      // Выбор категории портфолио (убрали newborn и corporate)
       else if (data?.startsWith('portfolio_cat_')) {
         const session = getSession(userId)
         logger.info('Category selection', { userId, sessionExists: !!session, data })
@@ -135,8 +134,8 @@ serve(async (req) => {
             'lovestory': 'Love Story', 
             'portrait': 'Портрет',
             'family': 'Семья',
-            'corporate': 'Корпоратив',
-            'maternity': 'Материнство'
+            'maternity': 'Материнство',
+            'event': 'Мероприятие'
           }
           
           const category = data.replace('portfolio_cat_', '')
@@ -377,7 +376,13 @@ serve(async (req) => {
       // Обработка фото
       if (photo && photo.length > 0) {
         const session = getSession(userId)
-        logger.info('Photo received', { userId, sessionExists: !!session, sessionType: session?.type, sessionStep: session?.step })
+        logger.info('Photo received', { 
+          userId, 
+          sessionExists: !!session, 
+          sessionType: session?.type, 
+          sessionStep: session?.step,
+          photoCount: photo.length
+        })
         
         if (session && session.step === 'waiting_photo') {
           const largestPhoto = photo[photo.length - 1]
@@ -385,7 +390,7 @@ serve(async (req) => {
           session.step = 'waiting_title'
           setSession(userId, session)
           
-          logger.info('Photo saved, asking for title', { userId, fileId: largestPhoto.file_id })
+          logger.info('Photo saved to session, requesting title', { userId, fileId: largestPhoto.file_id })
           
           await telegramAPI.sendMessage(
             chatId,
@@ -412,6 +417,7 @@ serve(async (req) => {
           }
         }
         else {
+          logger.info('Photo received without active session or wrong step')
           await telegramAPI.sendMessage(
             chatId,
             `❓ <b>Для добавления фото используйте меню</b>\n\nВыберите "📸 Добавить в портфолио" или "📍 Добавить локацию":`,
@@ -454,6 +460,8 @@ serve(async (req) => {
           session.step = 'choosing_category'
           setSession(userId, session)
           
+          logger.info('Title saved, showing category selection', { userId, title: session.data.title })
+          
           await telegramAPI.sendMessage(
             chatId,
             `📝 <b>Шаг 3: Категория</b>\n\n` +
@@ -470,8 +478,8 @@ serve(async (req) => {
                   { text: '👨‍👩‍👧‍👦 Семейная', callback_data: 'portfolio_cat_family' }
                 ],
                 [
-                  { text: '🏢 Корпоративная', callback_data: 'portfolio_cat_corporate' },
-                  { text: '🤱 Материнство', callback_data: 'portfolio_cat_maternity' }
+                  { text: '🤱 Материнство', callback_data: 'portfolio_cat_maternity' },
+                  { text: '🎉 Мероприятие', callback_data: 'portfolio_cat_event' }
                 ],
                 [{ text: '❌ Отмена', callback_data: 'cancel' }]
               ]
@@ -515,22 +523,43 @@ serve(async (req) => {
         try {
           await telegramAPI.sendMessage(chatId, `⏳ <b>Обрабатываем...</b>\n\nЗагружаем фото и сохраняем данные...`)
 
-          // Получение и загрузка файла
+          // Проверяем наличие file_id
+          if (!session.data.photo_file_id) {
+            throw new Error('Файл фото не найден в сессии')
+          }
+
+          logger.info('Processing photo upload', { 
+            userId, 
+            fileId: session.data.photo_file_id,
+            type: session.type,
+            title: session.data.title
+          })
+
+          // Получение и загрузка файла из Telegram
           const fileResponse = await fetch(`https://api.telegram.org/bot${botToken}/getFile?file_id=${session.data.photo_file_id}`)
           const fileData = await fileResponse.json()
           
           if (!fileData.ok) {
-            throw new Error('Не удалось получить файл из Telegram')
+            logger.error('Failed to get file from Telegram', fileData)
+            throw new Error(`Не удалось получить файл из Telegram: ${fileData.description}`)
           }
 
           const fileUrl = `https://api.telegram.org/file/bot${botToken}/${fileData.result.file_path}`
+          logger.info('Downloading file from Telegram', { fileUrl })
+          
           const imageResponse = await fetch(fileUrl)
+          if (!imageResponse.ok) {
+            throw new Error(`Не удалось скачать файл: HTTP ${imageResponse.status}`)
+          }
+          
           const imageBlob = await imageResponse.blob()
+          logger.info('File downloaded', { size: imageBlob.size, type: imageBlob.type })
           
           const fileName = `telegram-${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`
           const storagePath = session.type === 'portfolio' ? `portfolio/${fileName}` : `locations/${fileName}`
           
           // Загрузка в Supabase Storage
+          logger.info('Uploading to Supabase Storage', { storagePath })
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from('images')
             .upload(storagePath, imageBlob, {
@@ -538,35 +567,47 @@ serve(async (req) => {
               cacheControl: '3600'
             })
 
-          if (uploadError) throw uploadError
+          if (uploadError) {
+            logger.error('Supabase upload error', uploadError)
+            throw new Error(`Ошибка загрузки в хранилище: ${uploadError.message}`)
+          }
+
+          logger.info('File uploaded successfully', uploadData)
 
           const { data: urlData } = supabase.storage
             .from('images')
             .getPublicUrl(storagePath)
 
           const imageUrl = urlData.publicUrl
+          logger.info('Got public URL', { imageUrl })
 
           if (session.type === 'portfolio') {
             // Добавление в портфолио
+            const portfolioData = {
+              title: session.data.title,
+              category: session.data.category,
+              description: session.data.description,
+              image_url: imageUrl,
+              is_featured: false
+            }
+            
+            logger.info('Inserting portfolio data', portfolioData)
             const { error: insertError } = await supabase
               .from('portfolio')
-              .insert({
-                title: session.data.title,
-                category: session.data.category,
-                description: session.data.description,
-                image_url: imageUrl,
-                is_featured: false
-              })
+              .insert(portfolioData)
 
-            if (insertError) throw insertError
+            if (insertError) {
+              logger.error('Portfolio insert error', insertError)
+              throw new Error(`Ошибка сохранения в портфолио: ${insertError.message}`)
+            }
 
             const categoryNames: { [key: string]: string } = {
               'wedding': 'Свадьба',
               'lovestory': 'Love Story',
               'portrait': 'Портрет',
               'family': 'Семья',
-              'corporate': 'Корпоратив',
-              'maternity': 'Материнство'
+              'maternity': 'Материнство',
+              'event': 'Мероприятие'
             }
 
             await telegramAPI.sendMessage(
@@ -580,16 +621,22 @@ serve(async (req) => {
             )
           } else {
             // Добавление локации
+            const locationData = {
+              name: session.data.title,
+              description: session.data.description,
+              image_url: imageUrl,
+              category_id: '00000000-0000-0000-0000-000000000001'
+            }
+            
+            logger.info('Inserting location data', locationData)
             const { error: insertError } = await supabase
               .from('photoshoot_locations')
-              .insert({
-                name: session.data.title,
-                description: session.data.description,
-                image_url: imageUrl,
-                category_id: '00000000-0000-0000-0000-000000000001'
-              })
+              .insert(locationData)
 
-            if (insertError) throw insertError
+            if (insertError) {
+              logger.error('Location insert error', insertError)
+              throw new Error(`Ошибка сохранения локации: ${insertError.message}`)
+            }
 
             await telegramAPI.sendMessage(
               chatId,

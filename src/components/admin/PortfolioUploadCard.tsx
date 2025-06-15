@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Plus } from 'lucide-react';
 import { useUpdatePortfolio } from '@/hooks/usePortfolio';
 import ImageUpload from './ImageUpload';
+import { Sparkles } from 'lucide-react';
 
 const PortfolioUploadCard = () => {
   const [formData, setFormData] = useState({
@@ -21,6 +21,9 @@ const PortfolioUploadCard = () => {
     image_url: '',
     is_featured: false
   });
+
+  // новое: show which field auto-detected
+  const [aiDesc, setAIDesc] = useState<string | null>(null);
 
   const createPortfolio = useUpdatePortfolio();
 
@@ -97,13 +100,27 @@ const PortfolioUploadCard = () => {
             </SelectContent>
           </Select>
 
+          <ImageUpload
+            currentImage={formData.image_url}
+            onImageUploaded={handleImageUpload}
+            folder="portfolio"
+            onImageDescribed={(desc) => {
+              setFormData(f => ({ ...f, description: desc }));
+              setAIDesc(desc);
+            }}
+          />
           <Textarea
             placeholder="Описание фотографии"
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             rows={3}
           />
-
+          {aiDesc && (
+            <div className="text-xs text-gray-400 flex items-center gap-2">
+              <Sparkles className="w-3 h-3" />
+              Предложение от ИИ, можно изменить вручную
+            </div>
+          )}
           <Input
             placeholder="Локация съемки"
             value={formData.location}
@@ -130,12 +147,6 @@ const PortfolioUploadCard = () => {
             />
             <label className="text-sm font-medium">Рекомендуемая фотография</label>
           </div>
-
-          <ImageUpload
-            currentImage={formData.image_url}
-            onImageUploaded={handleImageUpload}
-            folder="portfolio"
-          />
 
           <Button 
             type="submit" 

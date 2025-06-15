@@ -1,20 +1,27 @@
-
 import React, { useRef, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, X, Link, Image as ImageIcon, AlertCircle, CheckCircle } from 'lucide-react';
+import { Upload, X, Link, Image as ImageIcon, AlertCircle, CheckCircle, Sparkles } from 'lucide-react';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useImageDescriptionAI } from '@/hooks/useImageDescriptionAI';
 
 interface ImageUploadProps {
   onImageUploaded: (url: string) => void;
   currentImage?: string;
   onRemoveImage?: () => void;
   folder?: string;
+  onImageDescribed?: (desc: string) => void;
 }
 
-const ImageUpload = ({ onImageUploaded, currentImage, onRemoveImage, folder = 'portfolio' }: ImageUploadProps) => {
+const ImageUpload = ({
+  onImageUploaded,
+  currentImage,
+  onRemoveImage,
+  folder = 'portfolio',
+  onImageDescribed
+}: ImageUploadProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [urlInput, setUrlInput] = useState('');
   const [uploadMode, setUploadMode] = useState<'file' | 'url'>('file');
@@ -22,6 +29,9 @@ const ImageUpload = ({ onImageUploaded, currentImage, onRemoveImage, folder = 'p
   const [error, setError] = useState<string | null>(null);
   const { uploadFile, uploading } = useFileUpload();
   const { toast } = useToast();
+  const { generateDescription, loading: aiLoading, error: aiError } = useImageDescriptionAI();
+  const [aiDescription, setAIDescription] = useState<string | null>(null);
+  const [descStatus, setDescStatus] = useState<"idle" | "generating" | "success" | "fail">("idle");
 
   const validateFile = (file: File): string | null => {
     // Проверка типа файла
@@ -161,6 +171,31 @@ const ImageUpload = ({ onImageUploaded, currentImage, onRemoveImage, folder = 'p
     }
   };
 
+  const handleAIDescribe = async () => {
+    if (!currentImage) return;
+    setDescStatus("generating");
+    setAIDescription(null);
+    const desc = await generateDescription(currentImage);
+    if (desc) {
+      setAIDescription(desc);
+      setDescStatus("success");
+      if (onImageDescribed) onImageDescribed(desc);
+      toast({
+        title: "AI Описание готово",
+        description: "Вы можете использовать его или изменить вручную",
+        variant: "success"
+      });
+    } else {
+      setDescStatus("fail");
+      setAIDescription(null);
+      toast({
+        title: "Ошибка AI описания",
+        description: aiError || "Не удалось сгенерировать описание",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="space-y-4">
       {error && (
@@ -214,6 +249,25 @@ const ImageUpload = ({ onImageUploaded, currentImage, onRemoveImage, folder = 'p
             )}
             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
               <span className="text-white text-sm font-medium">Нажмите X чтобы удалить</span>
+            </div>
+            {/* AI описание */}
+            <div className="mt-3 flex flex-col items-stretch gap-2">
+              <Button
+                type="button"
+                onClick={handleAIDescribe}
+                className="w-full flex items-center justify-center gap-2"
+                disabled={aiLoading || descStatus === "generating"}
+                variant="outline"
+              >
+                <Sparkles className="w-4 h-4" />
+                {descStatus === "generating" ? "Генерация описания..." : "Сгенерировать описание с помощью ИИ"}
+              </Button>
+              {aiDescription && (
+                <div className="bg-gray-50 rounded p-2 mt-1 text-gray-700 text-sm border">
+                  <span className="font-semibold">AI: </span>
+                  {aiDescription}
+                </div>
+              )}
             </div>
           </div>
         )}

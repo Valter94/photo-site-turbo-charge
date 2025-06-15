@@ -12,6 +12,7 @@ import TelegramBotManager from './TelegramBotManager';
 import SiteSettingsManager from './SiteSettingsManager';
 import SiteAnalyticsDashboard from './SiteAnalyticsDashboard';
 import ExportManager from './ExportManager';
+import AnalyticsSetup from './AnalyticsSetup';
 import { 
   Camera, 
   MapPin, 
@@ -181,6 +182,7 @@ const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
+            <AnalyticsSetup />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

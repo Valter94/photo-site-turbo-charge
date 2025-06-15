@@ -57,7 +57,7 @@ export const createMessageHandlers = (deps: any) => {
         return
       }
 
-      // Только если ждем фото
+      // --- Вот здесь сохраняем шаг ---
       if (session.step !== 'waiting_photo') {
         await telegramAPI.sendMessage(
           chatId,
@@ -85,7 +85,7 @@ export const createMessageHandlers = (deps: any) => {
       return
     }
 
-    // --- ОБРАБОТКА ТЕКСТА В РАМКАХ СЕССИИ ---
+    // --- Текст в рамках сессии ---
     let session = getSession(userId)
 
     if (!session && !text.startsWith('/')) {
@@ -99,7 +99,7 @@ export const createMessageHandlers = (deps: any) => {
 
     if (session) {
       try {
-        // Название (после фото)
+        // --- Шаг: название ---
         if (session.step === 'waiting_title') {
           if (!validators.isValidTitle(text)) {
             await telegramAPI.sendMessage(
@@ -134,7 +134,6 @@ export const createMessageHandlers = (deps: any) => {
               }
             )
           } else {
-            // Для локации — сразу описание
             session.step = 'waiting_description'
             setSession(userId, session)
             await telegramAPI.sendMessage(
@@ -146,7 +145,8 @@ export const createMessageHandlers = (deps: any) => {
           return
         }
 
-        // Описание (после категории или для локации)
+        // --- Для портфолио: после выбора категории шаг меняется на waiting_description через callback ---
+        // --- Шаг: описание ---
         if (session.step === 'waiting_description') {
           if (!validators.isValidDescription(text)) {
             await telegramAPI.sendMessage(
@@ -157,11 +157,6 @@ export const createMessageHandlers = (deps: any) => {
             return
           }
           session.data.description = validators.sanitizeText(text)
-          await telegramAPI.sendMessage(chatId, `⏳ <b>Обработка...</b>`, null)
-          if (!session.data.photo_file_id) {
-            throw new Error('Фото не найдено в сессии.')
-          }
-
           // --- Загрузка фото и сохранение данных (как раньше) ---
           const fileResponse = await fetch(`https://api.telegram.org/bot${botToken}/getFile?file_id=${session.data.photo_file_id}`)
           const fileData = await fileResponse.json()

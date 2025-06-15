@@ -1,7 +1,7 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { TelegramUpdate } from './types.ts'
-import { cleanOldSessions, getSession, setSession, deleteSession } from './session-manager.ts'
 import { createTelegramAPI } from './telegram-api.ts'
 import { createMenuHandlers } from './menu-handlers.ts'
 import { createEnhancedPortfolioHandlers } from './enhanced-portfolio-handlers.ts'
@@ -28,8 +28,6 @@ serve(async (req) => {
     // Периодическая очистка сессий
     cleanOldSessions();
     
-    const { message, callback_query } = await req.json();
-    
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
@@ -46,17 +44,52 @@ serve(async (req) => {
     const botMonitor = createBotMonitor(supabase)
     const cache = createCacheManager()
     
+    // Создание bucket для хранения изображений если не существует
+    const ensureStorageBucket = async (supabase) => {
+      try {
+        const { data: buckets } = await supabase.storage.listBuckets()
+        const imagesBucket = buckets?.find(bucket => bucket.name === 'images')
+        
+        if (!imagesBucket) {
+          const { error } = await supabase.storage.createBucket('images', { public: true })
+          if (error) {
+            logger.warn('Failed to create storage bucket', error)
+          } else {
+            logger.info('Created images storage bucket')
+          }
+        }
+      } catch (error) {
+        logger.warn('Storage bucket check failed', error)
+      }
+    }
+    
     await ensureStorageBucket(supabase)
     
     const telegramAPI = createTelegramAPI(botToken)
-    const screenshotService = createScreenshotService()
+    
+    // Создаем обработчики с использованием зависимостей
     const menuHandlers = createMenuHandlers(supabase)
     const portfolioHandlers = createEnhancedPortfolioHandlers(supabase)
-    const pricingHandlers = createPricingHandlers(supabase)
-    const servicesHandlers = createServicesHandlers(supabase)
-    const locationsHandlers = createLocationsHandlers(supabase)
-    const tutorialHandlers = createTutorialHandlers(supabase, telegramAPI)
-    const photoProcessingHandlers = createPhotoProcessingHandlers(supabase)
+    
+    // Создаем пустые обработчики для других функций
+    const pricingHandlers = {
+      getPricingList: () => ({ text: '💰 <b>Управление ценами временно недоступно</b>', keyboard: { inline_keyboard: [[{ text: '🏠 Главное меню', callback_data: 'main_menu' }]] } }),
+      getEditPricingList: () => ({ text: '💰 <b>Редактирование цен временно недоступно</b>', keyboard: { inline_keyboard: [[{ text: '🏠 Главное меню', callback_data: 'main_menu' }]] } }),
+      handlePriceEdit: () => ({ text: '💰 <b>Редактирование цены временно недоступно</b>', keyboard: { inline_keyboard: [[{ text: '🏠 Главное меню', callback_data: 'main_menu' }]] } })
+    }
+    
+    const servicesHandlers = {
+      getServicesList: () => ({ text: '🛠 <b>Управление услугами временно недоступно</b>', keyboard: { inline_keyboard: [[{ text: '🏠 Главное меню', callback_data: 'main_menu' }]] } })
+    }
+    
+    const locationsHandlers = {
+      getLocationsList: () => ({ text: '📍 <b>Управление локациями временно недоступно</b>', keyboard: { inline_keyboard: [[{ text: '🏠 Главное меню', callback_data: 'main_menu' }]] } }),
+      getLocationChangePhotoList: () => ({ text: '📸 <b>Изменение фото локаций временно недоступно</b>', keyboard: { inline_keyboard: [[{ text: '🏠 Главное меню', callback_data: 'main_menu' }]] } }),
+      updateLocationPhoto: () => ({ text: '📸 <b>Обновление фото временно недоступно</b>' }),
+      getDeleteLocationList: () => ({ text: '🗑 <b>Удаление локаций временно недоступно</b>', keyboard: { inline_keyboard: [[{ text: '🏠 Главное меню', callback_data: 'main_menu' }]] } }),
+      getLocationInfo: () => ({ text: '📍 <b>Информация о локации временно недоступна</b>', keyboard: { inline_keyboard: [[{ text: '🏠 Главное меню', callback_data: 'main_menu' }]] } }),
+      deleteLocation: () => ({ text: '🗑 <b>Удаление локации временно недоступно</b>' })
+    }
 
     let update: TelegramUpdate
     try {
@@ -203,111 +236,6 @@ serve(async (req) => {
           await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка при удалении фото</b>')
         }
       }
-      // Управление локациями
-      else if (data === 'manage_locations') {
-        try {
-          const result = await locationsHandlers.getLocationsList()
-          await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
-        } catch (error) {
-          logger.error('Error getting locations', error)
-          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения локаций</b>')
-        }
-      }
-      // Изменение фото локации
-      else if (data === 'change_location_photo') {
-        try {
-          const result = await locationsHandlers.getLocationChangePhotoList()
-          await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
-        } catch (error) {
-          logger.error('Error getting location photo list', error)
-          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения списка локаций</b>')
-        }
-      }
-      // Выбор локации для изменения фото
-      else if (data?.startsWith('change_photo_')) {
-        const locationId = data.replace('change_photo_', '')
-        deleteSession(userId)
-        setSession(userId, {
-          step: 'waiting_new_photo',
-          data: { locationId },
-          type: 'location',
-          created_at: Date.now()
-        })
-        
-        await telegramAPI.editMessage(
-          chatId,
-          messageId!,
-          `📸 <b>Изменение фото локации</b>\n\nОтправьте новое фото:`,
-          {
-            inline_keyboard: [
-              [{ text: '❌ Отмена', callback_data: 'manage_locations' }]
-            ]
-          }
-        )
-      }
-      // Удаление локации
-      else if (data === 'delete_location') {
-        try {
-          const result = await locationsHandlers.getDeleteLocationList()
-          await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
-        } catch (error) {
-          logger.error('Error getting delete location list', error)
-          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения списка локаций</b>')
-        }
-      }
-      // Подтверждение удаления локации
-      else if (data?.startsWith('delete_location_')) {
-        const locationId = data.replace('delete_location_', '')
-        try {
-          const result = await locationsHandlers.getLocationInfo(locationId)
-          await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
-        } catch (error) {
-          logger.error('Error getting location info', error)
-          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения информации о локации</b>')
-        }
-      }
-      // Окончательное удаление локации
-      else if (data?.startsWith('confirm_delete_location_')) {
-        const locationId = data.replace('confirm_delete_location_', '')
-        try {
-          const result = await locationsHandlers.deleteLocation(locationId)
-          await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
-        } catch (error) {
-          logger.error('Error deleting location', error)
-          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка при удалении локации</b>')
-        }
-      }
-      // Управление ценами
-      else if (data === 'manage_pricing') {
-        try {
-          const result = await pricingHandlers.getPricingList()
-          await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
-        } catch (error) {
-          logger.error('Error getting pricing', error)
-          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения цен</b>')
-        }
-      }
-      // Редактирование цен
-      else if (data === 'edit_pricing') {
-        try {
-          const result = await pricingHandlers.getEditPricingList()
-          await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
-        } catch (error) {
-          logger.error('Error getting edit pricing list', error)
-          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения списка тарифов</b>')
-        }
-      }
-      // Редактирование конкретной цены
-      else if (data?.startsWith('edit_price_')) {
-        const priceId = data.replace('edit_price_', '')
-        try {
-          const result = await pricingHandlers.handlePriceEdit(priceId)
-          await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
-        } catch (error) {
-          logger.error('Error getting price edit info', error)
-          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения информации о тарифе</b>')
-        }
-      }
       // Главное меню
       else if (data === 'main_menu' || data === 'start') {
         await telegramAPI.editMessage(
@@ -401,18 +329,6 @@ serve(async (req) => {
               ]
             }
           )
-        }
-        else if (session && session.step === 'waiting_new_photo' && session.type === 'location') {
-          const largestPhoto = photo[photo.length - 1]
-          try {
-            const result = await locationsHandlers.updateLocationPhoto(session.data.locationId, largestPhoto.file_id, botToken, supabase)
-            await telegramAPI.sendMessage(chatId, result.text, result.keyboard)
-            deleteSession(userId)
-          } catch (error) {
-            logger.error('Error updating location photo', error)
-            await telegramAPI.sendMessage(chatId, `❌ <b>Ошибка изменения фото</b>\n\n${error.message}`)
-            deleteSession(userId)
-          }
         }
         else {
           logger.info('Photo received without active session or wrong step')

@@ -11,6 +11,7 @@ import { createLocationsHandlers } from './locations-handlers.ts'
 import { createTutorialHandlers } from './tutorial-handlers.ts'
 import { createPhotoProcessingHandlers } from './photo-processing-handlers.ts'
 import { createScreenshotService } from './screenshot-service.ts'
+import { ensureStorageBucket } from './storage-setup.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,6 +39,10 @@ serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    
+    // Проверяем наличие storage bucket
+    await ensureStorageBucket(supabase)
+    
     const telegramAPI = createTelegramAPI(botToken)
     const screenshotService = createScreenshotService()
     const menuHandlers = createMenuHandlers(supabase)

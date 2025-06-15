@@ -34,7 +34,7 @@ export const usePortfolioActions = () => {
     onSuccess: ()  => {
       queryClient.invalidateQueries({ queryKey: ['portfolio'] });
       toast({
-        title: "Успeshно",
+        title: "Успешно",
         description: "Фотография удалена",
       });
     }

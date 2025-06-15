@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { usePricing } from '@/hooks/usePricing';
 import { Button } from '@/components/ui/button';
@@ -62,15 +63,18 @@ const defaultPricing = [
     is_active: true,
     premium: true,
   },
+  // newborn убран по вашей просьбе
 ];
 
 const PricingSection = () => {
   const { data: pricing, isLoading } = usePricing();
 
-  // Группируем по категориям — используем русские имена
+  // Исключить newborn если вдруг она пришла из бэка
+  const filteredPricing = (pricing || defaultPricing).filter(plan => plan.service_type !== "newborn");
+
   const grouped = React.useMemo(() => {
     const groups: { [cat: string]: any[] } = {};
-    (pricing || defaultPricing).forEach((plan) => {
+    filteredPricing.forEach((plan) => {
       const category = serviceTypeName(plan.service_type);
       if (!groups[category]) groups[category] = [];
       groups[category].push(plan);

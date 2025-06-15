@@ -9,15 +9,14 @@ const SERVICE_TYPE_LABELS: Record<string, string> = {
   portrait: 'Портретная съемка',
   family: 'Семейная съемка',
   corporate: 'Корпоративная съемка',
-  newborn: 'Newborn',
   children: 'Детская фотосессия',
   maternity: 'Фотосессия беременности',
-  // можно добавить другие
+  // newborn убран по просьбе пользователя
 };
 
 export const serviceTypeName = (key: string): string => SERVICE_TYPE_LABELS[key] || key;
 
-// экспорт для использования в выпадающих списках и фильтрах
+// экспорт для выпадающих списков и фильтров
 export const ALL_SERVICE_TYPES = Object.entries(SERVICE_TYPE_LABELS).map(([value, label]) => ({
   value, label
 }));

@@ -97,12 +97,13 @@ serve(async (req) => {
     if (callbackQuery) {
       await telegramAPI.answerCallback(callbackQuery.id)
       const data = callbackQuery.data
+
       logger.info('Processing callback', { data, userId })
 
       try {
         await botMonitor.logBotActivity(userId, `callback:${data}`, true)
 
-        // "Добавить" — создаём чёткую сессию
+        // "Добавить" — создаём сессию для портфолио или локации
         if (data?.startsWith('add_')) {
           deleteSession(userId)
           const type = data.split('_')[1] as 'portfolio' | 'location'
@@ -112,24 +113,27 @@ serve(async (req) => {
             type: type,
             created_at: Date.now()
           })
-          logger.info('Session created for add action', { userId, type })
 
-          const typeText = type === 'portfolio' ? '🎨 Добавляем в портфолио' : '📍 Добавляем локацию'
+          const typeText = type === 'portfolio'
+            ? '🎨 Добавляем в портфолио'
+            : '📍 Добавляем локацию'
           await telegramAPI.editMessage(
             chatId,
             messageId!,
-            `📸 <b>Шаг 1: Отправьте фото</b>\n\n${typeText}\n\nОтправьте фото, которое хотите добавить.`,
+            `📸 <b>Шаг 1: Отправьте фото</b>\n\n${typeText}\n\nПожалуйста, прикрепите фото, которое хотите добавить.`,
             {
               inline_keyboard: [[{ text: '❌ Отмена', callback_data: 'cancel' }]]
             }
           )
+          return new Response('OK', { headers: corsHeaders })
         }
-        // Категория портфолио (после ввода названия)
+
+        // --- Категория портфолио (после названия) ---
         else if (data?.startsWith('portfolio_cat_')) {
           const session = getSession(userId)
           if (session && session.type === 'portfolio' && session.step === 'choosing_category') {
             const categoryMap: { [key: string]: string } = {
-              'wedding': 'Свадьба',
+              'wedding': 'Свадебная фотосессия',
               'lovestory': 'Love Story',
               'portrait': 'Портрет',
               'family': 'Семья',
@@ -150,10 +154,14 @@ serve(async (req) => {
                 inline_keyboard: [[{ text: '❌ Отмена', callback_data: 'cancel' }]]
               }
             )
+            return new Response('OK', { headers: corsHeaders })
           } else {
+            deleteSession(userId)
             await telegramAPI.editMessage(chatId, messageId!, '❌ Ошибка сессии. Начните заново:', menuHandlers.getMainMenu())
+            return new Response('OK', { headers: corsHeaders })
           }
         }
+
         // Portfolio management
         else if (data === 'manage_portfolio') {
           const result = await portfolioHandlers.getPortfolioList()
@@ -275,17 +283,17 @@ serve(async (req) => {
 
       logger.info('Message received', { hasText: !!text, hasPhoto: !!photo, userId })
 
-      // --- /start
+      // --- /start ---
       if (text.startsWith('/start')) {
         await telegramAPI.sendMessage(
           chatId,
-          `🤖 <b>Добро пожаловать!</b>\n\nУправляйте контентом сайта через бота:`,
+          `🤖 <b>Добро пожаловать!</b>\n\nВы можете добавить фото в портфолио или локацию пошагово 👇`,
           menuHandlers.getMainMenu()
         )
         return new Response('OK', { headers: corsHeaders })
       }
 
-      // --- /stats
+      // --- /stats ---
       if (text.startsWith('/stats')) {
         try {
           const result = await menuHandlers.getStats()
@@ -309,29 +317,29 @@ serve(async (req) => {
         })
 
         if (!session) {
-          // user отправил фото без сессии — подскажем начать с меню
+          // user отправил фото без сессии — объясняем
           await telegramAPI.sendMessage(
             chatId,
-            `📸 <b>Чтобы добавить фото, воспользуйтесь меню:</b>\n\n` +
+            `📸 <b>Чтобы добавить фото, начните с меню 👇</b>\n\n` +
             `1️⃣ Нажмите "📸 Добавить в портфолио" или "📍 Добавить локацию"\n` +
-            `2️⃣ Затем отправьте фото сюда 👆\n\n` +
+            `2️⃣ Затем отправьте фото.\n\n` +
             `Выберите действие:`,
             menuHandlers.getMainMenu()
           )
           return new Response('OK', { headers: corsHeaders })
         }
 
-        // Приняты только на этапе ожидания фото:
+        // Только если ждем фото
         if (session.step !== 'waiting_photo') {
           await telegramAPI.sendMessage(
             chatId,
-            `❌ <b>Сейчас не требуется фото.</b>\n\nСледуйте инструкции. Если вы хотите начать заново — выберите действие в меню:`,
+            `❌ <b>Сейчас фото не требуется.</b>\n\nСледуйте инструкции или начните заново:`,
             menuHandlers.getMainMenu()
           )
           return new Response('OK', { headers: corsHeaders })
         }
 
-        // Всё ок, двигаем дальше
+        // Сохраняем файл и переходим к названию
         const largestPhoto = photo[photo.length - 1]
         session.data.photo_file_id = largestPhoto.file_id
         session.step = 'waiting_title'
@@ -341,9 +349,7 @@ serve(async (req) => {
 
         await telegramAPI.sendMessage(
           chatId,
-          `✅ <b>Фото принято!</b>\n\n` +
-          `📝 <b>Шаг 2: Введите название</b>\n\n` +
-          `Пожалуйста, отправьте название (3-100 символов):`,
+          `✅ <b>Фото получено!</b>\n\n<b>Шаг 2: Введите название</b>\nОтправьте название (3-100 символов):`,
           {
             inline_keyboard: [[{ text: '❌ Отмена', callback_data: 'cancel' }]]
           }
@@ -357,7 +363,7 @@ serve(async (req) => {
       if (!session && !text.startsWith('/')) {
         await telegramAPI.sendMessage(
           chatId,
-          `👋 <b>Добро пожаловать!</b>\n\nВыберите действие:`,
+          `👋 <b>Выберите действие из меню:</b>`,
           menuHandlers.getMainMenu()
         )
         return new Response('OK', { headers: corsHeaders })
@@ -365,32 +371,27 @@ serve(async (req) => {
 
       if (session) {
         try {
-          // Ожидание название фото/локации
+          // Название (после фото)
           if (session.step === 'waiting_title') {
             if (!validators.isValidTitle(text)) {
               await telegramAPI.sendMessage(
                 chatId,
-                `❌ <b>Некорректное название</b>\n\nНазвание должно быть от 3 до 100 символов:`,
+                `❌ <b>Название должно быть от 3 до 100 символов.</b>\nПожалуйста, попробуйте еще раз:`,
                 { inline_keyboard: [[{ text: '❌ Отмена', callback_data: 'cancel' }]] }
               )
               return new Response('OK', { headers: corsHeaders })
             }
-
             session.data.title = validators.sanitizeText(text)
-
             if (session.type === 'portfolio') {
               session.step = 'choosing_category'
               setSession(userId, session)
-
               await telegramAPI.sendMessage(
                 chatId,
-                `📝 <b>Шаг 3: Выберите категорию</b>\n\n` +
-                `🖼 <b>${session.data.title}</b>\n\n` +
-                `Выберите категорию (кнопкой):`,
+                `📝 <b>Шаг 3: Выберите категорию</b>\n🖼 <b>${session.data.title}</b>\n\nВыберите категорию кнопкой:`,
                 {
                   inline_keyboard: [
                     [
-                      { text: '💒 Свадьба', callback_data: 'portfolio_cat_wedding' },
+                      { text: '💒 Свадебная фотосессия', callback_data: 'portfolio_cat_wedding' },
                       { text: '💕 Love Story', callback_data: 'portfolio_cat_lovestory' }
                     ],
                     [
@@ -405,38 +406,35 @@ serve(async (req) => {
                 }
               )
             } else {
-              // Для локации: сразу описание
+              // Для локации — сразу описание
               session.step = 'waiting_description'
               setSession(userId, session)
               await telegramAPI.sendMessage(
                 chatId,
-                `📝 <b>Шаг 3: Введите описание локации</b>\n\n` +
-                `📍 <b>${session.data.title}</b>\n\n` +
-                `Пожалуйста, отправьте описание (10-500 символов):`,
+                `📝 <b>Шаг 3: Введите описание локации</b>\n📍 <b>${session.data.title}</b>\nОтправьте описание (10-500 символов):`,
                 { inline_keyboard: [[{ text: '❌ Отмена', callback_data: 'cancel' }]] }
               )
             }
             return new Response('OK', { headers: corsHeaders })
           }
 
-          // Ожидание описания (и публикация)
+          // Описание (после категории или для локации)
           if (session.step === 'waiting_description') {
             if (!validators.isValidDescription(text)) {
               await telegramAPI.sendMessage(
                 chatId,
-                `❌ <b>Некорректное описание</b>\n\nОписание должно быть от 10 до 500 символов:`,
+                `❌ <b>Описание от 10 до 500 символов.</b>\nПопробуйте еще раз:`,
                 { inline_keyboard: [[{ text: '❌ Отмена', callback_data: 'cancel' }]] }
               )
               return new Response('OK', { headers: corsHeaders })
             }
             session.data.description = validators.sanitizeText(text)
-
             await telegramAPI.sendMessage(chatId, `⏳ <b>Обработка...</b>`, null)
             if (!session.data.photo_file_id) {
-              throw new Error('Не найден файл фото в сессии.')
+              throw new Error('Фото не найдено в сессии.')
             }
 
-            // Получаем и загружаем фото на Storage
+            // --- Загрузка фото и сохранение данных (как раньше) ---
             const fileResponse = await fetch(`https://api.telegram.org/bot${botToken}/getFile?file_id=${session.data.photo_file_id}`)
             const fileData = await fileResponse.json()
             if (!fileData.ok) throw new Error(`Не удалось получить файл: ${fileData.description}`)
@@ -476,8 +474,9 @@ serve(async (req) => {
                 })
               if (insertError) throw insertError
 
+              // Переопределяем categoryNames на русский:
               const categoryNames: { [key: string]: string } = {
-                'wedding': 'Свадьба',
+                'wedding': 'Свадебная фотосессия',
                 'lovestory': 'Love Story',
                 'portrait': 'Портрет',
                 'family': 'Семья',
@@ -490,10 +489,19 @@ serve(async (req) => {
                 `📷 Название: ${session.data.title}\n` +
                 `🏷 Категория: ${categoryNames[session.data.category] || session.data.category}\n` +
                 `📝 Описание: ${session.data.description}\n\n` +
-                `🌐 Фото появится на сайте через несколько минут.`,
-                menuHandlers.getMainMenu()
+                `🌐 Фото появится на сайте через несколько минут.\n\n` +
+                `➕ <b>Хотите добавить еще?</b>\nВыберите действие или снова воспользуйтесь кнопкой ниже.`,
+                {
+                  inline_keyboard: [
+                    [
+                      { text: '➕ Добавить еще', callback_data: 'add_portfolio' },
+                      { text: '🏠 Главное меню', callback_data: 'main_menu' }
+                    ]
+                  ]
+                }
               )
             } else {
+              // Для локации
               const { error: insertError } = await supabase
                 .from('photoshoot_locations')
                 .insert({
@@ -506,11 +514,19 @@ serve(async (req) => {
 
               await telegramAPI.sendMessage(
                 chatId,
-                `✅ <b>Локация добавлена!</b>\n\n` +
+                `✅ <b>Локация успешно добавлена!</b>\n\n` +
                 `📍 Название: ${session.data.title}\n` +
                 `📝 Описание: ${session.data.description}\n\n` +
-                `🌐 Локация появится на сайте через несколько минут.`,
-                menuHandlers.getMainMenu()
+                `🌐 Локация появится на сайте через несколько минут.\n\n` +
+                `➕ <b>Хотите добавить локацию?</b>`,
+                {
+                  inline_keyboard: [
+                    [
+                      { text: '➕ Добавить локацию', callback_data: 'add_location' },
+                      { text: '🏠 Главное меню', callback_data: 'main_menu' }
+                    ]
+                  ]
+                }
               )
             }
 
@@ -522,7 +538,7 @@ serve(async (req) => {
           logger.error('Session processing error', error)
           await telegramAPI.sendMessage(
             chatId,
-            `❌ <b>Ошибка при сохранении</b>\n\n${error.message}\n\nПопробуйте еще раз:`,
+            `❌ <b>Ошибка при сохранении:</b>\n${error.message}\n\nПопробуйте еще раз или начните заново:`,
             menuHandlers.getMainMenu()
           )
           deleteSession(userId)

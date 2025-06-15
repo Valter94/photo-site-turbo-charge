@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';
+import React from 'react';
+import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { Trash2, Edit, Save, X } from 'lucide-react';
 import { usePortfolioActions } from '@/hooks/usePortfolio';
 import { useToast } from '@/hooks/use-toast';
 import ImageUpload from './ImageUpload';
+import OptimizedImage from '@/components/OptimizedImage';
 
 interface PortfolioImageCardProps {
   item: any;
@@ -157,8 +158,8 @@ const PortfolioImageCard = ({ item }: PortfolioImageCardProps) => {
   return (
     <Card className="overflow-hidden">
       <div className="relative h-48">
-        <img 
-          src={item.image_url} 
+        <OptimizedImage
+          src={item.image_url}
           alt={item.title}
           className="w-full h-full object-cover"
         />

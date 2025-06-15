@@ -16,7 +16,7 @@ const ReviewsSection = lazy(() => import("@/components/ReviewsSection"));
 const EnhancedBookingCalendar = lazy(() => import("@/components/EnhancedBookingCalendar"));
 const FAQSection = lazy(() => import("@/components/FAQSection"));
 const Footer = lazy(() => import("@/components/Footer"));
-const LiveStats = lazy(() => import("@/components/LiveStats"));
+// LiveStats больше не используется на главной
 const FloatingReviews = lazy(() => import("@/components/FloatingReviews"));
 
 // Компонент загрузки
@@ -37,48 +37,46 @@ const Index = () => {
           <div id="hero">
             <HeroSection />
           </div>
-          
-          <Suspense fallback={<SectionLoader />}>
-            <LiveStats />
-          </Suspense>
-          
+
+          {/* LiveStats убран отсюда */}
+
           <Suspense fallback={<SectionLoader />}>
             <PortfolioSection />
           </Suspense>
-          
+
           <Suspense fallback={<SectionLoader />}>
             <LocationsSection />
           </Suspense>
-          
+
           <Suspense fallback={<SectionLoader />}>
             <PricingSection />
           </Suspense>
-          
+
           <Suspense fallback={<SectionLoader />}>
             <AdditionalServicesSection />
           </Suspense>
-          
+
           <Suspense fallback={<SectionLoader />}>
             <ReviewsSection />
           </Suspense>
-          
+
           <div id="booking">
             <Suspense fallback={<SectionLoader />}>
               <EnhancedBookingCalendar />
             </Suspense>
           </div>
-          
+
           <Suspense fallback={<SectionLoader />}>
             <FAQSection />
           </Suspense>
         </main>
-        
+
         <Suspense fallback={<div className="h-32 bg-gray-100"></div>}>
           <Footer />
         </Suspense>
-        
+
         <ScrollToTop />
-        
+
         <Suspense fallback={null}>
           <FloatingReviews />
         </Suspense>
@@ -88,3 +86,4 @@ const Index = () => {
 };
 
 export default Index;
+

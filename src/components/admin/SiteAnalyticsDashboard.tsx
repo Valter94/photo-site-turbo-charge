@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';
+import React from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +31,7 @@ import {
   Lightbulb,
   RefreshCw
 } from 'lucide-react';
+import LiveStats from '../LiveStats';
 
 const SiteAnalyticsDashboard = () => {
   const { analytics, recommendations, isLoading, updateAnalytics } = useSiteAnalytics();
@@ -86,6 +87,12 @@ const SiteAnalyticsDashboard = () => {
           <RefreshCw className="h-4 w-4 mr-2" />
           Обновить данные
         </Button>
+      </div>
+
+      {/* Новый дополнительный блок статистики исключительно для админа */}
+      <div>
+        <h2 className="text-xl font-bold mb-2 text-pink-700">Live статистика по сайту (только админ)</h2>
+        <LiveStats />
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>

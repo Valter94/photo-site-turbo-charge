@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { errorHandler } from '@/utils/errorHandler';
 
@@ -32,9 +31,11 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   }, []);
 
   const handleImageError = useCallback((event: React.SyntheticEvent<HTMLImageElement>) => {
-    console.error('Image failed to load:', src);
     setImageError(true);
-    errorHandler.handleImageError(event.nativeEvent, fallbackUrl);
+    console.error('[OptimizedImage][Ошибка]: Не удалось загрузить', src);
+    if (fallbackUrl) {
+      (event.target as HTMLImageElement).src = fallbackUrl;
+    }
   }, [src, fallbackUrl]);
 
   if (!src) {
@@ -88,7 +89,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
           </>
         )}
         <img
-          src={isSupabaseImage ? src : jpegSrc}
+          src={src}
           alt={alt}
           width={width}
           height={height}

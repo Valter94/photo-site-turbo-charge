@@ -51,7 +51,7 @@ const PricingCard = ({ plan, russianName, scrollToBooking }: {
           <h3 className="text-lg font-bold text-gray-900 mb-2">{russianName}</h3>
           <div className="mb-2">
             <span className="text-2xl font-bold text-gray-900">
-              {plan.price.toLocaleString('ru-RU')} ₽
+              {plan.price?.toLocaleString('ru-RU') ?? '—'} ₽
             </span>
           </div>
           <div className="flex justify-center gap-2 text-xs text-gray-600 mb-3">

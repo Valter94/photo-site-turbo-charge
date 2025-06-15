@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { usePricing } from '@/hooks/usePricing';
 import PricingCard from './PricingCard';
 import { Button } from '@/components/ui/button';
 
-const serviceNamesRu = {
+const serviceNamesRu: Record<string, string> = {
   portrait: 'Портретная съёмка',
   family: 'Семейная съёмка',
   lovestory: 'Love Story',
@@ -102,6 +101,13 @@ const PricingSection = () => {
       </section>
     );
   }
+
+  // Проводим диагностику: если пришли нереализованные типы сервисов — уведомим в консоль
+  displayPricing.forEach(plan => {
+    if (!serviceNamesRu[plan.service_type]) {
+      console.warn('Неизвестный service_type в ценах:', plan.service_type);
+    }
+  });
 
   return (
     <section id="pricing" className="py-20 bg-white">

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings, MessageSquare, Bell, Play, Camera, DollarSign, MapPin, Star, Settings as SettingsIcon, BarChart3, Users, TrendingUp, BookOpen, Download } from 'lucide-react';
@@ -9,7 +10,7 @@ import PortfolioManager from './PortfolioManager';
 import PricingManager from './PricingManager';
 import LocationsManager from './LocationsManager';
 import ReviewsManager from './ReviewsManager';
-import CRMDashboard from './CRMDashboard';
+import CRMDashboard from '../CRMDashboard';
 import AnalyticsSetup from './AnalyticsSetup';
 import TutorialPresentation from './TutorialPresentation';
 import TelegramBotManager from './TelegramBotManager';
@@ -63,6 +64,7 @@ const AllSectionsManager = () => {
 
   return (
     <div className="space-y-6">
+      {/* Табы */}
       <Tabs defaultValue="site" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="site" className="flex items-center gap-2">

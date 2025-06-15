@@ -26,8 +26,7 @@ const EnhancedBookingCalendar = () => {
     phone: '',
     serviceType: '',
     locationId: '',
-    message: '',
-    additionalServices: [] as string[]
+    message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -85,16 +84,22 @@ const EnhancedBookingCalendar = () => {
     try {
       const selectedPricing = pricing?.find(p => p.service_type === formData.serviceType);
       
+      const bookingData = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        service_type: formData.serviceType,
+        location_id: formData.locationId || null,
+        message: formData.message,
+        date: selectedDate.toISOString().split('T')[0],
+        time: selectedTime + ':00',
+        total_price: selectedPricing?.price || 0,
+        status: 'pending'
+      };
+
       const { error } = await supabase
         .from('bookings')
-        .insert([{
-          ...formData,
-          date: selectedDate.toISOString().split('T')[0],
-          time: selectedTime + ':00',
-          location_id: formData.locationId || null,
-          total_price: selectedPricing?.price || 0,
-          status: 'pending'
-        }]);
+        .insert([bookingData]);
 
       if (error) throw error;
 
@@ -113,8 +118,7 @@ const EnhancedBookingCalendar = () => {
         phone: '',
         serviceType: '',
         locationId: '',
-        message: '',
-        additionalServices: []
+        message: ''
       });
       setSelectedDate(undefined);
       setSelectedTime('');

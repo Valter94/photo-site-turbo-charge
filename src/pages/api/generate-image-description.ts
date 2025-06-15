@@ -1,3 +1,4 @@
+declare const Deno: any;
 
 // Переиспользуемый edge-функция для Vite/Vercel (стандартный Web API)
 export const config = { runtime: "edge" };

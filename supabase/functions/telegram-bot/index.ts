@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { TelegramUpdate } from './types.ts'
@@ -14,6 +13,9 @@ import { createPhotoProcessingHandlers } from './photo-processing-handlers.ts'
 import { createScreenshotService } from './screenshot-service.ts'
 import { ensureStorageBucket } from './storage-setup.ts'
 import { createLogger } from './logger.ts'
+import { createBotMonitor } from './bot-monitor.ts'
+import { createCacheManager } from './cache-manager.ts'
+import { validators } from './validators.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -43,6 +45,8 @@ serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const botMonitor = createBotMonitor(supabase)
+    const cache = createCacheManager()
     
     // Проверяем наличие storage bucket
     const bucketReady = await ensureStorageBucket(supabase)
@@ -93,6 +97,8 @@ serve(async (req) => {
       await telegramAPI.answerCallback(callbackQuery.id)
       const data = callbackQuery.data
       logger.info('Processing callback', { data, userId })
+
+      await botMonitor.logBotActivity(userId, `callback:${data}`, true)
 
       // Обработка фотографий
       if (data === 'process_photos') {
@@ -197,7 +203,6 @@ serve(async (req) => {
 
       // Основные действия добавления
       if (data?.startsWith('add_')) {
-        // Удаляем предыдущую сессию перед созданием новой
         deleteSession(userId)
         
         const type = data.split('_')[1] as 'portfolio' | 'location'
@@ -223,15 +228,15 @@ serve(async (req) => {
           }
         )
       }
-      // ИСПРАВЛЕННАЯ ЛОГИКА: Выбор категории портфолио
+      // Выбор категории портфолио - ИСПРАВЛЕННАЯ ЛОГИКА
       else if (data?.startsWith('portfolio_cat_')) {
         const session = getSession(userId)
-        logger.info('Category selection attempt', { userId, session: session?.step })
+        logger.info('Category selection attempt', { userId, sessionExists: !!session, sessionStep: session?.step, sessionType: session?.type })
         
         if (session && session.step === 'choosing_category' && session.type === 'portfolio') {
           const categoryMap: { [key: string]: string } = {
             'wedding': 'Свадьба',
-            'lovestory': 'Love Story',
+            'lovestory': 'Love Story', 
             'portrait': 'Портрет',
             'family': 'Семья',
             'corporate': 'Корпоратив',
@@ -243,7 +248,7 @@ serve(async (req) => {
           session.step = 'waiting_description'
           setSession(userId, session)
           
-          logger.info('Category selected', { userId, category })
+          logger.info('Category selected successfully', { userId, category })
           
           await telegramAPI.editMessage(
             chatId,
@@ -251,7 +256,7 @@ serve(async (req) => {
             `📝 <b>Шаг 3: Описание</b>\n\n` +
             `✅ Категория: <b>${categoryMap[category] || category}</b>\n` +
             `🖼 Название: <b>${session.data.title}</b>\n\n` +
-            `Теперь отправьте описание для фото:`,
+            `Теперь отправьте описание для фото (10-500 символов):`,
             {
               inline_keyboard: [
                 [{ text: '❌ Отмена', callback_data: 'cancel' }]
@@ -259,11 +264,17 @@ serve(async (req) => {
             }
           )
         } else {
-          logger.warn('Invalid session for category selection', { userId })
+          logger.warn('Invalid session state for category selection', { 
+            userId, 
+            sessionExists: !!session,
+            sessionStep: session?.step,
+            sessionType: session?.type 
+          })
+          
           await telegramAPI.editMessage(
             chatId,
             messageId!,
-            `❌ <b>Ошибка сессии</b>\n\nНачните заново:`,
+            `❌ <b>Ошибка сессии</b>\n\nПопробуйте начать заново:`,
             menuHandlers.getMainMenu()
           )
         }
@@ -476,7 +487,7 @@ serve(async (req) => {
       const photo = message.photo
       const caption = message.caption || ''
 
-      logger.info('Processing message', { hasText: !!text, hasPhoto: !!photo })
+      logger.info('Processing message', { hasText: !!text, hasPhoto: !!photo, userId })
 
       // Команда /start
       if (text.startsWith('/start')) {
@@ -514,10 +525,16 @@ serve(async (req) => {
         return new Response('OK', { headers: corsHeaders })
       }
 
-      // Обработка фото
+      // ИСПРАВЛЕННАЯ ОБРАБОТКА ФОТО
       if (photo && photo.length > 0) {
         const session = getSession(userId)
-        logger.info('Photo received', { userId, sessionType: session?.type, sessionStep: session?.step })
+        logger.info('Photo received', { 
+          userId, 
+          sessionExists: !!session,
+          sessionType: session?.type, 
+          sessionStep: session?.step,
+          photoCount: photo.length 
+        })
         
         if (session && session.step === 'waiting_photo') {
           const largestPhoto = photo[photo.length - 1]
@@ -525,20 +542,23 @@ serve(async (req) => {
           session.step = 'waiting_title'
           setSession(userId, session)
           
-          logger.info('Photo saved', { userId, fileId: largestPhoto.file_id })
+          logger.info('Photo saved, requesting title', { userId, fileId: largestPhoto.file_id })
           
           await telegramAPI.sendMessage(
             chatId,
             `✅ <b>Фото получено!</b>\n\n` +
             `📝 <b>Шаг 2: Название</b>\n\n` +
-            `Отправьте название для этого ${session.type === 'portfolio' ? 'фото' : 'места'}:`,
+            `Отправьте название для этого ${session.type === 'portfolio' ? 'фото' : 'места'} (3-100 символов):`,
             {
               inline_keyboard: [
                 [{ text: '❌ Отмена', callback_data: 'cancel' }]
               ]
             }
           )
-        } else if (session && session.step === 'waiting_new_photo' && session.type === 'location') {
+          
+          await botMonitor.logBotActivity(userId, 'photo_received', true, { type: session.type })
+        }
+        else if (session && session.step === 'waiting_new_photo' && session.type === 'location') {
           // Обработка изменения фото локации
           const largestPhoto = photo[photo.length - 1]
           try {
@@ -616,7 +636,7 @@ serve(async (req) => {
 
       // Обработка сессий пользователя
       const session = getSession(userId)
-      logger.info('Session check', { userId, sessionExists: !!session, sessionType: session?.type, sessionStep: session?.step })
+      logger.info('Session check for text', { userId, sessionExists: !!session, sessionType: session?.type, sessionStep: session?.step })
       
       if (!session && !text.startsWith('/')) {
         await telegramAPI.sendMessage(
@@ -628,20 +648,35 @@ serve(async (req) => {
         return new Response('OK', { headers: corsHeaders })
       }
 
-      // Обработка названия в сессии
+      // ИСПРАВЛЕННАЯ ОБРАБОТКА НАЗВАНИЯ
       if (session && session.step === 'waiting_title') {
-        session.data.title = text
+        // Валидация названия
+        if (!validators.isValidTitle(text)) {
+          await telegramAPI.sendMessage(
+            chatId,
+            `❌ <b>Неверное название</b>\n\n` +
+            `Название должно быть от 3 до 100 символов. Попробуйте еще раз:`,
+            {
+              inline_keyboard: [
+                [{ text: '❌ Отмена', callback_data: 'cancel' }]
+              ]
+            }
+          )
+          return new Response('OK', { headers: corsHeaders })
+        }
+
+        session.data.title = validators.sanitizeText(text)
         
         if (session.type === 'portfolio') {
           session.step = 'choosing_category'
           setSession(userId, session)
           
-          logger.info('Title received for portfolio', { userId, title: text })
+          logger.info('Title received for portfolio, showing categories', { userId, title: text })
           
           await telegramAPI.sendMessage(
             chatId,
             `📝 <b>Шаг 3: Выберите категорию</b>\n\n` +
-            `🖼 Название: <b>${text}</b>\n\n` +
+            `🖼 Название: <b>${session.data.title}</b>\n\n` +
             `Выберите подходящую категорию:`,
             {
               inline_keyboard: [
@@ -671,8 +706,8 @@ serve(async (req) => {
           await telegramAPI.sendMessage(
             chatId,
             `📝 <b>Шаг 3: Описание локации</b>\n\n` +
-            `📍 Название: <b>${text}</b>\n\n` +
-            `Отправьте описание места (адрес, особенности, лучшее время для съемки):`,
+            `📍 Название: <b>${session.data.title}</b>\n\n` +
+            `Отправьте описание места (10-500 символов):`,
             {
               inline_keyboard: [
                 [{ text: '❌ Отмена', callback_data: 'cancel' }]
@@ -682,22 +717,48 @@ serve(async (req) => {
         }
       }
 
-      // Обработка описания в сессии
+      // ИСПРАВЛЕННАЯ ОБРАБОТКА ОПИСАНИЯ
       if (session && session.step === 'waiting_description') {
-        session.data.description = text
+        // Валидация описания
+        if (!validators.isValidDescription(text)) {
+          await telegramAPI.sendMessage(
+            chatId,
+            `❌ <b>Неверное описание</b>\n\n` +
+            `Описание должно быть от 10 до 500 символов. Попробуйте еще раз:`,
+            {
+              inline_keyboard: [
+                [{ text: '❌ Отмена', callback_data: 'cancel' }]
+              ]
+            }
+          )
+          return new Response('OK', { headers: corsHeaders })
+        }
+
+        session.data.description = validators.sanitizeText(text)
         
-        logger.info('Description received', { userId, description: text })
+        logger.info('Description received, processing upload', { userId, description: text })
         
         try {
+          // Показываем индикатор обработки
+          await telegramAPI.sendMessage(
+            chatId,
+            `⏳ <b>Обрабатываем...</b>\n\nЗагружаем фото на сервер и сохраняем данные...`
+          )
+
           const fileResponse = await fetch(`https://api.telegram.org/bot${botToken}/getFile?file_id=${session.data.photo_file_id}`)
           const fileData = await fileResponse.json()
           
           if (!fileData.ok) {
-            throw new Error('Не удалось получить файл')
+            throw new Error('Не удалось получить файл из Telegram')
           }
 
           const fileUrl = `https://api.telegram.org/file/bot${botToken}/${fileData.result.file_path}`
           const imageResponse = await fetch(fileUrl)
+          
+          if (!imageResponse.ok) {
+            throw new Error('Не удалось скачать изображение')
+          }
+          
           const imageBlob = await imageResponse.blob()
           
           const fileName = `telegram-${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`
@@ -712,7 +773,7 @@ serve(async (req) => {
             })
 
           if (uploadError) {
-            throw uploadError
+            throw new Error(`Ошибка загрузки файла: ${uploadError.message}`)
           }
 
           const { data: urlData } = supabase.storage
@@ -734,7 +795,7 @@ serve(async (req) => {
               })
 
             if (insertError) {
-              throw insertError
+              throw new Error(`Ошибка сохранения в базу данных: ${insertError.message}`)
             }
 
             const categoryNames: { [key: string]: string } = {
@@ -747,6 +808,10 @@ serve(async (req) => {
             }
 
             logger.info('Portfolio item added successfully', { userId })
+            await botMonitor.logBotActivity(userId, 'portfolio_added', true, { 
+              title: session.data.title,
+              category: session.data.category 
+            })
 
             await telegramAPI.sendMessage(
               chatId,
@@ -769,10 +834,13 @@ serve(async (req) => {
               })
 
             if (insertError) {
-              throw insertError
+              throw new Error(`Ошибка сохранения в базу данных: ${insertError.message}`)
             }
 
             logger.info('Location added successfully', { userId })
+            await botMonitor.logBotActivity(userId, 'location_added', true, { 
+              name: session.data.title 
+            })
 
             await telegramAPI.sendMessage(
               chatId,
@@ -785,13 +853,16 @@ serve(async (req) => {
           }
           
           deleteSession(userId)
+          cache.clear(`${session.type}_list`)
           logger.info('Session completed and deleted', { userId })
           
         } catch (error) {
-          logger.error('Error processing session', { userId, error })
+          logger.error('Error processing session', { userId, error: error.message })
+          await botMonitor.logBotActivity(userId, `${session.type}_add_error`, false, { error: error.message })
+          
           await telegramAPI.sendMessage(
             chatId, 
-            `❌ Ошибка при сохранении: ${error.message}`,
+            `❌ <b>Ошибка при сохранении</b>\n\n${error.message}\n\nПопробуйте еще раз:`,
             menuHandlers.getMainMenu()
           )
           deleteSession(userId)

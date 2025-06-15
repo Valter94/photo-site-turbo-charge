@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Heart, Camera, Star, Clock, Users, MapPin } from "lucide-react";
 import { usePricing } from '@/hooks/usePricing';
 import { usePortfolio } from '@/hooks/usePortfolio';
@@ -11,7 +10,7 @@ const LiveStats = () => {
   const { data: pricing } = usePricing();
   const { data: portfolio } = usePortfolio();
   const { data: reviews } = useReviews();
-  
+
   const [stats, setStats] = useState({
     happyClients: 0,
     photosCreated: 0,
@@ -104,87 +103,18 @@ const LiveStats = () => {
     fetchRealStats();
   }, [portfolio, reviews]);
 
-  // Создаем активности на основе реальных данных
-  useEffect(() => {
-    if (!pricing || pricing.length === 0) return;
-
-    const serviceNames = pricing.map(service => {
-      const serviceTypes = {
-        'wedding_preparations': 'утренние сборы',
-        'wedding_ceremony': 'свадебную съемку',
-        'wedding_full_day': 'полный свадебный день',
-        'lovestory': 'Love Story съемку',
-        'portrait': 'портретную фотосессию',
-        'family': 'семейную фотосессию',
-        'corporate': 'корпоративную съемку'
-      };
-      return serviceTypes[service.service_type] || 'фотосессию';
-    });
-
-    const names = ['Анна', 'Михаил', 'Елена', 'Дмитрий', 'Ольга', 'Александр', 'Мария', 'Владимир', 'Наталья', 'Сергей'];
-    
-    const generateActivities = () => {
-      const activities = [];
-      
-      // Активности на основе портфолио
-      if (portfolio && portfolio.length > 0) {
-        const recentPhotos = portfolio.slice(-3);
-        recentPhotos.forEach(photo => {
-          activities.push(`Добавлена новая работа: ${photo.title}`);
-        });
-      }
-
-      // Активности на основе отзывов
-      if (reviews && reviews.length > 0) {
-        const approvedReviews = reviews.filter(r => r.is_approved).slice(-3);
-        approvedReviews.forEach(review => {
-          activities.push(`${review.name} оставил(а) отзыв ⭐⭐⭐⭐⭐`);
-        });
-      }
-
-      // Общие активности с именами
-      serviceNames.slice(0, 2).forEach(serviceName => {
-        names.slice(0, 2).forEach(name => {
-          activities.push(`${name} забронировал(а) ${serviceName}`);
-        });
-      });
-
-      return activities;
-    };
-
-    const activities = generateActivities();
-
-    const addActivity = () => {
-      if (activities.length === 0) return;
-      
-      const randomActivity = activities[Math.floor(Math.random() * activities.length)];
-      setRecentActivity(prev => [randomActivity, ...prev.slice(0, 2)]);
-    };
-
-    // Увеличиваем интервал: каждые 20-40 минут для более реалистичности
-    const timer = setInterval(addActivity, Math.random() * 20 * 60 * 1000 + 20 * 60 * 1000);
-    
-    // Начальная активность через 5 секунд
-    setTimeout(addActivity, 5000);
-
-    return () => clearInterval(timer);
-  }, [pricing, portfolio, reviews]);
-
   return (
-    <div className="py-16 bg-gradient-to-br from-pink-50 via-purple-50 to-rose-50">
+    <div className="py-10 bg-gradient-to-br from-pink-50 via-purple-50 to-rose-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Заголовок секции */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-4">
+        <div className="text-center mb-8">
+          <h2 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-3">
             📊 Реальная статистика
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Актуальные данные о нашей работе - все цифры основаны на реальных заявках и отзывах
+            Актуальные данные о нашей работе — все цифры основаны на реальных заявках и отзывах
           </p>
         </div>
-
-        {/* Основная статистика с реальными данными */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
           <Card className="hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-gradient-to-br from-pink-500 to-rose-500 text-white border-0">
             <CardContent className="p-6 text-center">
               <Heart className="w-8 h-8 mx-auto mb-3 animate-pulse" />
@@ -194,7 +124,6 @@ const LiveStats = () => {
               <p className="text-pink-100 text-sm">Выполненных заявок</p>
             </CardContent>
           </Card>
-
           <Card className="hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-gradient-to-br from-purple-500 to-indigo-500 text-white border-0">
             <CardContent className="p-6 text-center">
               <Camera className="w-8 h-8 mx-auto mb-3 animate-bounce" />
@@ -204,7 +133,6 @@ const LiveStats = () => {
               <p className="text-purple-100 text-sm">Фото в портфолио</p>
             </CardContent>
           </Card>
-
           <Card className="hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-gradient-to-br from-emerald-500 to-teal-500 text-white border-0">
             <CardContent className="p-6 text-center">
               <Clock className="w-8 h-8 mx-auto mb-3 animate-spin-slow" />
@@ -214,7 +142,6 @@ const LiveStats = () => {
               <p className="text-emerald-100 text-sm">Лет опыта</p>
             </CardContent>
           </Card>
-
           <Card className="hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0">
             <CardContent className="p-6 text-center">
               <Star className="w-8 h-8 mx-auto mb-3 animate-pulse" />
@@ -224,7 +151,6 @@ const LiveStats = () => {
               <p className="text-amber-100 text-sm">Средний рейтинг</p>
             </CardContent>
           </Card>
-
           <Card className="hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-gradient-to-br from-blue-500 to-cyan-500 text-white border-0">
             <CardContent className="p-6 text-center">
               <Users className="w-8 h-8 mx-auto mb-3 animate-bounce" />
@@ -234,7 +160,6 @@ const LiveStats = () => {
               <p className="text-blue-100 text-sm">Активных проектов</p>
             </CardContent>
           </Card>
-
           <Card className="hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-gradient-to-br from-violet-500 to-purple-500 text-white border-0">
             <CardContent className="p-6 text-center">
               <MapPin className="w-8 h-8 mx-auto mb-3 animate-pulse" />
@@ -244,64 +169,6 @@ const LiveStats = () => {
               <p className="text-violet-100 text-sm">Локаций для съемки</p>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Живая активность с реальными данными */}
-        <div className="max-w-2xl mx-auto">
-          <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-xl">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-semibold text-gray-700">Реальная активность на сайте</span>
-                <Badge variant="secondary" className="ml-auto">LIVE</Badge>
-              </div>
-              
-              <div className="space-y-3 min-h-[120px]">
-                {recentActivity.length > 0 ? (
-                  recentActivity.map((activity, index) => (
-                    <div 
-                      key={index}
-                      className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-500 ${
-                        index === 0 
-                          ? 'bg-gradient-to-r from-pink-100 to-rose-100 transform scale-105' 
-                          : 'bg-gray-50'
-                      }`}
-                      style={{
-                        opacity: index === 0 ? 1 : 0.7 - (index * 0.2),
-                        transform: `translateY(${index * 2}px)`
-                      }}
-                    >
-                      <div className="w-2 h-2 bg-pink-500 rounded-full flex-shrink-0"></div>
-                      <span className="text-sm text-gray-700">{activity}</span>
-                      <div className="text-xs text-gray-500 ml-auto">
-                        {index === 0 ? 'только что' : `${(index + 1) * 20} мин назад`}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center text-gray-500 py-8">
-                    <div className="animate-pulse">Загрузка активности...</div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Бейджи доверия */}
-        <div className="flex flex-wrap justify-center gap-4 mt-12">
-          <Badge variant="outline" className="px-4 py-2 text-sm bg-white/80 backdrop-blur-sm border-pink-300 text-pink-700 hover:bg-pink-50">
-            🏆 Топ фотограф 2024
-          </Badge>
-          <Badge variant="outline" className="px-4 py-2 text-sm bg-white/80 backdrop-blur-sm border-purple-300 text-purple-700 hover:bg-purple-50">
-            ⭐ Рекомендуют 98% клиентов
-          </Badge>
-          <Badge variant="outline" className="px-4 py-2 text-sm bg-white/80 backdrop-blur-sm border-emerald-300 text-emerald-700 hover:bg-emerald-50">
-            ✨ Профессионал года
-          </Badge>
-          <Badge variant="outline" className="px-4 py-2 text-sm bg-white/80 backdrop-blur-sm border-blue-300 text-blue-700 hover:bg-blue-50">
-            📸 5+ лет опыта
-          </Badge>
         </div>
       </div>
     </div>

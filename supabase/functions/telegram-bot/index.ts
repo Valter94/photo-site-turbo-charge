@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { TelegramUpdate } from './types.ts'
@@ -116,6 +117,27 @@ serve(async (req) => {
           await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения списка цен</b>')
         }
       }
+      // Редактирование цен - список
+      else if (data === 'edit_pricing') {
+        try {
+          const result = await pricingHandlers.getEditPricingList()
+          await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
+        } catch (error) {
+          console.error('❌ Ошибка получения списка для редактирования:', error)
+          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения списка тарифов</b>')
+        }
+      }
+      // Редактирование конкретной цены
+      else if (data?.startsWith('edit_price_')) {
+        const priceId = data.replace('edit_price_', '')
+        try {
+          const result = await pricingHandlers.handlePriceEdit(priceId)
+          await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
+        } catch (error) {
+          console.error('❌ Ошибка получения информации о тарифе:', error)
+          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения информации о тарифе</b>')
+        }
+      }
       // Управление услугами
       else if (data === 'manage_services') {
         try {
@@ -136,8 +158,8 @@ serve(async (req) => {
           await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения списка локаций</b>')
         }
       }
-      // Видео-инструкции
-      else if (data === 'help') {
+      // Видео-инструкции и помощь
+      else if (data === 'help' || data === 'video_instructions') {
         await tutorialHandlers.sendTutorialVideo(chatId)
       }
       // Управление портфолио
@@ -275,6 +297,12 @@ serve(async (req) => {
           console.error('❌ Ошибка отправки приветственного сообщения:', error)
         }
         
+        return new Response('OK', { headers: corsHeaders })
+      }
+
+      // Команда /help - отправляем видео инструкции
+      if (text.startsWith('/help')) {
+        await tutorialHandlers.sendTutorialVideo(chatId)
         return new Response('OK', { headers: corsHeaders })
       }
 

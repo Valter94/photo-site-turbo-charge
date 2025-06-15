@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar as CalendarIcon, Clock, User, Phone, Mail, MessageSquare, Camera, MapPin } from 'lucide-react';
+import { Calendar as CalendarIcon, User, Phone, Mail, MessageSquare, Camera, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAnalytics } from './Analytics';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,8 +18,6 @@ import { usePricing } from '@/hooks/usePricing';
 
 const EnhancedBookingCalendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [selectedTime, setSelectedTime] = useState<string>('');
-  const [availability, setAvailability] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -35,45 +33,13 @@ const EnhancedBookingCalendar = () => {
   const { data: locations } = useLocations();
   const { data: pricing } = usePricing();
 
-  // Временные слоты
-  const timeSlots = [
-    '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', 
-    '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'
-  ];
-
-  // Загрузка доступности
-  useEffect(() => {
-    const fetchAvailability = async () => {
-      const { data, error } = await supabase
-        .from('availability')
-        .select('*')
-        .gte('date', new Date().toISOString().split('T')[0]);
-      
-      if (!error && data) {
-        setAvailability(data);
-      }
-    };
-
-    fetchAvailability();
-  }, []);
-
-  // Проверка доступности времени
-  const isTimeAvailable = (date: Date, time: string) => {
-    const dateStr = date.toISOString().split('T')[0];
-    const slot = availability.find(a => 
-      a.date === dateStr && 
-      a.time_slot === time + ':00'
-    );
-    return !slot || slot.is_available;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedDate || !selectedTime || !formData.name || !formData.email || !formData.serviceType) {
+    if (!selectedDate || !formData.name || !formData.email || !formData.serviceType) {
       toast({
         title: "Ошибка",
-        description: "Пожалуйста, заполните все обязательные поля и выберите дату и время",
+        description: "Пожалуйста, заполните все обязательные поля и выберите дату",
         variant: "destructive"
       });
       return;
@@ -92,7 +58,7 @@ const EnhancedBookingCalendar = () => {
         location_id: formData.locationId || null,
         message: formData.message,
         date: selectedDate.toISOString().split('T')[0],
-        time: selectedTime + ':00',
+        time: '10:00:00', // Фиксированное время по умолчанию
         total_price: selectedPricing?.price || 0,
         status: 'pending'
       };
@@ -108,7 +74,7 @@ const EnhancedBookingCalendar = () => {
 
       toast({
         title: "Успешно!",
-        description: `Ваша заявка на ${selectedDate.toLocaleDateString('ru-RU')} в ${selectedTime} отправлена!`,
+        description: `Ваша заявка на ${selectedDate.toLocaleDateString('ru-RU')} отправлена! Мы свяжемся с вами для уточнения времени.`,
       });
 
       // Сброс формы
@@ -121,7 +87,6 @@ const EnhancedBookingCalendar = () => {
         message: ''
       });
       setSelectedDate(undefined);
-      setSelectedTime('');
     } catch (error) {
       toast({
         title: "Ошибка",
@@ -142,20 +107,20 @@ const EnhancedBookingCalendar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-4">
-            Расширенная система бронирования
+            Система бронирования
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Выберите удобную дату и время, укажите предпочтения - мы создадим идеальную фотосессию специально для вас
+            Выберите удобную дату и заполните форму - мы свяжемся с вами для уточнения времени и деталей
           </p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Календарь и время */}
+          {/* Календарь */}
           <Card className="lg:col-span-1">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <CalendarIcon className="h-5 w-5 text-rose-400" />
-                <span>Дата и время</span>
+                <span>Выберите дату</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -168,49 +133,19 @@ const EnhancedBookingCalendar = () => {
               />
               
               {selectedDate && (
-                <div className="space-y-4">
-                  <div className="p-4 bg-rose-50 rounded-lg">
-                    <p className="text-sm text-gray-600">Выбранная дата:</p>
-                    <p className="font-semibold text-rose-600">
-                      {selectedDate.toLocaleDateString('ru-RU', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <Label className="flex items-center space-x-2 mb-3">
-                      <Clock className="h-4 w-4" />
-                      <span>Выберите время</span>
-                    </Label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {timeSlots.map((time) => {
-                        const available = isTimeAvailable(selectedDate, time);
-                        return (
-                          <Button
-                            key={time}
-                            variant={selectedTime === time ? "default" : "outline"}
-                            size="sm"
-                            disabled={!available}
-                            onClick={() => setSelectedTime(time)}
-                            className={`${!available ? 'opacity-50' : ''} ${
-                              selectedTime === time ? 'bg-rose-400 hover:bg-rose-500' : ''
-                            }`}
-                          >
-                            {time}
-                          </Button>
-                        );
-                      })}
-                    </div>
-                    {selectedTime && (
-                      <Badge variant="secondary" className="mt-2">
-                        Выбрано: {selectedTime}
-                      </Badge>
-                    )}
-                  </div>
+                <div className="p-4 bg-rose-50 rounded-lg">
+                  <p className="text-sm text-gray-600">Выбранная дата:</p>
+                  <p className="font-semibold text-rose-600">
+                    {selectedDate.toLocaleDateString('ru-RU', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Точное время обсуждается индивидуально
+                  </p>
                 </div>
               )}
             </CardContent>
@@ -376,11 +311,11 @@ const EnhancedBookingCalendar = () => {
                         </li>
                         <li className="flex items-center space-x-2">
                           <span className="w-6 h-6 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center text-xs font-semibold">2</span>
-                          <span>Обсудим все детали и локацию съемки</span>
+                          <span>Обсудим все детали, время и локацию съемки</span>
                         </li>
                         <li className="flex items-center space-x-2">
                           <span className="w-6 h-6 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center text-xs font-semibold">3</span>
-                          <span>Подтвердим дату, время и условия</span>
+                          <span>Подтвердим дату и удобное время</span>
                         </li>
                         <li className="flex items-center space-x-2">
                           <span className="w-6 h-6 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center text-xs font-semibold">4</span>
@@ -394,7 +329,7 @@ const EnhancedBookingCalendar = () => {
                     <Button 
                       type="submit" 
                       className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white px-8 py-3 text-lg rounded-full shadow-lg transform transition-all duration-300 hover:scale-105"
-                      disabled={isSubmitting || !selectedDate || !selectedTime}
+                      disabled={isSubmitting || !selectedDate}
                     >
                       {isSubmitting ? (
                         <div className="flex items-center gap-2">

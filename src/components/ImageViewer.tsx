@@ -1,22 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { X, ChevronLeft, ChevronRight, Download, Heart } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import OptimizedImage from './OptimizedImage';
-
-/**
- * VisuallyHidden: Utility component to hide content visually but keep it for screen readers
- */
-const VisuallyHidden: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <span style={{
-    position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden',
-    clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0
-  }}>
-    {children}
-  </span>
-);
+import { VisuallyHidden } from "./ImageViewerVisuallyHidden";
+import { ImageViewerInfoPanel } from "./ImageViewerInfoPanel";
 
 interface ImageViewerProps {
   images: Array<{
@@ -112,7 +100,6 @@ const ImageViewer = ({ images, initialIndex, isOpen, onClose }: ImageViewerProps
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl w-full h-full max-h-screen p-0 bg-black/95">
-        {/* accessibility: DialogTitle & DialogDescription */}
         <DialogTitle asChild>
           <VisuallyHidden>
             {currentImage.title || "Изображение"}
@@ -170,68 +157,17 @@ const ImageViewer = ({ images, initialIndex, isOpen, onClose }: ImageViewerProps
               // onError={handleImageError}
             />
           </div>
-
-          {/* Информационная панель */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 text-white">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-xl font-bold">{currentImage.title}</h3>
-                    <Badge className="bg-white/20 text-white">
-                      {getCategoryName(currentImage.category)}
-                    </Badge>
-                    {currentImage.is_featured && (
-                      <Badge className="bg-rose-400 text-white">
-                        Рекомендуем
-                      </Badge>
-                    )}
-                  </div>
-                  {currentImage.description && (
-                    <p className="text-gray-300 mb-2">{currentImage.description}</p>
-                  )}
-                  <div className="flex flex-wrap gap-4 text-sm text-gray-400">
-                    {currentImage.location && (
-                      <span>📍 {currentImage.location}</span>
-                    )}
-                    {currentImage.client_name && (
-                      <span>👤 {currentImage.client_name}</span>
-                    )}
-                    {currentImage.shoot_date && (
-                      <span>📅 {new Date(currentImage.shoot_date).toLocaleDateString('ru-RU')}</span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-white hover:bg-white/20"
-                    onClick={() => setIsLiked(!isLiked)}
-                  >
-                    <Heart className={`h-5 w-5 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-white hover:bg-white/20"
-                    onClick={downloadImage}
-                  >
-                    <Download className="h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
-              {images.length > 1 && (
-                <div className="text-center text-sm text-gray-400">
-                  {currentIndex + 1} из {images.length}
-                </div>
-              )}
-            </div>
-          </div>
+          <ImageViewerInfoPanel
+            currentImage={currentImage}
+            isLiked={isLiked}
+            setIsLiked={setIsLiked}
+            downloadImage={downloadImage}
+            currentIndex={currentIndex}
+            imagesLength={images.length}
+          />
         </div>
       </DialogContent>
     </Dialog>
   );
 };
-
 export default ImageViewer;

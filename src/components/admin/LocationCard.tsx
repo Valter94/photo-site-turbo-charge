@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Trash2, Edit, Save, X } from 'lucide-react';
+import { Trash2, Edit, Save, X, Camera } from 'lucide-react';
 import { useLocationActions } from '@/hooks/useLocationActions';
 import { useLocationCategories } from '@/hooks/useLocations';
 import ImageUpload from './ImageUpload';
@@ -18,6 +18,7 @@ interface LocationCardProps {
 
 const LocationCard = ({ location }: LocationCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isChangingPhoto, setIsChangingPhoto] = useState(false);
   const [locationForm, setLocationForm] = useState(location);
   const { updateLocation, deleteLocation } = useLocationActions();
   const { data: categories } = useLocationCategories();
@@ -31,6 +32,7 @@ const LocationCard = ({ location }: LocationCardProps) => {
     try {
       await updateLocation.mutateAsync(locationForm);
       setIsEditing(false);
+      setIsChangingPhoto(false);
     } catch (error) {
       console.error('Update failed:', error);
     }
@@ -52,6 +54,11 @@ const LocationCard = ({ location }: LocationCardProps) => {
 
   const handleRemoveImage = () => {
     setLocationForm({ ...locationForm, image_url: null });
+  };
+
+  const handleChangePhoto = () => {
+    setIsChangingPhoto(true);
+    setLocationForm(location);
   };
 
   if (isEditing) {
@@ -120,7 +127,37 @@ const LocationCard = ({ location }: LocationCardProps) => {
                 <Save className="h-4 w-4 mr-2" />
                 Сохранить
               </Button>
-              <Button onClick={() => setIsEditing(false)} variant="outline">
+              <Button onClick={() => {setIsEditing(false); setIsChangingPhoto(false);}} variant="outline">
+                <X className="h-4 w-4 mr-2" />
+                Отмена
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isChangingPhoto) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            <h4 className="font-medium text-lg">Изменить фото: {location.name}</h4>
+            
+            <ImageUpload
+              currentImage={locationForm.image_url}
+              onImageUploaded={handleImageUpload}
+              onRemoveImage={handleRemoveImage}
+              folder="locations"
+            />
+
+            <div className="flex gap-2">
+              <Button onClick={handleSave} disabled={updateLocation.isPending}>
+                <Save className="h-4 w-4 mr-2" />
+                Сохранить фото
+              </Button>
+              <Button onClick={() => setIsChangingPhoto(false)} variant="outline">
                 <X className="h-4 w-4 mr-2" />
                 Отмена
               </Button>
@@ -134,12 +171,23 @@ const LocationCard = ({ location }: LocationCardProps) => {
   return (
     <Card className="overflow-hidden">
       {location.image_url && (
-        <div className="h-48 overflow-hidden">
+        <div className="h-48 overflow-hidden relative group">
           <img 
             src={location.image_url} 
             alt={location.name}
             className="w-full h-full object-cover"
           />
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            <Button
+              onClick={handleChangePhoto}
+              variant="secondary"
+              size="sm"
+              className="bg-white/90 hover:bg-white"
+            >
+              <Camera className="h-4 w-4 mr-2" />
+              Изменить фото
+            </Button>
+          </div>
         </div>
       )}
       <CardContent className="p-4">
@@ -147,6 +195,11 @@ const LocationCard = ({ location }: LocationCardProps) => {
           <div className="flex justify-between items-start">
             <h4 className="font-medium text-lg">{location.name}</h4>
             <div className="flex gap-1">
+              {!location.image_url && (
+                <Button onClick={handleChangePhoto} variant="outline" size="sm">
+                  <Camera className="h-4 w-4" />
+                </Button>
+              )}
               <Button onClick={handleEdit} variant="outline" size="sm">
                 <Edit className="h-4 w-4" />
               </Button>

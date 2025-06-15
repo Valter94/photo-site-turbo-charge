@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -297,10 +296,10 @@ const PhotoRetouchManager = () => {
               <SelectTrigger>
                 <SelectValue placeholder="Выберите фильтр" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent side="bottom" className="max-h-64 z-50 bg-white border shadow-lg">
                 {presetFilters.map((filter) => (
-                  <SelectItem key={filter.id} value={filter.id}>
-                    <div>
+                  <SelectItem key={filter.id} value={filter.id} className="cursor-pointer hover:bg-gray-100">
+                    <div className="py-1">
                       <div className="font-medium">{filter.name}</div>
                       <div className="text-sm text-gray-500">{filter.description}</div>
                     </div>

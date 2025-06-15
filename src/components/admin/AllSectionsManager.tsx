@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Camera, MapPin, DollarSign, Users, BarChart3, Settings, Sparkles } from 'lucide-react';
+import { Camera, MapPin, DollarSign, Users, BarChart3, Settings, Sparkles, Send } from 'lucide-react';
 import PortfolioImageManager from './PortfolioImageManager';
 import LocationsManager from './LocationsManager';
 import PricingManager from './PricingManager';
@@ -9,6 +9,7 @@ import ReviewsManager from './ReviewsManager';
 import SiteAnalyticsDashboard from './SiteAnalyticsDashboard';
 import EnhancedAdminPanel from './EnhancedAdminPanel';
 import PhotoRetouchManager from './PhotoRetouchManager';
+import TelegramBotManager from './TelegramBotManager';
 
 interface AllSectionsManagerProps {
   onLogout?: () => void;
@@ -30,7 +31,7 @@ const AllSectionsManager = ({ onLogout }: AllSectionsManagerProps) => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7 bg-white p-1 rounded-lg shadow-sm">
+          <TabsList className="grid w-full grid-cols-8 bg-white p-1 rounded-lg shadow-sm">
             <TabsTrigger 
               value="portfolio" 
               className="flex items-center gap-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white"
@@ -67,6 +68,13 @@ const AllSectionsManager = ({ onLogout }: AllSectionsManagerProps) => {
               Отзывы
             </TabsTrigger>
             <TabsTrigger 
+              value="telegram"
+              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+            >
+              <Send className="w-4 h-4" />
+              Telegram
+            </TabsTrigger>
+            <TabsTrigger 
               value="analytics"
               className="flex items-center gap-2 data-[state=active]:bg-indigo-500 data-[state=active]:text-white"
             >
@@ -100,6 +108,10 @@ const AllSectionsManager = ({ onLogout }: AllSectionsManagerProps) => {
 
           <TabsContent value="reviews" className="space-y-6">
             <ReviewsManager />
+          </TabsContent>
+
+          <TabsContent value="telegram" className="space-y-6">
+            <TelegramBotManager />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">

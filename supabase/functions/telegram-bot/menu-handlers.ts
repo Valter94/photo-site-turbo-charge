@@ -9,15 +9,18 @@ export const createMenuHandlers = (supabase: SupabaseClient) => {
         { text: '📍 Добавить локацию', callback_data: 'add_location' }
       ],
       [
-        { text: '🎨 Управление портфолио', callback_data: 'manage_portfolio' },
+        { text: '🎨 Обработать фото', callback_data: 'process_photos' },
         { text: '💰 Управление ценами', callback_data: 'manage_pricing' }
       ],
       [
-        { text: '🛠 Управление услугами', callback_data: 'manage_services' },
+        { text: '🖼 Управление портфолио', callback_data: 'manage_portfolio' },
         { text: '🏛 Управление локациями', callback_data: 'manage_locations' }
       ],
       [
-        { text: '📊 Статистика', callback_data: 'stats' },
+        { text: '🛠 Управление услугами', callback_data: 'manage_services' },
+        { text: '📊 Статистика', callback_data: 'stats' }
+      ],
+      [
         { text: '❓ Помощь', callback_data: 'help' }
       ]
     ]

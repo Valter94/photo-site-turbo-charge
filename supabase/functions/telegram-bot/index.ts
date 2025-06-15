@@ -98,7 +98,7 @@ serve(async (req) => {
         deleteSession(userId)
         setSession(userId, {
           step: 'waiting_photos_for_processing',
-          data: { filterType },
+          data: { filterType, photos: [] },
           type: 'photo_processing',
           created_at: Date.now()
         })
@@ -114,18 +114,32 @@ serve(async (req) => {
       // Начать обработку фото
       else if (data === 'start_processing') {
         const session = getSession(userId)
-        if (session && session.type === 'photo_processing' && session.data.photos) {
+        if (session && session.type === 'photo_processing' && session.data.photos && session.data.photos.length > 0) {
           try {
+            await telegramAPI.editMessage(chatId, messageId!, '🎨 <b>Обрабатываю фотографии...</b>\n\nПожалуйста, подождите...')
+            
             const result = await photoProcessingHandlers.processPhotos(
               session.data.photos, 
-              session.data.filterType
+              session.data.filterType,
+              botToken
             )
+            
             await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
+            
+            // Отправляем обработанные фото
+            if (result.processedPhotos && result.processedPhotos.length > 0) {
+              for (const photoUrl of result.processedPhotos) {
+                await telegramAPI.sendPhoto(chatId, photoUrl, '✨ Обработанное фото')
+              }
+            }
+            
             deleteSession(userId)
           } catch (error) {
             console.error('❌ Ошибка обработки фото:', error)
-            await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка при обработке фотографий</b>')
+            await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка при обработке фотографий</b>\n\n' + error.message)
           }
+        } else {
+          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Нет фото для обработки</b>\n\nОтправьте фото сначала.')
         }
       }
       // Пакетная обработка
@@ -151,6 +165,22 @@ serve(async (req) => {
             ]
           }
         )
+      }
+      // Завершить загрузку для пакетной обработки
+      else if (data === 'finish_upload') {
+        const session = getSession(userId)
+        if (session && session.type === 'batch_processing' && session.data.photos && session.data.photos.length > 0) {
+          const result = photoProcessingHandlers.getProcessingMenu()
+          await telegramAPI.editMessage(chatId, messageId!, 
+            result.text.replace('Выберите тип обработки:', `Загружено фото: ${session.data.photos.length}\n\nВыберите тип обработки:`), 
+            result.keyboard
+          )
+          
+          // Меняем тип сессии на photo_processing
+          session.type = 'photo_processing'
+          session.step = 'choosing_filter'
+          setSession(userId, session)
+        }
       }
 
       // Основные действия добавления

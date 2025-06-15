@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { usePricing } from '@/hooks/usePricing';
 import PricingCard from './PricingCard';
@@ -83,6 +84,9 @@ const PricingSection = () => {
     ? pricing.filter(p => p.is_active) 
     : defaultPricing;
 
+  // Ещё раз даём гарантию отображения только по-русски
+  const getRussianName = (type: string) => serviceNamesRu[type] || type;
+
   const scrollToBooking = () => {
     const bookingElement = document.getElementById('booking');
     if (bookingElement) {
@@ -102,7 +106,6 @@ const PricingSection = () => {
     );
   }
 
-  // Проводим диагностику: если пришли нереализованные типы сервисов — уведомим в консоль
   displayPricing.forEach(plan => {
     if (!serviceNamesRu[plan.service_type]) {
       console.warn('Неизвестный service_type в ценах:', plan.service_type);
@@ -123,7 +126,7 @@ const PricingSection = () => {
             <PricingCard
               key={plan.id}
               plan={plan}
-              russianName={serviceNamesRu[plan.service_type] || plan.service_type}
+              russianName={getRussianName(plan.service_type)}
               scrollToBooking={scrollToBooking}
             />
           ))}

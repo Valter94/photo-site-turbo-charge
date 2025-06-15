@@ -2,11 +2,17 @@
 export const processStart = async (deps: any, { chatId }: { chatId: number }) => {
   try {
     console.log("▶️ processStart invoked для чата:", chatId);
+    // Проверяем наличие необходимых зависимостей
+    if (!deps || !deps.telegramAPI || !deps.menuHandlers) {
+      console.error("❌ Не хватает зависимостей в processStart", deps);
+      return;
+    }
     await deps.telegramAPI.sendMessage(
       chatId,
       `🤖 <b>Добро пожаловать!</b>\n\nВы можете добавить фото в портфолио или локацию пошагово 👇\n\nЕсли что-то не работает, нажмите /start ещё раз или попробуйте перезапустить бота.`,
       deps.menuHandlers.getMainMenu()
     );
+    console.log("✅ Сообщение приветствия отправлено для чата:", chatId);
   } catch (error) {
     console.error('Ошибка в processStart:', error);
     try {

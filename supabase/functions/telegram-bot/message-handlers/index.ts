@@ -32,6 +32,7 @@ export const createMessageHandlers = (deps: any) => {
 
       const session = deps.getSession(userId);
       if (session) {
+        console.log('[TelegramBot] Обнаружена сессия пользователя:', session.step);
         switch (session.step) {
           case 'waiting_title':
             return processTitle(deps, { message, chatId, userId });
@@ -43,9 +44,11 @@ export const createMessageHandlers = (deps: any) => {
         }
       } else if (!text.startsWith('/')) {
         // Сообщение не команда, нет сессии — показываем главное меню
+        console.log('[TelegramBot] Не команда и нет сессии, вызывается processFallback');
         return processFallback(deps, { message, chatId, userId });
       } else {
         // Лишний случай — неизвестная команда
+        console.log('[TelegramBot] Неизвестная команда:', text);
         await deps.telegramAPI.sendMessage(
           chatId,
           `❓ Неизвестная команда. Нажмите /start для главного меню.`

@@ -1,6 +1,5 @@
 
 // Главный messageHandler для Telegram, делегирует в зависимости от входящего сообщения
-
 import { processStart } from './processStart.ts'
 import { processPhoto } from './processPhoto.ts'
 import { processTitle } from './processTitle.ts'
@@ -13,22 +12,21 @@ export const createMessageHandlers = (deps: any) => {
     const photo = message.photo
 
     if (text.startsWith('/start')) {
+      console.log('Получена команда /start');
       return processStart(deps, { chatId })
     }
 
     if (text.startsWith('/stats')) {
-      // Оставляем обработку в основном файле для stats
       const result = await deps.menuHandlers.getStats()
       await deps.telegramAPI.sendMessage(chatId, result.text)
       return
     }
 
-    // Фото на первом этапе
     if (photo && photo.length > 0) {
+      console.log('Получено фото, передаём в processPhoto');
       return processPhoto(deps, { message, chatId, userId })
     }
 
-    // Текстовые шаги
     const session = deps.getSession(userId)
     if (session) {
       switch (session.step) {
@@ -40,7 +38,6 @@ export const createMessageHandlers = (deps: any) => {
           return processFallback(deps, { message, chatId, userId })
       }
     } else if (!text.startsWith('/')) {
-      // Нет сессии — fallback (направим в меню)
       return processFallback(deps, { message, chatId, userId })
     }
   }

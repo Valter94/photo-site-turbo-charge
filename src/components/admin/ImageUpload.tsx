@@ -183,7 +183,7 @@ const ImageUpload = ({
       toast({
         title: "AI Описание готово",
         description: "Вы можете использовать его или изменить вручную",
-        variant: "success"
+        variant: "default"
       });
     } else {
       setDescStatus("fail");

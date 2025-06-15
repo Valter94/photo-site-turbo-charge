@@ -12,11 +12,14 @@ import { createTutorialHandlers } from './tutorial-handlers.ts'
 import { createPhotoProcessingHandlers } from './photo-processing-handlers.ts'
 import { createScreenshotService } from './screenshot-service.ts'
 import { ensureStorageBucket } from './storage-setup.ts'
+import { createLogger } from './logger.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+const logger = createLogger('TelegramBot')
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -31,7 +34,7 @@ serve(async (req) => {
     const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
 
     if (!supabaseUrl || !supabaseServiceKey || !botToken) {
-      console.error('❌ Missing environment variables')
+      logger.error('Missing environment variables')
       return new Response('Configuration error', { 
         status: 500, 
         headers: corsHeaders 
@@ -41,7 +44,10 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
     
     // Проверяем наличие storage bucket
-    await ensureStorageBucket(supabase)
+    const bucketReady = await ensureStorageBucket(supabase)
+    if (!bucketReady) {
+      logger.warn('Storage bucket not ready, but continuing...')
+    }
     
     const telegramAPI = createTelegramAPI(botToken)
     const screenshotService = createScreenshotService()
@@ -57,11 +63,11 @@ serve(async (req) => {
     try {
       update = await req.json()
     } catch (error) {
-      console.error('❌ Ошибка парсинга JSON:', error)
+      logger.error('JSON parsing error', error)
       return new Response('Invalid JSON', { status: 400, headers: corsHeaders })
     }
 
-    console.log('📨 Получено обновление:', JSON.stringify(update, null, 2))
+    logger.info('Received update', { type: update.message ? 'message' : 'callback' })
 
     const message = update.message
     const callbackQuery = update.callback_query
@@ -85,7 +91,7 @@ serve(async (req) => {
     if (callbackQuery) {
       await telegramAPI.answerCallback(callbackQuery.id)
       const data = callbackQuery.data
-      console.log('🔔 Получен callback:', data)
+      logger.info('Processing callback', { data, userId })
 
       // Обработка фотографий
       if (data === 'process_photos') {
@@ -93,7 +99,7 @@ serve(async (req) => {
           const result = photoProcessingHandlers.getProcessingMenu()
           await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
         } catch (error) {
-          console.error('❌ Ошибка получения меню обработки:', error)
+          logger.error('Error getting processing menu', error)
           await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения меню обработки</b>')
         }
       }
@@ -112,7 +118,7 @@ serve(async (req) => {
           const result = photoProcessingHandlers.startPhotoProcessing(filterType)
           await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
         } catch (error) {
-          console.error('❌ Ошибка начала обработки:', error)
+          logger.error('Error starting photo processing', error)
           await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка запуска обработки</b>')
         }
       }
@@ -140,7 +146,7 @@ serve(async (req) => {
             
             deleteSession(userId)
           } catch (error) {
-            console.error('❌ Ошибка обработки фото:', error)
+            logger.error('Error processing photos', error)
             await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка при обработке фотографий</b>\n\n' + error.message)
           }
         } else {
@@ -201,7 +207,7 @@ serve(async (req) => {
           created_at: Date.now()
         })
         
-        console.log(`📝 Создана НОВАЯ сессия для пользователя ${userId}:`, type)
+        logger.info('Created new session', { userId, type })
         
         await telegramAPI.editMessage(
           chatId,
@@ -219,7 +225,7 @@ serve(async (req) => {
       // ИСПРАВЛЕННАЯ ЛОГИКА: Выбор категории портфолио
       else if (data?.startsWith('portfolio_cat_')) {
         const session = getSession(userId)
-        console.log(`🔍 Проверка сессии для выбора категории пользователя ${userId}:`, session)
+        logger.info('Category selection attempt', { userId, session: session?.step })
         
         if (session && session.step === 'choosing_category' && session.type === 'portfolio') {
           const categoryMap: { [key: string]: string } = {
@@ -236,7 +242,7 @@ serve(async (req) => {
           session.step = 'waiting_description'
           setSession(userId, session)
           
-          console.log(`📝 Обновлена сессия пользователя ${userId}: выбрана категория ${category}`)
+          logger.info('Category selected', { userId, category })
           
           await telegramAPI.editMessage(
             chatId,
@@ -252,7 +258,7 @@ serve(async (req) => {
             }
           )
         } else {
-          console.log(`❌ Некорректная сессия для выбора категории пользователя ${userId}`)
+          logger.warn('Invalid session for category selection', { userId })
           await telegramAPI.editMessage(
             chatId,
             messageId!,
@@ -268,7 +274,7 @@ serve(async (req) => {
           const result = await pricingHandlers.getPricingList()
           await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
         } catch (error) {
-          console.error('❌ Ошибка получения цен:', error)
+          logger.error('Error getting prices', error)
           await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения списка цен</b>')
         }
       }
@@ -278,7 +284,7 @@ serve(async (req) => {
           const result = await pricingHandlers.getEditPricingList()
           await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
         } catch (error) {
-          console.error('❌ Ошибка получения списка для редактирования:', error)
+          logger.error('Error getting edit list', error)
           await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения списка тарифов</b>')
         }
       }
@@ -289,7 +295,7 @@ serve(async (req) => {
           const result = await pricingHandlers.handlePriceEdit(priceId)
           await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
         } catch (error) {
-          console.error('❌ Ошибка получения информации о тарифе:', error)
+          logger.error('Error getting price info', error)
           await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения информации о тарифе</b>')
         }
       }
@@ -299,7 +305,7 @@ serve(async (req) => {
           const result = await servicesHandlers.getServicesList()
           await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
         } catch (error) {
-          console.error('❌ Ошибка получения услуг:', error)
+          logger.error('Error getting services', error)
           await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения списка услуг</b>')
         }
       }
@@ -309,9 +315,42 @@ serve(async (req) => {
           const result = await locationsHandlers.getLocationsList()
           await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
         } catch (error) {
-          console.error('❌ Ошибка получения локаций:', error)
+          logger.error('Error getting locations list', error)
           await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения списка локаций</b>')
         }
+      }
+      // Изменение фото локации
+      else if (data === 'change_location_photo') {
+        try {
+          const result = await locationsHandlers.getLocationPhotoChangeList()
+          await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
+        } catch (error) {
+          logger.error('Error getting location photo change list', error)
+          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения списка локаций</b>')
+        }
+      }
+      // Выбор локации для изменения фото
+      else if (data?.startsWith('change_photo_')) {
+        const locationId = data.replace('change_photo_', '')
+        deleteSession(userId)
+        setSession(userId, {
+          step: 'waiting_new_photo',
+          data: { locationId },
+          type: 'location',
+          created_at: Date.now()
+        })
+        
+        await telegramAPI.editMessage(
+          chatId,
+          messageId!,
+          `📸 <b>Изменение фото локации</b>\n\n` +
+          `Отправьте новое фото для этой локации:`,
+          {
+            inline_keyboard: [
+              [{ text: '❌ Отмена', callback_data: 'manage_locations' }]
+            ]
+          }
+        )
       }
       // Видео-инструкции и помощь
       else if (data === 'help' || data === 'video_instructions') {
@@ -323,7 +362,7 @@ serve(async (req) => {
           const result = await portfolioHandlers.getPortfolioList()
           await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
         } catch (error) {
-          console.error('❌ Ошибка получения портфолио:', error)
+          logger.error('Error getting portfolio', error)
           await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения списка фотографий</b>')
         }
       }
@@ -333,7 +372,7 @@ serve(async (req) => {
           const result = await portfolioHandlers.getDeleteList()
           await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
         } catch (error) {
-          console.error('❌ Ошибка получения списка для удаления:', error)
+          logger.error('Error getting delete list', error)
           await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения списка фотографий</b>')
         }
       }
@@ -345,7 +384,7 @@ serve(async (req) => {
           const result = await portfolioHandlers.getPhotoInfo(photoId)
           await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
         } catch (error) {
-          console.error('❌ Ошибка получения информации о фото:', error)
+          logger.error('Error getting photo info', error)
           await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения информации о фотографии</b>')
         }
       }
@@ -357,10 +396,11 @@ serve(async (req) => {
           const result = await portfolioHandlers.deletePhoto(photoId)
           await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
         } catch (error) {
-          console.error('❌ Ошибка удаления фото:', error)
+          logger.error('Error deleting photo', error)
           await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка при удалении фотографии</b>')
         }
       }
+
       // Главное меню
       else if (data === 'main_menu' || data === 'start') {
         await telegramAPI.editMessage(
@@ -376,14 +416,14 @@ serve(async (req) => {
           const result = await menuHandlers.getStats()
           await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
         } catch (error) {
-          console.error('❌ Ошибка получения статистики:', error)
+          logger.error('Error getting stats', error)
           await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения статистики</b>')
         }
       }
       // Отмена операции
       else if (data === 'cancel') {
         deleteSession(userId)
-        console.log(`❌ Отменена сессия пользователя ${userId}`)
+        logger.info('Session cancelled', { userId })
         await telegramAPI.editMessage(
           chatId, 
           messageId!, 
@@ -401,11 +441,11 @@ serve(async (req) => {
       const photo = message.photo
       const caption = message.caption || ''
 
-      console.log('💬 Обрабатываем сообщение:', { text, hasPhoto: !!photo, caption })
+      logger.info('Processing message', { hasText: !!text, hasPhoto: !!photo })
 
       // Команда /start
       if (text.startsWith('/start')) {
-        console.log('🚀 Обрабатываем команду /start')
+        logger.info('Processing /start command')
         
         try {
           await telegramAPI.sendMessage(
@@ -415,7 +455,7 @@ serve(async (req) => {
             menuHandlers.getMainMenu()
           )
         } catch (error) {
-          console.error('❌ Ошибка отправки приветственного сообщения:', error)
+          logger.error('Error sending welcome message', error)
         }
         
         return new Response('OK', { headers: corsHeaders })
@@ -433,7 +473,7 @@ serve(async (req) => {
           const result = await menuHandlers.getStats()
           await telegramAPI.sendMessage(chatId, result.text)
         } catch (error) {
-          console.error('❌ Ошибка получения статистики:', error)
+          logger.error('Error getting stats', error)
           await telegramAPI.sendMessage(chatId, '❌ <b>Ошибка получения статистики</b>')
         }
         return new Response('OK', { headers: corsHeaders })
@@ -442,7 +482,7 @@ serve(async (req) => {
       // Обработка фото
       if (photo && photo.length > 0) {
         const session = getSession(userId)
-        console.log(`📸 Получено фото от пользователя ${userId}, сессия:`, session)
+        logger.info('Photo received', { userId, sessionType: session?.type, sessionStep: session?.step })
         
         if (session && session.step === 'waiting_photo') {
           const largestPhoto = photo[photo.length - 1]
@@ -450,7 +490,7 @@ serve(async (req) => {
           session.step = 'waiting_title'
           setSession(userId, session)
           
-          console.log(`📸 Сохранено фото для пользователя ${userId}: ${largestPhoto.file_id}`)
+          logger.info('Photo saved', { userId, fileId: largestPhoto.file_id })
           
           await telegramAPI.sendMessage(
             chatId,
@@ -463,6 +503,26 @@ serve(async (req) => {
               ]
             }
           )
+        } else if (session && session.step === 'waiting_new_photo' && session.type === 'location') {
+          // Обработка изменения фото локации
+          const largestPhoto = photo[photo.length - 1]
+          try {
+            const result = await locationsHandlers.updateLocationPhoto(session.data.locationId, largestPhoto.file_id, botToken, supabase)
+            await telegramAPI.sendMessage(chatId, result.text, result.keyboard)
+            deleteSession(userId)
+          } catch (error) {
+            logger.error('Error updating location photo', error)
+            await telegramAPI.sendMessage(
+              chatId,
+              `❌ <b>Ошибка при изменении фото</b>\n\n${error.message}`,
+              {
+                inline_keyboard: [
+                  [{ text: '🔙 К локациям', callback_data: 'manage_locations' }]
+                ]
+              }
+            )
+            deleteSession(userId)
+          }
         } else if (session && session.type === 'photo_processing' && session.step === 'waiting_photos_for_processing') {
           const largestPhoto = photo[photo.length - 1]
           session.data.photos = session.data.photos || []
@@ -508,7 +568,7 @@ serve(async (req) => {
             }
           )
         } else {
-          console.log(`❓ Фото получено без активной сессии от пользователя ${userId}`)
+          logger.info('Photo received without active session', { userId })
           await telegramAPI.sendMessage(
             chatId,
             `❓ <b>Чтобы добавить фото, используйте меню</b>\n\n` +
@@ -521,7 +581,7 @@ serve(async (req) => {
 
       // Обработка сессий пользователя
       const session = getSession(userId)
-      console.log(`🔍 Проверка сессии для пользователя ${userId}:`, session ? `${session.type} - ${session.step}` : 'нет сессии')
+      logger.info('Session check', { userId, sessionExists: !!session, sessionType: session?.type, sessionStep: session?.step })
       
       if (!session && !text.startsWith('/')) {
         await telegramAPI.sendMessage(
@@ -541,7 +601,7 @@ serve(async (req) => {
           session.step = 'choosing_category'
           setSession(userId, session)
           
-          console.log(`📝 Получено название для портфолио от пользователя ${userId}: ${text}`)
+          logger.info('Title received for portfolio', { userId, title: text })
           
           await telegramAPI.sendMessage(
             chatId,
@@ -571,7 +631,7 @@ serve(async (req) => {
           session.step = 'waiting_description'
           setSession(userId, session)
           
-          console.log(`📝 Получено название для локации от пользователя ${userId}: ${text}`)
+          logger.info('Title received for location', { userId, title: text })
           
           await telegramAPI.sendMessage(
             chatId,
@@ -591,7 +651,7 @@ serve(async (req) => {
       if (session && session.step === 'waiting_description') {
         session.data.description = text
         
-        console.log(`📝 Получено описание от пользователя ${userId}: ${text}`)
+        logger.info('Description received', { userId, description: text })
         
         try {
           const fileResponse = await fetch(`https://api.telegram.org/bot${botToken}/getFile?file_id=${session.data.photo_file_id}`)
@@ -651,7 +711,7 @@ serve(async (req) => {
               'maternity': 'Материнство'
             }
 
-            console.log(`✅ Добавлено в портфолио от пользователя ${userId}`)
+            logger.info('Portfolio item added successfully', { userId })
 
             await telegramAPI.sendMessage(
               chatId,
@@ -659,44 +719,9 @@ serve(async (req) => {
               `📷 Название: ${session.data.title}\n` +
               `🏷 Категория: ${categoryNames[session.data.category] || session.data.category}\n` +
               `📝 Описание: ${session.data.description}\n\n` +
-              `🌐 Фото появится на сайте через несколько минут.\n` +
-              `📸 Создаю скриншот сайта...`,
+              `🌐 Фото появится на сайте через несколько минут.`,
               menuHandlers.getMainMenu()
             )
-
-            // Создаем скриншот сайта с новым фото
-            try {
-              const siteUrl = 'https://ojrekbttkriwwyaupbox.supabase.co/'
-              const screenshotData = await screenshotService.takeSimpleScreenshot(siteUrl)
-              
-              if (screenshotData) {
-                await telegramAPI.sendPhoto(
-                  chatId,
-                  screenshotData,
-                  `📸 <b>Вот как выглядит ваш сайт сейчас</b>\n\n` +
-                  `Новая фотография "<b>${session.data.title}</b>" добавлена в портфолио!`,
-                  {
-                    inline_keyboard: [
-                      [{ text: '🌐 Открыть сайт', url: siteUrl }],
-                      [{ text: '🔙 Главное меню', callback_data: 'main_menu' }]
-                    ]
-                  }
-                )
-              } else {
-                await telegramAPI.sendMessage(
-                  chatId,
-                  `📸 <b>Скриншот временно недоступен</b>\n\n` +
-                  `Но фото успешно добавлено! Проверьте сайт: ${siteUrl}`
-                )
-              }
-            } catch (screenshotError) {
-              console.error('❌ Ошибка создания скриншота:', screenshotError)
-              await telegramAPI.sendMessage(
-                chatId,
-                `📸 <b>Скриншот временно недоступен</b>\n\n` +
-                `Но фото успешно добавлено! Проверьте сайт: https://ojrekbttkriwwyaupbox.supabase.co/`
-              )
-            }
           } else {
             // Добавляем локацию
             const { error: insertError } = await supabase
@@ -712,58 +737,23 @@ serve(async (req) => {
               throw insertError
             }
 
-            console.log(`✅ Добавлена локация от пользователя ${userId}`)
+            logger.info('Location added successfully', { userId })
 
             await telegramAPI.sendMessage(
               chatId,
               `✅ <b>Локация успешно добавлена!</b>\n\n` +
               `📍 Название: ${session.data.title}\n` +
               `📝 Описание: ${session.data.description}\n\n` +
-              `🌐 Локация появится на сайте через несколько минут.\n` +
-              `📸 Создаю скриншот сайта...`,
+              `🌐 Локация появится на сайте через несколько минут.`,
               menuHandlers.getMainMenu()
             )
-
-            // Создаем скриншот сайта с новой локацией
-            try {
-              const siteUrl = 'https://ojrekbttkriwwyaupbox.supabase.co/'
-              const screenshotData = await screenshotService.takeSimpleScreenshot(siteUrl)
-              
-              if (screenshotData) {
-                await telegramAPI.sendPhoto(
-                  chatId,
-                  screenshotData,
-                  `📸 <b>Вот как выглядит ваш сайт сейчас</b>\n\n` +
-                  `Новая локация "<b>${session.data.title}</b>" добавлена!`,
-                  {
-                    inline_keyboard: [
-                      [{ text: '🌐 Открыть сайт', url: siteUrl }],
-                      [{ text: '🔙 Главное меню', callback_data: 'main_menu' }]
-                    ]
-                  }
-                )
-              } else {
-                await telegramAPI.sendMessage(
-                  chatId,
-                  `📸 <b>Скриншот временно недоступен</b>\n\n` +
-                  `Но локация успешно добавлена! Проверьте сайт: ${siteUrl}`
-                )
-              }
-            } catch (screenshotError) {
-              console.error('❌ Ошибка создания скриншота:', screenshotError)
-              await telegramAPI.sendMessage(
-                chatId,
-                `📸 <b>Скриншот временно недоступен</b>\n\n` +
-                `Но локация успешно добавлена! Проверьте сайт: https://ojrekbttkriwwyaupbox.supabase.co/`
-              )
-            }
           }
           
           deleteSession(userId)
-          console.log(`🗑️ Удалена сессия пользователя ${userId} после успешного завершения`)
+          logger.info('Session completed and deleted', { userId })
           
         } catch (error) {
-          console.error('❌ Ошибка обработки:', error)
+          logger.error('Error processing session', { userId, error })
           await telegramAPI.sendMessage(
             chatId, 
             `❌ Ошибка при сохранении: ${error.message}`,
@@ -776,7 +766,7 @@ serve(async (req) => {
 
     return new Response('OK', { headers: corsHeaders })
   } catch (error) {
-    console.error('💥 Ошибка в Telegram боте:', error)
+    logger.error('Critical bot error', error)
     return new Response(`Error: ${error.message}`, { 
       status: 500, 
       headers: corsHeaders 

@@ -9,7 +9,7 @@ export const createMenuHandlers = (supabase: SupabaseClient) => {
         { text: '📍 Добавить локацию', callback_data: 'add_location' }
       ],
       [
-        { text: '🎨 Обработать фото', callback_data: 'process_photos' },
+        { text: '🎨 Ретушь фото', callback_data: 'process_photos' },
         { text: '💰 Управление ценами', callback_data: 'manage_pricing' }
       ],
       [
@@ -46,34 +46,29 @@ export const createMenuHandlers = (supabase: SupabaseClient) => {
   })
 
   const getStats = async () => {
-    const { count: portfolioCount } = await supabase
-      .from('portfolio')
-      .select('*', { count: 'exact', head: true })
+    try {
+      const [portfolioResult, bookingsResult, reviewsResult, locationsResult] = await Promise.all([
+        supabase.from('portfolio').select('*', { count: 'exact', head: true }),
+        supabase.from('bookings').select('*', { count: 'exact', head: true }),
+        supabase.from('reviews').select('*', { count: 'exact', head: true }),
+        supabase.from('photoshoot_locations').select('*', { count: 'exact', head: true })
+      ])
 
-    const { count: bookingsCount } = await supabase
-      .from('bookings')
-      .select('*', { count: 'exact', head: true })
-
-    const { count: reviewsCount } = await supabase
-      .from('reviews')
-      .select('*', { count: 'exact', head: true })
-
-    const { count: locationsCount } = await supabase
-      .from('photoshoot_locations')
-      .select('*', { count: 'exact', head: true })
-
-    return {
-      text: `📊 <b>Статистика сайта:</b>\n\n` +
-            `📸 Фото в портфолио: <b>${portfolioCount || 0}</b>\n` +
-            `📝 Заявок на съемку: <b>${bookingsCount || 0}</b>\n` +
-            `⭐ Отзывов: <b>${reviewsCount || 0}</b>\n` +
-            `📍 Локаций: <b>${locationsCount || 0}</b>\n\n` +
-            `🕐 Обновлено: ${new Date().toLocaleString('ru-RU')}`,
-      keyboard: {
-        inline_keyboard: [
-          [{ text: '🔙 Назад', callback_data: 'main_menu' }]
-        ]
+      return {
+        text: `📊 <b>Статистика сайта:</b>\n\n` +
+              `📸 Фото в портфолио: <b>${portfolioResult.count || 0}</b>\n` +
+              `📝 Заявок на съемку: <b>${bookingsResult.count || 0}</b>\n` +
+              `⭐ Отзывов: <b>${reviewsResult.count || 0}</b>\n` +
+              `📍 Локаций: <b>${locationsResult.count || 0}</b>\n\n` +
+              `🕐 Обновлено: ${new Date().toLocaleString('ru-RU')}`,
+        keyboard: {
+          inline_keyboard: [
+            [{ text: '🔙 Назад', callback_data: 'main_menu' }]
+          ]
+        }
       }
+    } catch (error) {
+      throw new Error('Ошибка получения статистики: ' + error.message)
     }
   }
 

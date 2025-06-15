@@ -111,6 +111,23 @@ serve(async (req) => {
           await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка запуска обработки</b>')
         }
       }
+      // Начать обработку фото
+      else if (data === 'start_processing') {
+        const session = getSession(userId)
+        if (session && session.type === 'photo_processing' && session.data.photos) {
+          try {
+            const result = await photoProcessingHandlers.processPhotos(
+              session.data.photos, 
+              session.data.filterType
+            )
+            await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
+            deleteSession(userId)
+          } catch (error) {
+            console.error('❌ Ошибка обработки фото:', error)
+            await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка при обработке фотографий</b>')
+          }
+        }
+      }
       // Пакетная обработка
       else if (data === 'batch_process') {
         deleteSession(userId)
@@ -164,6 +181,52 @@ serve(async (req) => {
           }
         )
       }
+      // ИСПРАВЛЕННАЯ ЛОГИКА: Выбор категории портфолио
+      else if (data?.startsWith('portfolio_cat_')) {
+        const session = getSession(userId)
+        console.log(`🔍 Проверка сессии для выбора категории пользователя ${userId}:`, session)
+        
+        if (session && session.step === 'choosing_category' && session.type === 'portfolio') {
+          const categoryMap: { [key: string]: string } = {
+            'wedding': 'Свадьба',
+            'lovestory': 'Love Story',
+            'portrait': 'Портрет',
+            'family': 'Семья',
+            'corporate': 'Корпоратив',
+            'maternity': 'Материнство'
+          }
+          
+          const category = data.replace('portfolio_cat_', '')
+          session.data.category = category
+          session.step = 'waiting_description'
+          setSession(userId, session)
+          
+          console.log(`📝 Обновлена сессия пользователя ${userId}: выбрана категория ${category}`)
+          
+          await telegramAPI.editMessage(
+            chatId,
+            messageId!,
+            `📝 <b>Шаг 3: Описание</b>\n\n` +
+            `✅ Категория: <b>${categoryMap[category] || category}</b>\n` +
+            `🖼 Название: <b>${session.data.title}</b>\n\n` +
+            `Теперь отправьте описание для фото:`,
+            {
+              inline_keyboard: [
+                [{ text: '❌ Отмена', callback_data: 'cancel' }]
+              ]
+            }
+          )
+        } else {
+          console.log(`❌ Некорректная сессия для выбора категории пользователя ${userId}`)
+          await telegramAPI.editMessage(
+            chatId,
+            messageId!,
+            `❌ <b>Ошибка сессии</b>\n\nНачните заново:`,
+            menuHandlers.getMainMenu()
+          )
+        }
+      }
+
       // Управление ценами
       else if (data === 'manage_pricing') {
         try {
@@ -293,41 +356,6 @@ serve(async (req) => {
           menuHandlers.getMainMenu()
         )
       }
-      // ИСПРАВЛЕННАЯ ЛОГИКА: Выбор категории портфолио
-      else if (data?.startsWith('portfolio_cat_')) {
-        const session = getSession(userId)
-        if (session && session.step === 'choosing_category' && session.type === 'portfolio') {
-          const categoryMap: { [key: string]: string } = {
-            'wedding': 'Свадьба',
-            'lovestory': 'Love Story',
-            'portrait': 'Портрет',
-            'family': 'Семья',
-            'corporate': 'Корпоратив',
-            'maternity': 'Материнство'
-          }
-          
-          const category = data.replace('portfolio_cat_', '')
-          session.data.category = category
-          session.step = 'waiting_description'
-          setSession(userId, session)
-          
-          console.log(`📝 Обновлена сессия пользователя ${userId}: выбрана категория ${category}`)
-          
-          await telegramAPI.editMessage(
-            chatId,
-            messageId!,
-            `📝 <b>Шаг 3: Описание</b>\n\n` +
-            `✅ Категория: <b>${categoryMap[category] || category}</b>\n` +
-            `🖼 Название: <b>${session.data.title}</b>\n\n` +
-            `Теперь отправьте описание для фото:`,
-            {
-              inline_keyboard: [
-                [{ text: '❌ Отмена', callback_data: 'cancel' }]
-              ]
-            }
-          )
-        }
-      }
       
       return new Response('OK', { headers: corsHeaders })
     }
@@ -379,6 +407,8 @@ serve(async (req) => {
       // Обработка фото
       if (photo && photo.length > 0) {
         const session = getSession(userId)
+        console.log(`📸 Получено фото от пользователя ${userId}, сессия:`, session)
+        
         if (session && session.step === 'waiting_photo') {
           const largestPhoto = photo[photo.length - 1]
           session.data.photo_file_id = largestPhoto.file_id

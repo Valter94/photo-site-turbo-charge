@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { TelegramUpdate } from './types.ts'
@@ -11,6 +10,7 @@ import { createServicesHandlers } from './services-handlers.ts'
 import { createLocationsHandlers } from './locations-handlers.ts'
 import { createTutorialHandlers } from './tutorial-handlers.ts'
 import { createPhotoProcessingHandlers } from './photo-processing-handlers.ts'
+import { createScreenshotService } from './screenshot-service.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -39,6 +39,7 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
     const telegramAPI = createTelegramAPI(botToken)
+    const screenshotService = createScreenshotService()
     const menuHandlers = createMenuHandlers(supabase)
     const portfolioHandlers = createPortfolioHandlers(supabase)
     const pricingHandlers = createPricingHandlers(supabase)
@@ -527,7 +528,6 @@ serve(async (req) => {
         
         console.log(`📝 Получено описание от пользователя ${userId}: ${text}`)
         
-        // Обрабатываем фото и сохраняем в базу
         try {
           const fileResponse = await fetch(`https://api.telegram.org/bot${botToken}/getFile?file_id=${session.data.photo_file_id}`)
           const fileData = await fileResponse.json()
@@ -594,9 +594,44 @@ serve(async (req) => {
               `📷 Название: ${session.data.title}\n` +
               `🏷 Категория: ${categoryNames[session.data.category] || session.data.category}\n` +
               `📝 Описание: ${session.data.description}\n\n` +
-              `🌐 Фото появится на сайте через несколько минут.`,
+              `🌐 Фото появится на сайте через несколько минут.\n` +
+              `📸 Создаю скриншот сайта...`,
               menuHandlers.getMainMenu()
             )
+
+            // Создаем скриншот сайта с новым фото
+            try {
+              const siteUrl = 'https://ojrekbttkriwwyaupbox.supabase.co/'
+              const screenshotData = await screenshotService.takeSimpleScreenshot(siteUrl)
+              
+              if (screenshotData) {
+                await telegramAPI.sendPhoto(
+                  chatId,
+                  screenshotData,
+                  `📸 <b>Вот как выглядит ваш сайт сейчас</b>\n\n` +
+                  `Новая фотография "<b>${session.data.title}</b>" добавлена в портфолио!`,
+                  {
+                    inline_keyboard: [
+                      [{ text: '🌐 Открыть сайт', url: siteUrl }],
+                      [{ text: '🔙 Главное меню', callback_data: 'main_menu' }]
+                    ]
+                  }
+                )
+              } else {
+                await telegramAPI.sendMessage(
+                  chatId,
+                  `📸 <b>Скриншот временно недоступен</b>\n\n` +
+                  `Но фото успешно добавлено! Проверьте сайт: ${siteUrl}`
+                )
+              }
+            } catch (screenshotError) {
+              console.error('❌ Ошибка создания скриншота:', screenshotError)
+              await telegramAPI.sendMessage(
+                chatId,
+                `📸 <b>Скриншот временно недоступен</b>\n\n` +
+                `Но фото успешно добавлено! Проверьте сайт: https://ojrekbttkriwwyaupbox.supabase.co/`
+              )
+            }
           } else {
             // Добавляем локацию
             const { error: insertError } = await supabase
@@ -619,9 +654,44 @@ serve(async (req) => {
               `✅ <b>Локация успешно добавлена!</b>\n\n` +
               `📍 Название: ${session.data.title}\n` +
               `📝 Описание: ${session.data.description}\n\n` +
-              `🌐 Локация появится на сайте через несколько минут.`,
+              `🌐 Локация появится на сайте через несколько минут.\n` +
+              `📸 Создаю скриншот сайта...`,
               menuHandlers.getMainMenu()
             )
+
+            // Создаем скриншот сайта с новой локацией
+            try {
+              const siteUrl = 'https://ojrekbttkriwwyaupbox.supabase.co/'
+              const screenshotData = await screenshotService.takeSimpleScreenshot(siteUrl)
+              
+              if (screenshotData) {
+                await telegramAPI.sendPhoto(
+                  chatId,
+                  screenshotData,
+                  `📸 <b>Вот как выглядит ваш сайт сейчас</b>\n\n` +
+                  `Новая локация "<b>${session.data.title}</b>" добавлена!`,
+                  {
+                    inline_keyboard: [
+                      [{ text: '🌐 Открыть сайт', url: siteUrl }],
+                      [{ text: '🔙 Главное меню', callback_data: 'main_menu' }]
+                    ]
+                  }
+                )
+              } else {
+                await telegramAPI.sendMessage(
+                  chatId,
+                  `📸 <b>Скриншот временно недоступен</b>\n\n` +
+                  `Но локация успешно добавлена! Проверьте сайт: ${siteUrl}`
+                )
+              }
+            } catch (screenshotError) {
+              console.error('❌ Ошибка создания скриншота:', screenshotError)
+              await telegramAPI.sendMessage(
+                chatId,
+                `📸 <b>Скриншот временно недоступен</b>\n\n` +
+                `Но локация успешно добавлена! Проверьте сайт: https://ojrekbttkriwwyaupbox.supabase.co/`
+              )
+            }
           }
           
           deleteSession(userId)

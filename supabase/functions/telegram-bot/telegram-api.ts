@@ -34,6 +34,41 @@ export const createTelegramAPI = (botToken: string) => {
     }
   }
 
+  const sendPhoto = async (chatId: number, photo: Uint8Array | string, caption?: string, keyboard?: any) => {
+    try {
+      const formData = new FormData()
+      formData.append('chat_id', chatId.toString())
+      
+      if (typeof photo === 'string') {
+        formData.append('photo', photo)
+      } else {
+        const blob = new Blob([photo], { type: 'image/jpeg' })
+        formData.append('photo', blob, 'screenshot.jpg')
+      }
+      
+      if (caption) {
+        formData.append('caption', caption)
+        formData.append('parse_mode', 'HTML')
+      }
+      
+      if (keyboard) {
+        formData.append('reply_markup', JSON.stringify(keyboard))
+      }
+
+      const response = await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+        method: 'POST',
+        body: formData
+      })
+      
+      const result = await response.json()
+      console.log('📸 Результат отправки фото:', result)
+      return result
+    } catch (error) {
+      console.error('❌ Ошибка отправки фото:', error)
+      throw error
+    }
+  }
+
   const editMessage = async (chatId: number, messageId: number, text: string, keyboard?: any) => {
     const payload: any = {
       chat_id: chatId,
@@ -76,5 +111,5 @@ export const createTelegramAPI = (botToken: string) => {
     }
   }
 
-  return { sendMessage, editMessage, answerCallback }
+  return { sendMessage, sendPhoto, editMessage, answerCallback }
 }

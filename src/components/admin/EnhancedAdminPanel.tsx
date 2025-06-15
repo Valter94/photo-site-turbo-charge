@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import PortfolioManager from './PortfolioManager';
 import LocationsManager from './LocationsManager';
 import PricingManager from './PricingManager';
@@ -22,10 +22,15 @@ import {
   MessageSquare,
   BarChart3,
   Download,
-  Plus
+  Plus,
+  LogOut
 } from 'lucide-react';
 
-const EnhancedAdminPanel = () => {
+interface EnhancedAdminPanelProps {
+  onLogout: () => void;
+}
+
+const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
   const [activeTab, setActiveTab] = useState("portfolio");
 
   const tabs = [
@@ -46,9 +51,19 @@ const EnhancedAdminPanel = () => {
       <div className="max-w-7xl mx-auto">
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">
-              🎨 Панель управления сайтом фотографа
-            </CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle className="text-2xl font-bold">
+                🎨 Панель управления сайтом фотографа
+              </CardTitle>
+              <Button 
+                onClick={onLogout}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Выйти
+              </Button>
+            </div>
           </CardHeader>
         </Card>
 

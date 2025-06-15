@@ -1,10 +1,22 @@
 
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { X, ChevronLeft, ChevronRight, Download, Heart } from 'lucide-react';
 import OptimizedImage from './OptimizedImage';
+
+/**
+ * VisuallyHidden: Utility component to hide content visually but keep it for screen readers
+ */
+const VisuallyHidden: React.FC<React.PropsWithChildren> = ({ children }) => (
+  <span style={{
+    position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden',
+    clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0
+  }}>
+    {children}
+  </span>
+);
 
 interface ImageViewerProps {
   images: Array<{
@@ -43,7 +55,6 @@ const ImageViewer = ({ images, initialIndex, isOpen, onClose }: ImageViewerProps
 
   const handleKeyDown = (event: KeyboardEvent) => {
     if (!isOpen) return;
-    
     if (event.key === 'ArrowLeft') goToPrevious();
     if (event.key === 'ArrowRight') goToNext();
     if (event.key === 'Escape') onClose();
@@ -58,7 +69,6 @@ const ImageViewer = ({ images, initialIndex, isOpen, onClose }: ImageViewerProps
 
   const downloadImage = async () => {
     if (!currentImage?.image_url) return;
-    
     try {
       const response = await fetch(currentImage.image_url);
       const blob = await response.blob();
@@ -86,11 +96,35 @@ const ImageViewer = ({ images, initialIndex, isOpen, onClose }: ImageViewerProps
     return names[category as keyof typeof names] || category;
   };
 
+  // Новый обработчик ошибок изображений для отлова target == null
+  const handleImageError = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    if (!event.target || !(event.target instanceof HTMLImageElement)) {
+      console.warn('Image error event or target is null (handled gracefully)');
+      return;
+    }
+    // Можно добавить fallback/заглушку при необходимости
+    event.target.src = 'https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?w=400&h=300&fit=crop&auto=format&q=50';
+    event.target.alt = 'Изображение недоступно';
+  };
+
   if (!currentImage) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl w-full h-full max-h-screen p-0 bg-black/95">
+        {/* accessibility: DialogTitle & DialogDescription */}
+        <DialogTitle asChild>
+          <VisuallyHidden>
+            {currentImage.title || "Изображение"}
+          </VisuallyHidden>
+        </DialogTitle>
+        {currentImage.description && (
+          <DialogDescription asChild>
+            <VisuallyHidden>
+              {currentImage.description}
+            </VisuallyHidden>
+          </DialogDescription>
+        )}
         <div className="relative w-full h-full flex items-center justify-center">
           {/* Кнопка закрытия */}
           <Button
@@ -132,6 +166,8 @@ const ImageViewer = ({ images, initialIndex, isOpen, onClose }: ImageViewerProps
               className="max-w-full max-h-full object-contain"
               width={1200}
               height={800}
+              // handle error graceful, optional
+              // onError={handleImageError}
             />
           </div>
 
@@ -151,11 +187,9 @@ const ImageViewer = ({ images, initialIndex, isOpen, onClose }: ImageViewerProps
                       </Badge>
                     )}
                   </div>
-                  
                   {currentImage.description && (
                     <p className="text-gray-300 mb-2">{currentImage.description}</p>
                   )}
-                  
                   <div className="flex flex-wrap gap-4 text-sm text-gray-400">
                     {currentImage.location && (
                       <span>📍 {currentImage.location}</span>
@@ -168,7 +202,6 @@ const ImageViewer = ({ images, initialIndex, isOpen, onClose }: ImageViewerProps
                     )}
                   </div>
                 </div>
-
                 <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"
@@ -188,8 +221,6 @@ const ImageViewer = ({ images, initialIndex, isOpen, onClose }: ImageViewerProps
                   </Button>
                 </div>
               </div>
-
-              {/* Счетчик изображений */}
               {images.length > 1 && (
                 <div className="text-center text-sm text-gray-400">
                   {currentIndex + 1} из {images.length}

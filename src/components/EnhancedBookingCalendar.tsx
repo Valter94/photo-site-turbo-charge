@@ -33,6 +33,20 @@ const EnhancedBookingCalendar = () => {
   const { data: locations } = useLocations();
   const { data: pricing } = usePricing();
 
+  // Перевод типов съемки на русский
+  const serviceTypeTranslations: { [key: string]: string } = {
+    'wedding_preparations': 'Утренние сборы',
+    'wedding_ceremony': 'Церемония и банкет', 
+    'wedding_full_day': 'Полный свадебный день',
+    'lovestory': 'Love Story',
+    'portrait': 'Портретная съемка',
+    'family': 'Семейная фотосессия',
+    'maternity': 'Съемка беременности',
+    'newborn': 'Съемка новорожденного',
+    'corporate': 'Корпоративная съемка',
+    'event': 'Съемка мероприятий'
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -232,7 +246,7 @@ const EnhancedBookingCalendar = () => {
                           {pricing?.map((service) => (
                             <SelectItem key={service.id} value={service.service_type}>
                               <div className="flex justify-between items-center w-full">
-                                <span>{service.service_type}</span>
+                                <span>{serviceTypeTranslations[service.service_type] || service.service_type}</span>
                                 <span className="text-rose-600 font-semibold ml-4">
                                   {service.price.toLocaleString('ru-RU')} ₽
                                 </span>

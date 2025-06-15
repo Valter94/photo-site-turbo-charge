@@ -25,16 +25,19 @@ const BookingForm = () => {
   const { data: locations } = useLocations();
   const { data: pricing } = usePricing();
 
-  const serviceTypes = [
-    { value: 'wedding_preparations', label: 'Утренние сборы' },
-    { value: 'wedding_ceremony', label: 'Церемония и банкет' },
-    { value: 'wedding_full_day', label: 'Полный свадебный день' },
-    { value: 'lovestory', label: 'Love Story' },
-    { value: 'portrait', label: 'Портретная съемка' },
-    { value: 'family', label: 'Семейная фотосессия' },
-    { value: 'maternity', label: 'Съемка беременности' },
-    { value: 'newborn', label: 'Съемка новорожденного' }
-  ];
+  // Перевод типов съемки на русский
+  const serviceTypeTranslations: { [key: string]: string } = {
+    'wedding_preparations': 'Утренние сборы',
+    'wedding_ceremony': 'Церемония и банкет',
+    'wedding_full_day': 'Полный свадебный день',
+    'lovestory': 'Love Story',
+    'portrait': 'Портретная съемка',
+    'family': 'Семейная фотосессия',
+    'maternity': 'Съемка беременности',
+    'newborn': 'Съемка новорожденного',
+    'corporate': 'Корпоративная съемка',
+    'event': 'Съемка мероприятий'
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,9 +168,9 @@ const BookingForm = () => {
                     <SelectValue placeholder="Выберите тип съемки" />
                   </SelectTrigger>
                   <SelectContent>
-                    {serviceTypes.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
+                    {pricing?.map((service) => (
+                      <SelectItem key={service.id} value={service.service_type}>
+                        {serviceTypeTranslations[service.service_type] || service.service_type}
                       </SelectItem>
                     ))}
                   </SelectContent>

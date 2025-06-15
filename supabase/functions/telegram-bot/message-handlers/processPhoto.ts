@@ -4,6 +4,9 @@ export const processPhoto = async (deps: any, { message, chatId, userId }: any) 
   const photo = message.photo
   let session = getSession(userId)
 
+  // Логирование состояния сессии для диагностики
+  console.log('[processPhoto] Состояние сессии до:', session);
+
   if (!session) {
     await telegramAPI.sendMessage(
       chatId,
@@ -16,7 +19,9 @@ export const processPhoto = async (deps: any, { message, chatId, userId }: any) 
     return
   }
 
+  // Дополнительная защита: корректно восстановить step, если пользователь был на шаге photo
   if (session.step !== 'waiting_photo') {
+    console.log(`[processPhoto] Фото получено не на своем step: session.step=${session.step}`);
     await telegramAPI.sendMessage(
       chatId,
       `❌ <b>Сейчас фото не требуется.</b>\n\nСледуйте инструкции или начните заново:`,
@@ -25,10 +30,15 @@ export const processPhoto = async (deps: any, { message, chatId, userId }: any) 
     return
   }
 
+  // Обработка добавления фото в сессию
   const largestPhoto = photo[photo.length - 1]
+  session.data = session.data || {};
   session.data.photo_file_id = largestPhoto.file_id
-  session.step = 'waiting_title'
+  session.step = 'waiting_title' // Переключаем step на "ввод названия"
   setSession(userId, session)
+
+  // Логирование для диагностики
+  console.log('[processPhoto] Сессия после добавления фото:', session);
 
   await telegramAPI.sendMessage(
     chatId,

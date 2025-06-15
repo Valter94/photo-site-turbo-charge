@@ -14,6 +14,75 @@ const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email
 const validateName = (name: string) => name.length >= 2 && name.length <= 40;
 const validateComment = (comment: string) => comment.length >= 10 && comment.length <= 600;
 
+// Тип для отзыва (включает photo_url)
+type Review = {
+  id: string;
+  name: string;
+  rating: number;
+  comment: string;
+  service_type: string;
+  created_at: string;
+  photo_url?: string; // теперь есть в обоих сценариях
+};
+
+// Моковые отзывы с РАЗНЫМИ датами и свойством photo_url для типизации
+const mockReviews: Review[] = [
+  {
+    id: '1',
+    name: 'Анна и Михаил',
+    rating: 5,
+    comment: 'Ирина - настоящий профессионал! Наша свадебная съемка прошла превосходно. Каждый кадр пропитан эмоциями и любовью. Фотографии получились просто волшебными!',
+    service_type: 'wedding',
+    created_at: '2024-11-15',
+    photo_url: undefined,
+  },
+  {
+    id: '2',
+    name: 'Елена Петрова',
+    rating: 5,
+    comment: 'Потрясающая работа! Love Story съемка в Патриарших прудах была очень романтичной. Ирина умеет найти подход к каждому клиенту и создать непринужденную атмосферу.',
+    service_type: 'lovestory',
+    created_at: '2024-10-28',
+    photo_url: undefined,
+  },
+  {
+    id: '3',
+    name: 'Семья Смирновых',
+    rating: 5,
+    comment: 'Семейная фотосессия с детьми - это всегда вызов, но Ирина справилась блестяще! Дети были в восторге, а мы получили прекрасные семейные фотографии.',
+    service_type: 'family',
+    created_at: '2024-12-10',
+    photo_url: undefined,
+  },
+  {
+    id: '4',
+    name: 'Мария Иванова',
+    rating: 5,
+    comment: 'Индивидуальная портретная съемка превзошла все ожидания. Ирина помогла мне почувствовать себя уверенно перед камерой. Результат - шикарные фотографии!',
+    service_type: 'portrait',
+    created_at: '2024-09-18',
+    photo_url: undefined,
+  },
+  {
+    id: '5',
+    name: 'Алексей Козлов',
+    rating: 5,
+    comment: 'Корпоративная съемка для нашей компании была организована на высшем уровне. Профессиональный подход, отличное качество фотографий и соблюдение всех сроков.',
+    service_type: 'corporate',
+    created_at: '2024-12-01',
+    photo_url: undefined,
+  },
+  {
+    id: '6',
+    name: 'Виктория и Артем',
+    rating: 5,
+    comment: 'Романтическая съемка на Крымском мосту была незабываемой! Ирина создала такую атмосферу, что мы забыли о камере и просто наслаждались моментом.',
+    service_type: 'lovestory',
+    created_at: '2024-08-14',
+    photo_url: undefined,
+  }
+];
+
 const ReviewsSection = () => {
   const { data: reviews, isLoading } = useReviews();
   const { toast } = useToast();
@@ -26,58 +95,6 @@ const ReviewsSection = () => {
     service_type: '',
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-  // Моковые отзывы с РАЗНЫМИ датами
-  const mockReviews = [
-    {
-      id: '1',
-      name: 'Анна и Михаил',
-      rating: 5,
-      comment: 'Ирина - настоящий профессионал! Наша свадебная съемка прошла превосходно. Каждый кадр пропитан эмоциями и любовью. Фотографии получились просто волшебными!',
-      service_type: 'wedding',
-      created_at: '2024-11-15'
-    },
-    {
-      id: '2',
-      name: 'Елена Петрова',
-      rating: 5,
-      comment: 'Потрясающая работа! Love Story съемка в Патриарших прудах была очень романтичной. Ирина умеет найти подход к каждому клиенту и создать непринужденную атмосферу.',
-      service_type: 'lovestory',
-      created_at: '2024-10-28'
-    },
-    {
-      id: '3',
-      name: 'Семья Смирновых',
-      rating: 5,
-      comment: 'Семейная фотосессия с детьми - это всегда вызов, но Ирина справилась блестяще! Дети были в восторге, а мы получили прекрасные семейные фотографии.',
-      service_type: 'family',
-      created_at: '2024-12-10'
-    },
-    {
-      id: '4',
-      name: 'Мария Иванова',
-      rating: 5,
-      comment: 'Индивидуальная портретная съемка превзошла все ожидания. Ирина помогла мне почувствовать себя уверенно перед камерой. Результат - шикарные фотографии!',
-      service_type: 'portrait',
-      created_at: '2024-09-18'
-    },
-    {
-      id: '5',
-      name: 'Алексей Козлов',
-      rating: 5,
-      comment: 'Корпоративная съемка для нашей компании была организована на высшем уровне. Профессиональный подход, отличное качество фотографий и соблюдение всех сроков.',
-      service_type: 'corporate',
-      created_at: '2024-12-01'
-    },
-    {
-      id: '6',
-      name: 'Виктория и Артем',
-      rating: 5,
-      comment: 'Романтическая съемка на Крымском мосту была незабываемой! Ирина создала такую атмосферу, что мы забыли о камере и просто наслаждались моментом.',
-      service_type: 'lovestory',
-      created_at: '2024-08-14'
-    }
-  ];
 
   // Валидация перед отправкой
   const validateForm = () => {
@@ -160,22 +177,23 @@ ${formData.comment}
   }
 
   // --- Исправляем даты и логику вывода при рендеринге ---
-  let displayReviews = reviews && reviews.length > 0 ? reviews.filter(r => r.is_approved) : mockReviews;
+  let displayReviews: Review[] = reviews && reviews.length > 0 ? (reviews.filter((r: any) => r.is_approved) as Review[]) : mockReviews;
 
   // Unique mock dates для дефолта — если вдруг дубликаты пришли из БД, заменим их на уникальные значения из mock (по индексу)
   if (reviews && reviews.length > 0) {
-    displayReviews = reviews
-      .filter(r => r.is_approved)
-      .map((r, idx) => ({
+    displayReviews = (reviews
+      .filter((r: any) => r.is_approved)
+      .map((r: any, idx: number) => ({
         ...r,
         created_at:
           r.created_at ||
-          mockReviews[idx % mockReviews.length].created_at
-      }));
+          mockReviews[idx % mockReviews.length].created_at,
+        photo_url: r.photo_url || undefined,
+      })) as Review[]);
   }
 
   // DEBUG: вывод src фото, если есть поле photo_url
-  if (displayReviews.some(r => r.photo_url)) {
+  if (displayReviews.some((r) => r.photo_url)) {
     displayReviews.forEach((r, i) => {
       if (r.photo_url) {
         console.log(`Отзывы: фото #${i + 1}:`, r.photo_url);

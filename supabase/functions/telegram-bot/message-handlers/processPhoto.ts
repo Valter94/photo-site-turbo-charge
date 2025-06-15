@@ -1,10 +1,9 @@
 
 export const processPhoto = async (deps: any, { message, chatId, userId }: any) => {
-  const { telegramAPI, getSession, setSession, menuHandlers } = deps
+  const { telegramAPI, getSession, setSession, menuHandlers, screenshotService } = deps
   const photo = message.photo
   let session = getSession(userId)
 
-  // Логирование состояния сессии для диагностики
   console.log('[processPhoto] Состояние сессии до:', session);
 
   if (!session) {
@@ -19,7 +18,6 @@ export const processPhoto = async (deps: any, { message, chatId, userId }: any) 
     return
   }
 
-  // Дополнительная защита: корректно восстановить step, если пользователь был на шаге photo
   if (session.step !== 'waiting_photo') {
     console.log(`[processPhoto] Фото получено не на своем step: session.step=${session.step}`);
     await telegramAPI.sendMessage(
@@ -30,14 +28,40 @@ export const processPhoto = async (deps: any, { message, chatId, userId }: any) 
     return
   }
 
-  // Обработка добавления фото в сессию
   const largestPhoto = photo[photo.length - 1]
   session.data = session.data || {};
   session.data.photo_file_id = largestPhoto.file_id
-  session.step = 'waiting_title' // Переключаем step на "ввод названия"
+  session.step = 'waiting_title'
   setSession(userId, session)
 
-  // Логирование для диагностики
+  // Запросить ссылку на файл Telegram
+  const botToken = deps.botToken;
+  let fileUrl: string | null = null;
+
+  try {
+    const fileId = largestPhoto.file_id;
+    const fileResp = await fetch(`https://api.telegram.org/bot${botToken}/getFile?file_id=${fileId}`);
+    const fileInfo = await fileResp.json();
+    if (fileInfo.ok && fileInfo.result && fileInfo.result.file_path) {
+      fileUrl = `https://api.telegram.org/file/bot${botToken}/${fileInfo.result.file_path}`;
+      console.log('[processPhoto] Получен fileUrl для скрина:', fileUrl);
+
+      // Получить скриншот через сервис (например, превью ценной части фото или поста)
+      if (screenshotService) {
+        const screen = await screenshotService.takeScreenshot(fileUrl);
+        if (screen) {
+          // Отправить скрин обратно пользователю
+          await telegramAPI.sendPhoto(chatId, screen, "📸 Ваш превью-скриншот (предпросмотр):");
+        } else {
+          await telegramAPI.sendMessage(chatId, "Не удалось сгенерировать скриншот, но фото принято!");
+        }
+      }
+    }
+  } catch (err) {
+    console.log('[processPhoto] Не удалось получить ссылку на файл Telegram или создать скрин:', err);
+    await telegramAPI.sendMessage(chatId, "Ошибка при создании скрина, фото принято!");
+  }
+
   console.log('[processPhoto] Сессия после добавления фото:', session);
 
   await telegramAPI.sendMessage(

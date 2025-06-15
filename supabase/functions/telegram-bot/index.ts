@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -26,7 +25,7 @@ interface TelegramUpdate {
 interface UserSession {
   step: string
   data: any
-  type: 'portfolio' | 'location'
+  type: 'portfolio' | 'location' | 'pricing' | 'service'
   created_at: number
 }
 
@@ -201,6 +200,7 @@ serve(async (req) => {
       const data = callbackQuery.data
       console.log('🔔 Получен callback:', data)
 
+      // Основные действия
       if (data?.startsWith('add_')) {
         const type = data.split('_')[1] as 'portfolio' | 'location'
         userSessions.set(userId, {
@@ -217,7 +217,174 @@ serve(async (req) => {
           `${type === 'portfolio' ? '🎨 Добавляем в портфолио' : '📍 Добавляем локацию'}\n\n` +
           `Просто отправьте фото, которое хотите добавить.`
         )
-      } else if (data?.startsWith('cat_')) {
+      }
+      // Управление ценами
+      else if (data === 'manage_pricing') {
+        try {
+          const { data: pricingData, error } = await supabase
+            .from('pricing')
+            .select('*')
+            .eq('is_active', true)
+            .order('price', { ascending: true })
+
+          if (error) throw error
+
+          let priceList = `💰 <b>Управление ценами</b>\n\n`
+          if (pricingData && pricingData.length > 0) {
+            pricingData.forEach((item, index) => {
+              priceList += `${index + 1}. <b>${item.service_type}</b>\n`
+              priceList += `   💵 ${item.price} руб.\n`
+              priceList += `   ⏰ ${item.duration_hours} ч.\n\n`
+            })
+          } else {
+            priceList += `Цены не настроены\n\n`
+          }
+
+          await editMessage(priceList, {
+            inline_keyboard: [
+              [
+                { text: '✏️ Изменить цену', callback_data: 'edit_pricing' },
+                { text: '➕ Добавить тариф', callback_data: 'add_pricing' }
+              ],
+              [{ text: '🔙 Назад', callback_data: 'main_menu' }]
+            ]
+          })
+        } catch (error) {
+          console.error('❌ Ошибка получения цен:', error)
+          await editMessage('❌ <b>Ошибка получения списка цен</b>')
+        }
+      }
+      // Управление услугами
+      else if (data === 'manage_services') {
+        try {
+          const { data: servicesData, error } = await supabase
+            .from('additional_services')
+            .select('*')
+            .eq('is_active', true)
+            .order('name')
+
+          if (error) throw error
+
+          let servicesList = `🛠 <b>Управление услугами</b>\n\n`
+          if (servicesData && servicesData.length > 0) {
+            servicesData.forEach((item, index) => {
+              servicesList += `${index + 1}. <b>${item.name}</b>\n`
+              servicesList += `   💵 ${item.price || 0} руб.\n`
+              servicesList += `   📝 ${item.description || 'Без описания'}\n\n`
+            })
+          } else {
+            servicesList += `Дополнительные услуги не настроены\n\n`
+          }
+
+          await editMessage(servicesList, {
+            inline_keyboard: [
+              [
+                { text: '✏️ Изменить услугу', callback_data: 'edit_service' },
+                { text: '➕ Добавить услугу', callback_data: 'add_service' }
+              ],
+              [{ text: '🔙 Назад', callback_data: 'main_menu' }]
+            ]
+          })
+        } catch (error) {
+          console.error('❌ Ошибка получения услуг:', error)
+          await editMessage('❌ <b>Ошибка получения списка услуг</b>')
+        }
+      }
+      // Управление локациями
+      else if (data === 'manage_locations') {
+        try {
+          const { data: locationsData, error } = await supabase
+            .from('photoshoot_locations')
+            .select('*')
+            .order('name')
+
+          if (error) throw error
+
+          let locationsList = `📍 <b>Управление локациями</b>\n\n`
+          if (locationsData && locationsData.length > 0) {
+            locationsData.forEach((item, index) => {
+              locationsList += `${index + 1}. <b>${item.name}</b>\n`
+              locationsList += `   📝 ${item.description.substring(0, 50)}...\n\n`
+            })
+          } else {
+            locationsList += `Локации не добавлены\n\n`
+          }
+
+          await editMessage(locationsList, {
+            inline_keyboard: [
+              [
+                { text: '✏️ Изменить локацию', callback_data: 'edit_location' },
+                { text: '➕ Добавить локацию', callback_data: 'add_location' }
+              ],
+              [{ text: '🔙 Назад', callback_data: 'main_menu' }]
+            ]
+          })
+        } catch (error) {
+          console.error('❌ Ошибка получения локаций:', error)
+          await editMessage('❌ <b>Ошибка получения списка локаций</b>')
+        }
+      }
+      // Добавление нового тарифа
+      else if (data === 'add_pricing') {
+        userSessions.set(userId, {
+          step: 'waiting_service_type',
+          data: {},
+          type: 'pricing',
+          created_at: Date.now()
+        })
+        
+        await editMessage(
+          `💰 <b>Добавление нового тарифа</b>\n\n` +
+          `Выберите тип услуги:`,
+          {
+            inline_keyboard: [
+              [
+                { text: '💒 Свадьба', callback_data: 'pricing_type_wedding' },
+                { text: '💕 Love Story', callback_data: 'pricing_type_lovestory' }
+              ],
+              [
+                { text: '👤 Портрет', callback_data: 'pricing_type_portrait' },
+                { text: '👨‍👩‍👧‍👦 Семья', callback_data: 'pricing_type_family' }
+              ],
+              [
+                { text: '🏢 Корпоратив', callback_data: 'pricing_type_corporate' }
+              ],
+              [{ text: '❌ Отмена', callback_data: 'cancel' }]
+            ]
+          }
+        )
+      }
+      // Выбор типа услуги для тарифа
+      else if (data?.startsWith('pricing_type_')) {
+        const session = userSessions.get(userId)
+        if (session && session.type === 'pricing') {
+          const serviceType = data.replace('pricing_type_', '')
+          session.data.service_type = serviceType
+          session.step = 'waiting_price'
+          userSessions.set(userId, session)
+          
+          await editMessage(
+            `💰 <b>Новый тариф: ${serviceType}</b>\n\n` +
+            `Введите цену в рублях (например: 15000):`
+          )
+        }
+      }
+      // Добавление новой услуги
+      else if (data === 'add_service') {
+        userSessions.set(userId, {
+          step: 'waiting_service_name',
+          data: {},
+          type: 'service',
+          created_at: Date.now()
+        })
+        
+        await editMessage(
+          `🛠 <b>Добавление новой услуги</b>\n\n` +
+          `Введите название услуги:`
+        )
+      }
+      // Выбор категории портфолио
+      else if (data?.startsWith('cat_')) {
         const session = userSessions.get(userId)
         if (session && session.step === 'choosing_category') {
           const category = data.replace('cat_', '')
@@ -234,7 +401,34 @@ serve(async (req) => {
             `Теперь отправьте описание для фото:`
           )
         }
-      } else if (data === 'cancel') {
+      }
+      // Главное меню
+      else if (data === 'main_menu' || data === 'start') {
+        await editMessage(
+          `🤖 <b>Главное меню</b>\n\n` +
+          `Выберите действие:`,
+          {
+            inline_keyboard: [
+              [
+                { text: '📸 Добавить в портфолио', callback_data: 'add_portfolio' },
+                { text: '📍 Добавить локацию', callback_data: 'add_location' }
+              ],
+              [
+                { text: '💰 Управление ценами', callback_data: 'manage_pricing' },
+                { text: '🛠 Управление услугами', callback_data: 'manage_services' }
+              ],
+              [
+                { text: '🏛 Управление локациями', callback_data: 'manage_locations' }
+              ],
+              [
+                { text: '📊 Статистика', callback_data: 'stats' },
+                { text: '❓ Помощь', callback_data: 'help' }
+              ]
+            ]
+          }
+        )
+      }
+      else if (data === 'cancel') {
         userSessions.delete(userId)
         console.log(`❌ Отменена сессия пользователя ${userId}`)
         await editMessage('❌ <b>Операция отменена</b>')
@@ -262,7 +456,12 @@ serve(async (req) => {
             `📝 Заявок на съемку: <b>${bookingsCount || 0}</b>\n` +
             `⭐ Отзывов: <b>${reviewsCount || 0}</b>\n` +
             `📍 Локаций: <b>${locationsCount || 0}</b>\n\n` +
-            `🕐 Обновлено: ${new Date().toLocaleString('ru-RU')}`
+            `🕐 Обновлено: ${new Date().toLocaleString('ru-RU')}`,
+            {
+              inline_keyboard: [
+                [{ text: '🔙 Назад', callback_data: 'main_menu' }]
+              ]
+            }
           )
         } catch (error) {
           console.error('❌ Ошибка получения статистики:', error)
@@ -271,15 +470,23 @@ serve(async (req) => {
       } else if (data === 'help') {
         await editMessage(
           `📋 <b>Доступные функции:</b>\n\n` +
-          `🎮 <b>Главное меню:</b>\n` +
-          `Нажмите /start для открытия меню\n\n` +
-          `📸 <b>Как добавить контент:</b>\n` +
-          `1. Выберите действие кнопкой\n` +
-          `2. Отправьте фото\n` +
-          `3. Введите название\n` +
-          `4. Выберите категорию (для портфолио)\n` +
-          `5. Добавьте описание\n\n` +
-          `✨ Все просто и пошагово!`
+          `🎮 <b>Контент:</b>\n` +
+          `• Добавление фото в портфолио\n` +
+          `• Добавление новых локаций\n\n` +
+          `💰 <b>Цены и услуги:</b>\n` +
+          `• Управление тарифами\n` +
+          `• Добавление дополнительных услуг\n\n` +
+          `🏛 <b>Локации:</b>\n` +
+          `• Редактирование существующих\n` +
+          `• Добавление новых мест\n\n` +
+          `📊 <b>Аналитика:</b>\n` +
+          `• Статистика сайта\n` +
+          `• Отчеты по активности`,
+          {
+            inline_keyboard: [
+              [{ text: '🔙 Назад', callback_data: 'main_menu' }]
+            ]
+          }
         )
       }
       
@@ -300,13 +507,20 @@ serve(async (req) => {
         
         try {
           await sendMessage(
-            `🤖 <b>Добро пожаловать!</b>\n\n` +
-            `Этот бот поможет вам управлять сайтом. Выберите действие:`,
+            `🤖 <b>Добро пожаловать в расширенную панель управления!</b>\n\n` +
+            `Теперь вы можете управлять всем сайтом через бота:`,
             {
               inline_keyboard: [
                 [
                   { text: '📸 Добавить в портфолио', callback_data: 'add_portfolio' },
                   { text: '📍 Добавить локацию', callback_data: 'add_location' }
+                ],
+                [
+                  { text: '💰 Управление ценами', callback_data: 'manage_pricing' },
+                  { text: '🛠 Управление услугами', callback_data: 'manage_services' }
+                ],
+                [
+                  { text: '🏛 Управление локациями', callback_data: 'manage_locations' }
                 ],
                 [
                   { text: '📊 Статистика', callback_data: 'stats' },
@@ -409,7 +623,7 @@ serve(async (req) => {
 
       if (!session && !text.startsWith('/')) {
         await sendMessage(
-          `👋 <b>Привет!</b>\n\n` +
+          `👋 <b>Добро пожаловать в панель управления сайтом!</b>\n\n` +
           `Для начала работы нажмите /start или выберите действие:`,
           {
             inline_keyboard: [
@@ -423,147 +637,279 @@ serve(async (req) => {
       }
 
       // Обработка текста в зависимости от шага
-      if (session && session.step === 'waiting_title') {
-        session.data.title = text
-        
-        if (session.type === 'portfolio') {
-          session.step = 'choosing_category'
-          userSessions.set(userId, session)
+      if (session) {
+        // Обработка названия
+        if (session.step === 'waiting_title') {
+          session.data.title = text
           
-          console.log(`📝 Получено название для портфолио от пользователя ${userId}: ${text}`)
-          
-          await sendMessage(
-            `📝 <b>Шаг 3: Выберите категорию</b>\n\n` +
-            `🖼 Название: <b>${text}</b>\n\n` +
-            `Выберите подходящую категорию:`,
-            {
-              inline_keyboard: [
-                [
-                  { text: '💒 Свадьба', callback_data: 'cat_wedding' },
-                  { text: '💕 Love Story', callback_data: 'cat_lovestory' }
-                ],
-                [
-                  { text: '👤 Портрет', callback_data: 'cat_portrait' },
-                  { text: '👨‍👩‍👧‍👦 Семья', callback_data: 'cat_family' }
-                ],
-                [
-                  { text: '🏢 Корпоратив', callback_data: 'cat_corporate' }
-                ],
-                [
-                  { text: '❌ Отмена', callback_data: 'cancel' }
-                ]
-              ]
-            }
-          )
-        } else {
-          // Для локации сразу переходим к описанию
-          session.step = 'waiting_description'
-          userSessions.set(userId, session)
-          
-          console.log(`📝 Получено название для локации от пользователя ${userId}: ${text}`)
-          
-          await sendMessage(
-            `📝 <b>Шаг 3: Описание локации</b>\n\n` +
-            `📍 Название: <b>${text}</b>\n\n` +
-            `Отправьте описание места (адрес, особенности, лучшее время для съемки):`
-          )
-        }
-      } else if (session && session.step === 'waiting_description') {
-        session.data.description = text
-        
-        console.log(`📝 Получено описание от пользователя ${userId}: ${text}`)
-        
-        // Теперь обрабатываем фото и сохраняем в базу
-        try {
-          const fileResponse = await fetch(`https://api.telegram.org/bot${botToken}/getFile?file_id=${session.data.photo_file_id}`)
-          const fileData = await fileResponse.json()
-          
-          if (!fileData.ok) {
-            throw new Error('Не удалось получить файл')
-          }
-
-          const fileUrl = `https://api.telegram.org/file/bot${botToken}/${fileData.result.file_path}`
-          const imageResponse = await fetch(fileUrl)
-          const imageBlob = await imageResponse.blob()
-          
-          const fileName = `telegram-${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`
-          const storagePath = session.type === 'portfolio' ? `portfolio/${fileName}` : `locations/${fileName}`
-          
-          // Загружаем в Supabase Storage
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('images')
-            .upload(storagePath, imageBlob, {
-              contentType: 'image/jpeg',
-              cacheControl: '3600'
-            })
-
-          if (uploadError) {
-            throw uploadError
-          }
-
-          const { data: urlData } = supabase.storage
-            .from('images')
-            .getPublicUrl(storagePath)
-
-          const imageUrl = urlData.publicUrl
-
           if (session.type === 'portfolio') {
-            // Добавляем в портфолио
-            const { error: insertError } = await supabase
-              .from('portfolio')
-              .insert({
-                title: session.data.title,
-                category: session.data.category,
-                description: session.data.description,
-                image_url: imageUrl,
-                is_featured: false
-              })
-
-            if (insertError) {
-              throw insertError
-            }
-
-            console.log(`✅ Добавлено в портфолио от пользователя ${userId}`)
-
+            session.step = 'choosing_category'
+            userSessions.set(userId, session)
+            
+            console.log(`📝 Получено название для портфолио от пользователя ${userId}: ${text}`)
+            
             await sendMessage(
-              `✅ <b>Фото успешно добавлено в портфолио!</b>\n\n` +
-              `📷 Название: ${session.data.title}\n` +
-              `🏷 Категория: ${session.data.category}\n` +
-              `📝 Описание: ${session.data.description}\n\n` +
-              `🌐 Фото появится на сайте через несколько минут.`
+              `📝 <b>Шаг 3: Выберите категорию</b>\n\n` +
+              `🖼 Название: <b>${text}</b>\n\n` +
+              `Выберите подходящую категорию:`,
+              {
+                inline_keyboard: [
+                  [
+                    { text: '💒 Свадьба', callback_data: 'cat_wedding' },
+                    { text: '💕 Love Story', callback_data: 'cat_lovestory' }
+                  ],
+                  [
+                    { text: '👤 Портрет', callback_data: 'cat_portrait' },
+                    { text: '👨‍👩‍👧‍👦 Семья', callback_data: 'cat_family' }
+                  ],
+                  [
+                    { text: '🏢 Корпоратив', callback_data: 'cat_corporate' }
+                  ],
+                  [
+                    { text: '❌ Отмена', callback_data: 'cancel' }
+                  ]
+                ]
+              }
             )
           } else {
-            // Добавляем локацию
-            const { error: insertError } = await supabase
-              .from('photoshoot_locations')
+            // Для локации сразу переходим к описанию
+            session.step = 'waiting_description'
+            userSessions.set(userId, session)
+            
+            console.log(`📝 Получено название для локации от пользователя ${userId}: ${text}`)
+            
+            await sendMessage(
+              `📝 <b>Шаг 3: Описание локации</b>\n\n` +
+              `📍 Название: <b>${text}</b>\n\n` +
+              `Отправьте описание места (адрес, особенности, лучшее время для съемки):`
+            )
+          }
+        }
+        // Обработка цены для тарифа
+        else if (session.step === 'waiting_price' && session.type === 'pricing') {
+          const price = parseInt(text)
+          if (isNaN(price)) {
+            await sendMessage('❌ Пожалуйста, введите корректную цену числом (например: 15000)')
+            return new Response('OK', { headers: corsHeaders })
+          }
+          
+          session.data.price = price
+          session.step = 'waiting_duration'
+          userSessions.set(userId, session)
+          
+          await sendMessage(
+            `💰 <b>Цена установлена: ${price} руб.</b>\n\n` +
+            `Теперь введите продолжительность в часах (например: 2):`
+          )
+        }
+        // Обработка продолжительности
+        else if (session.step === 'waiting_duration' && session.type === 'pricing') {
+          const duration = parseInt(text)
+          if (isNaN(duration)) {
+            await sendMessage('❌ Пожалуйста, введите корректное количество часов (например: 2)')
+            return new Response('OK', { headers: corsHeaders })
+          }
+          
+          session.data.duration_hours = duration
+          session.step = 'waiting_photos_count'
+          userSessions.set(userId, session)
+          
+          await sendMessage(
+            `⏰ <b>Продолжительность: ${duration} ч.</b>\n\n` +
+            `Введите количество фотографий (например: "30-40 обработанных фото"):`
+          )
+        }
+        // Обработка количества фото
+        else if (session.step === 'waiting_photos_count' && session.type === 'pricing') {
+          session.data.photos_count = text
+          
+          // Сохраняем тариф в базу
+          try {
+            const { error } = await supabase
+              .from('pricing')
               .insert({
-                name: session.data.title,
-                description: session.data.description,
-                image_url: imageUrl,
-                category_id: '00000000-0000-0000-0000-000000000001' // Дефолтная категория
+                service_type: session.data.service_type,
+                price: session.data.price,
+                duration_hours: session.data.duration_hours,
+                photos_count: session.data.photos_count,
+                features: ['Консультация по образу', 'Обработка фотографий', 'Онлайн-галерея'],
+                is_active: true
               })
 
-            if (insertError) {
-              throw insertError
-            }
-
-            console.log(`✅ Добавлена локация от пользователя ${userId}`)
+            if (error) throw error
 
             await sendMessage(
-              `✅ <b>Локация успешно добавлена!</b>\n\n` +
-              `📍 Название: ${session.data.title}\n` +
-              `📝 Описание: ${session.data.description}\n\n` +
-              `🌐 Локация появится на сайте через несколько минут.`
+              `✅ <b>Новый тариф добавлен!</b>\n\n` +
+              `📋 Тип: ${session.data.service_type}\n` +
+              `💵 Цена: ${session.data.price} руб.\n` +
+              `⏰ Время: ${session.data.duration_hours} ч.\n` +
+              `📸 Фото: ${session.data.photos_count}\n\n` +
+              `Тариф активирован на сайте!`
             )
+          } catch (error) {
+            console.error('❌ Ошибка добавления тарифа:', error)
+            await sendMessage('❌ Ошибка при сохранении тарифа')
           }
           
           userSessions.delete(userId)
-          console.log(`🗑️ Удалена сессия пользователя ${userId} после успешного завершения`)
+        }
+        // Обработка названия услуги
+        else if (session.step === 'waiting_service_name' && session.type === 'service') {
+          session.data.name = text
+          session.step = 'waiting_service_price'
+          userSessions.set(userId, session)
           
-        } catch (error) {
-          console.error('❌ Ошибка обработки:', error)
-          await sendMessage(`❌ Ошибка при сохранении: ${error.message}`)
+          await sendMessage(
+            `🛠 <b>Услуга: ${text}</b>\n\n` +
+            `Введите цену услуги в рублях (например: 3000):`
+          )
+        }
+        // Обработка цены услуги
+        else if (session.step === 'waiting_service_price' && session.type === 'service') {
+          const price = parseInt(text)
+          if (isNaN(price)) {
+            await sendMessage('❌ Пожалуйста, введите корректную цену числом (например: 3000)')
+            return new Response('OK', { headers: corsHeaders })
+          }
+          
+          session.data.price = price
+          session.step = 'waiting_service_description'
+          userSessions.set(userId, session)
+          
+          await sendMessage(
+            `💵 <b>Цена установлена: ${price} руб.</b>\n\n` +
+            `Введите описание услуги:`
+          )
+        }
+        // Обработка описания услуги
+        else if (session.step === 'waiting_service_description' && session.type === 'service') {
+          session.data.description = text
+          
+          // Сохраняем услугу в базу
+          try {
+            const { error } = await supabase
+              .from('additional_services')
+              .insert({
+                name: session.data.name,
+                price: session.data.price,
+                description: session.data.description,
+                is_active: true
+              })
+
+            if (error) throw error
+
+            await sendMessage(
+              `✅ <b>Новая услуга добавлена!</b>\n\n` +
+              `🛠 Название: ${session.data.name}\n` +
+              `💵 Цена: ${session.data.price} руб.\n` +
+              `📝 Описание: ${session.data.description}\n\n` +
+              `Услуга активирована на сайте!`
+            )
+          } catch (error) {
+            console.error('❌ Ошибка добавления услуги:', error)
+            await sendMessage('❌ Ошибка при сохранении услуги')
+          }
+          
           userSessions.delete(userId)
+        }
+        // Обработка описания
+        else if (session.step === 'waiting_description') {
+          session.data.description = text
+          
+          console.log(`📝 Получено описание от пользователя ${userId}: ${text}`)
+          
+          // Теперь обрабатываем фото и сохраняем в базу
+          try {
+            const fileResponse = await fetch(`https://api.telegram.org/bot${botToken}/getFile?file_id=${session.data.photo_file_id}`)
+            const fileData = await fileResponse.json()
+            
+            if (!fileData.ok) {
+              throw new Error('Не удалось получить файл')
+            }
+
+            const fileUrl = `https://api.telegram.org/file/bot${botToken}/${fileData.result.file_path}`
+            const imageResponse = await fetch(fileUrl)
+            const imageBlob = await imageResponse.blob()
+            
+            const fileName = `telegram-${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`
+            const storagePath = session.type === 'portfolio' ? `portfolio/${fileName}` : `locations/${fileName}`
+            
+            // Загружаем в Supabase Storage
+            const { data: uploadData, error: uploadError } = await supabase.storage
+              .from('images')
+              .upload(storagePath, imageBlob, {
+                contentType: 'image/jpeg',
+                cacheControl: '3600'
+              })
+
+            if (uploadError) {
+              throw uploadError
+            }
+
+            const { data: urlData } = supabase.storage
+              .from('images')
+              .getPublicUrl(storagePath)
+
+            const imageUrl = urlData.publicUrl
+
+            if (session.type === 'portfolio') {
+              // Добавляем в портфолио
+              const { error: insertError } = await supabase
+                .from('portfolio')
+                .insert({
+                  title: session.data.title,
+                  category: session.data.category,
+                  description: session.data.description,
+                  image_url: imageUrl,
+                  is_featured: false
+                })
+
+              if (insertError) {
+                throw insertError
+              }
+
+              console.log(`✅ Добавлено в портфолио от пользователя ${userId}`)
+
+              await sendMessage(
+                `✅ <b>Фото успешно добавлено в портфолио!</b>\n\n` +
+                `📷 Название: ${session.data.title}\n` +
+                `🏷 Категория: ${session.data.category}\n` +
+                `📝 Описание: ${session.data.description}\n\n` +
+                `🌐 Фото появится на сайте через несколько минут.`
+              )
+            } else {
+              // Добавляем локацию
+              const { error: insertError } = await supabase
+                .from('photoshoot_locations')
+                .insert({
+                  name: session.data.title,
+                  description: session.data.description,
+                  image_url: imageUrl,
+                  category_id: '00000000-0000-0000-0000-000000000001' // Дефолтная категория
+                })
+
+              if (insertError) {
+                throw insertError
+              }
+
+              console.log(`✅ Добавлена локация от пользователя ${userId}`)
+
+              await sendMessage(
+                `✅ <b>Локация успешно добавлена!</b>\n\n` +
+                `📍 Название: ${session.data.title}\n` +
+                `📝 Описание: ${session.data.description}\n\n` +
+                `🌐 Локация появится на сайте через несколько минут.`
+              )
+            }
+            
+            userSessions.delete(userId)
+            console.log(`🗑️ Удалена сессия пользователя ${userId} после успешного завершения`)
+            
+          } catch (error) {
+            console.error('❌ Ошибка обработки:', error)
+            await sendMessage(`❌ Ошибка при сохранении: ${error.message}`)
+            userSessions.delete(userId)
+          }
         }
       }
     }

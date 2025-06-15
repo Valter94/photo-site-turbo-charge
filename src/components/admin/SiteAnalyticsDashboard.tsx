@@ -34,7 +34,7 @@ import {
 import LiveStats from '../LiveStats';
 
 const SiteAnalyticsDashboard = () => {
-  const { analytics, recommendations, isLoading, updateAnalytics } = useSiteAnalytics();
+  const { analytics, recommendations, isLoading, updateAnalytics, resetAnalytics } = useSiteAnalytics();
   const [activeTab, setActiveTab] = useState('overview');
 
   const getPriorityColor = (priority: string) => {
@@ -83,10 +83,32 @@ const SiteAnalyticsDashboard = () => {
           <h1 className="text-3xl font-bold">Аналитика сайта</h1>
           <p className="text-gray-600">Мониторинг производительности и активности пользователей</p>
         </div>
-        <Button onClick={updateAnalytics} variant="outline">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Обновить данные
-        </Button>
+        <div className="flex gap-3">
+          <Button onClick={updateAnalytics} variant="outline">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Обновить данные
+          </Button>
+          <Button
+            onClick={() => {
+              if (window.confirm('Вы уверены, что хотите СБРОСИТЬ ВСЮ статистику?')) {
+                resetAnalytics();
+              }
+            }}
+            variant="destructive"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Сбросить статистику
+          </Button>
+          <Button
+            onClick={() => {
+              localStorage.setItem('analytics_exclude', 'true');
+              window.alert('Входы с этого компьютера больше не будут учитываться в статистике!');
+            }}
+            variant="secondary"
+          >
+            Исключить этот ПК
+          </Button>
+        </div>
       </div>
 
       {/* Новый дополнительный блок статистики исключительно для админа */}

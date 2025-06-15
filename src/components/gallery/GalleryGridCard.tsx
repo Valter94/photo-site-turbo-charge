@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card } from "@/components/ui/card";
 import OptimizedImage from "@/components/OptimizedImage";
@@ -23,7 +22,6 @@ interface GalleryGridCardProps {
   isHovered: boolean;
   isLiked: boolean;
   onLike: (e: React.MouseEvent) => void;
-  onDownload: (e: React.MouseEvent) => void;
   onView: (e: React.MouseEvent | undefined) => void; // Обновим сигнатуру для совместимости
   onClick: () => void;
   onMouseEnter: () => void;
@@ -35,7 +33,6 @@ const GalleryGridCard: React.FC<GalleryGridCardProps> = ({
   isHovered,
   isLiked,
   onLike,
-  onDownload,
   onView,
   onClick,
   onMouseEnter,
@@ -64,7 +61,6 @@ const GalleryGridCard: React.FC<GalleryGridCardProps> = ({
         <GalleryGridActionButtons
           isLiked={isLiked}
           onLike={onLike}
-          onDownload={onDownload}
           onView={onView}
         />
       </div>

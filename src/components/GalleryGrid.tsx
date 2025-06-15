@@ -95,7 +95,6 @@ const GalleryGrid = ({ items, columns = 3 }: GalleryGridProps) => {
             isHovered={hoveredIndex === index}
             isLiked={likedItems.has(item.id)}
             onLike={(e) => handleLike(item.id, e)}
-            onDownload={(e) => handleDownload(item, e)}
             onView={() => setSelectedImageIndex(index)}
             onClick={() => setSelectedImageIndex(index)}
             onMouseEnter={() => setHoveredIndex(index)}

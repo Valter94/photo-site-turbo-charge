@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { sendTelegramMessage } from "@/utils/telegram";
 import { AnalyticsData, Recommendation } from '@/types/analytics';
@@ -26,8 +25,19 @@ export const useSiteAnalytics = () => {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Новый флаг: exclude analytics (например, если в localStorage стоит "analytics_exclude" = "true")
+  const isExcluded = (() => {
+    try {
+      return localStorage.getItem('analytics_exclude') === 'true';
+    } catch {
+      return false;
+    }
+  })();
+
   // Отслеживание посещений страниц
   const trackPageView = (path: string) => {
+    if (isExcluded) return; // Игнорировать текущий ПК
+
     const sessionId = getOrCreateSessionId();
     const deviceInfo = getDeviceInfo();
     
@@ -137,6 +147,22 @@ export const useSiteAnalytics = () => {
     });
   };
 
+  // Доп: функция очистки статистики (только для админки)
+  const resetAnalytics = () => {
+    safeLocalStorage.setItem('page_views', JSON.stringify([]));
+    safeLocalStorage.setItem('errors', JSON.stringify([]));
+    setAnalytics({
+      pageViews: 0,
+      uniqueVisitors: 0,
+      bounceRate: 0,
+      avgSessionDuration: 0,
+      topPages: [],
+      deviceTypes: [],
+      errors: [],
+    });
+    setRecommendations([]);
+  };
+
   // Инициализация
   useEffect(() => {
     // Отслеживание текущей страницы
@@ -180,6 +206,7 @@ export const useSiteAnalytics = () => {
     isLoading,
     trackPageView,
     trackError: (error: Error, errorInfo?: any) => trackError(error, errorInfo, updateAnalytics),
-    updateAnalytics
+    updateAnalytics,
+    resetAnalytics // новый метод
   };
 };

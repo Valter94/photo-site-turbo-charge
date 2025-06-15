@@ -1,4 +1,3 @@
-
 import { Suspense, lazy, useEffect, useState } from 'react';
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
@@ -106,19 +105,14 @@ const Index = () => {
           <div id="hero">
             <HeroSection />
           </div>
-          {/* ПЕРЕД ПОРТФОЛИО! */}
           <LiveSiteActivity recentActivity={recentActivity} />
-          {/* Галерея и портфолио */}
-          {/* Вместо отдельной страницы Gallery вставляем сразу сюда */}
           <div id="portfolio_and_gallery">
             <Suspense fallback={<SectionLoader />}>
               <PortfolioSection />
             </Suspense>
             <Gallery />
           </div>
-          {/* Блок достижений */}
           <AchievementsBadges />
-          {/* После портфолио ... другие секции */}
           <Suspense fallback={<SectionLoader />}>
             <LocationsSection />
           </Suspense>
@@ -128,11 +122,9 @@ const Index = () => {
           <Suspense fallback={<SectionLoader />}>
             <AdditionalServicesSection />
           </Suspense>
-          {/* ВАЖНО: отзывы идут ДО бронирования */}
           <Suspense fallback={<SectionLoader />}>
             <ReviewsSection />
           </Suspense>
-          {/* Теперь бронирование */}
           <div id="booking">
             <Suspense fallback={<SectionLoader />}>
               <EnhancedBookingCalendar />
@@ -142,7 +134,6 @@ const Index = () => {
             <FAQSection />
           </Suspense>
         </main>
-        {/* Footer только в самом конце, после всех секций */}
         <Suspense fallback={<div className="h-32 bg-gray-100"></div>}>
           <Footer />
         </Suspense>
@@ -156,4 +147,3 @@ const Index = () => {
 };
 
 export default Index;
-

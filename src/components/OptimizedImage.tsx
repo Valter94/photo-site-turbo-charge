@@ -41,8 +41,12 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       if (fallbackUrl) {
         (event.target as HTMLImageElement).src = fallbackUrl;
       }
+      // Подробно логируем ошибку для Telegram фото
+      if (src && (src.includes('api.telegram.org/file/bot') || src.includes('supabase.co'))) {
+        console.error('[OptimizedImage] ❌ Элемент с src не загрузился:', src);
+      }
     },
-    [fallbackUrl]
+    [fallbackUrl, src]
   );
 
   if (!src) {
@@ -62,14 +66,13 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     src.includes('api.telegram.org/file/bot');
 
   if (isTelegramPhoto) {
-    console.log('[OptimizedImage] 🟠 Telegram-фото детектировано (не подвергается оптимизации!):', src);
+    console.log('[OptimizedImage] 🟠 Telegram-фото:', src);
   }
 
   const createOptimizedUrl = (
     url: string,
     format: 'webp' | 'avif' | 'jpeg' = 'webp'
   ) => {
-    // НЕ преобразовывать ссылки Telegram/bucket!
     if (isSupabaseImage || isTelegramPhoto) return url;
     if (url?.includes('unsplash.com')) {
       const params = new URLSearchParams();
@@ -95,7 +98,6 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         </div>
       )}
       <picture>
-        {/* Только если НЕ Supabase/Telegram — используем source для webp/avif */}
         {!(isSupabaseImage || isTelegramPhoto) && (
           <>
             <source srcSet={avifSrc} type="image/avif" />
@@ -127,6 +129,12 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
           <div className="text-gray-400 text-center">
             <div className="text-2xl mb-2">📷</div>
             <div className="text-sm">Изображение недоступно</div>
+            {/* Подсказка для Telegram фото */}
+            {isTelegramPhoto && (
+              <div className="text-xs mt-2 text-red-400">
+                Telegram ссылки часто недоступны, загрузите фото на сайт напрямую.
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -135,4 +143,3 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
 };
 
 export default OptimizedImage;
-

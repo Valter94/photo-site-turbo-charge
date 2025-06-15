@@ -1,5 +1,4 @@
 
-// Карточка отзыва с поддержкой фото и кастомным отображением ошибок.
 import React from "react";
 import OptimizedImage from "./OptimizedImage";
 import { Card, CardContent } from "@/components/ui/card";

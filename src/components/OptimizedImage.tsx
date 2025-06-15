@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 
 interface OptimizedImageProps {
@@ -38,18 +37,14 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const handleImageError = useCallback(
     (event: React.SyntheticEvent<HTMLImageElement>) => {
       setImageError(true);
-      if (fallbackUrl && (event.target as HTMLImageElement).src !== fallbackUrl) {
-        (event.target as HTMLImageElement).src = fallbackUrl;
-        console.warn('[OptimizedImage] fallbackUrl triggered:', fallbackUrl);
+      const el = event.target as HTMLImageElement;
+      if (fallbackUrl && el.src !== fallbackUrl) {
+        el.src = fallbackUrl;
       } else {
-        (event.target as HTMLImageElement).src = "/placeholder.svg";
-        console.warn('[OptimizedImage] placeholder used');
-      }
-      if (src && (src.includes('api.telegram.org/file/bot') || src.includes('supabase.co'))) {
-        console.error('[OptimizedImage] ❌ Image not shown (Telegram/Supabase):', src);
+        el.src = "/placeholder.svg";
       }
     },
-    [fallbackUrl, src]
+    [fallbackUrl]
   );
 
   if (!src) {
@@ -65,6 +60,24 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   const isSupabaseImage = src.includes('supabase.co') || src.includes('ojrekbttkriwwyaupbox');
   const isTelegramPhoto = src.startsWith('https://api.telegram.org/file/bot') || src.includes('api.telegram.org/file/bot');
+
+  // Информация о проблемах и совет по загрузке
+  const warningInfo = (isTelegramPhoto || isSupabaseImage) ? (
+    <span className="block text-xs mt-1 text-red-500 text-left px-2">
+      {isTelegramPhoto && (
+        <>
+          <b>Фото с Telegram могут стать недоступны через 1-2 дня.</b> <br />
+          Рекомендуем загрузить фото через сайт — или отправлять сессией через админ-панель / Supabase.
+        </>
+      )}
+      {isSupabaseImage && (
+        <>
+          <b>Проверьте публичность хранения (Supabase Storage).</b>
+        </>
+      )}
+      <span className="block break-all opacity-60 mt-1">[{src?.slice(0, 80)}...]</span>
+    </span>
+  ) : null;
 
   const createOptimizedUrl = (
     url: string,
@@ -124,31 +137,15 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         <div className="absolute inset-0 bg-gray-100 flex items-center justify-center z-10">
           <div className="text-gray-400 text-center">
             <div className="text-2xl mb-2">📷</div>
-            <div className="text-sm">
-              Изображение недоступно<br/>
-              {isTelegramPhoto && (
-                <span className="block text-xs mt-2 text-red-400">
-                  <b>Telegram-фото недолговечны.</b> Пожалуйста, перезагрузите изображение через кабинет сайта.<br/>
-                  <span className="block text-[10px] opacity-60">[{src?.slice(0,44)}...]</span>
-                </span>
-              )}
-              {!isTelegramPhoto && isSupabaseImage && (
-                <span className="block text-xs mt-2 text-amber-600">
-                  Проблема с Supabase Storage. Проверьте доступ или повторите загрузку.<br/>
-                  <span className="block text-[10px] opacity-60">[{src?.slice(0,44)}...]</span>
-                </span>
-              )}
-              {!isTelegramPhoto && !isSupabaseImage && (
-                <span className="block text-xs mt-2">
-                  Не удалось загрузить изображение.
-                </span>
-              )}
-            </div>
+            <div className="text-sm">Изображение недоступно</div>
+            {warningInfo}
           </div>
         </div>
+      )}
+      {warningInfo && !imageError && (
+        <div className="absolute bottom-0 left-0 w-full bg-white/80 text-xs text-red-500 py-1 px-2">{warningInfo}</div>
       )}
     </div>
   );
 };
-
 export default OptimizedImage;

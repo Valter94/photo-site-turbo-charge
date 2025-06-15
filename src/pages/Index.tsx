@@ -1,4 +1,3 @@
-
 import { Suspense, lazy, useEffect, useState } from 'react';
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
@@ -24,7 +23,7 @@ import { usePricing } from '@/hooks/usePricing';
 import { usePortfolio } from '@/hooks/usePortfolio';
 import { useReviews } from '@/hooks/useReviews';
 
-// Footer внизу даже если мало секций
+// Sticky-footer обёртка
 const wrapperMinHeightClass = "min-h-screen flex flex-col bg-white";
 
 const SectionLoader = () => (
@@ -92,11 +91,11 @@ const Index = () => {
 
   return (
     <HelmetProvider>
-      <div className={wrapperMinHeightClass} style={{ minHeight: '100vh', display:"flex", flexDirection:"column" }}>
+      <div className={wrapperMinHeightClass} style={{ minHeight: '100vh', display: "flex", flexDirection: "column" }}>
         <SEOHead />
         <Analytics />
         <Navigation />
-        <main className="flex-grow">
+        <main className="flex-grow flex flex-col">
           <div id="hero"><HeroSection /></div>
           <LiveSiteActivity recentActivity={recentActivity} />
           <div id="portfolio_and_gallery">

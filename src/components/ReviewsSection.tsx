@@ -5,6 +5,7 @@ import ReviewsList from "./ReviewsList";
 import { Button } from "@/components/ui/button";
 import { Mail } from "lucide-react";
 
+// Яркое разделение секции отзывов для рефакторинга
 const ReviewsSection = () => {
   const [showForm, setShowForm] = useState(false);
 
@@ -27,6 +28,7 @@ const ReviewsSection = () => {
         {showForm && (
           <ReviewForm onCancel={() => setShowForm(false)} onSuccess={() => setShowForm(false)} />
         )}
+        {/* СПИСОК отзывов строгой отдельной разметкой */}
         <ReviewsList />
       </div>
       <Button

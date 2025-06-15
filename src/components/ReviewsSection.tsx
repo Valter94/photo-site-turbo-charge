@@ -51,7 +51,7 @@ const ReviewsSection = () => {
       rating: 5,
       comment: 'Семейная фотосессия с детьми - это всегда вызов, но Ирина справилась блестяще! Дети были в восторге, а мы получили прекрасные семейные фотографии.',
       service_type: 'family',
-      created_at: '2024-12-05'
+      created_at: '2024-12-10'
     },
     {
       id: '4',
@@ -67,7 +67,7 @@ const ReviewsSection = () => {
       rating: 5,
       comment: 'Корпоративная съемка для нашей компании была организована на высшем уровне. Профессиональный подход, отличное качество фотографий и соблюдение всех сроков.',
       service_type: 'corporate',
-      created_at: '2024-11-02'
+      created_at: '2024-12-01'
     },
     {
       id: '6',
@@ -159,8 +159,29 @@ ${formData.comment}
     );
   }
 
-  // Используем базу данных если есть, иначе моковые данные
-  const displayReviews = reviews && reviews.length > 0 ? reviews.filter(r => r.is_approved) : mockReviews;
+  // --- Исправляем даты и логику вывода при рендеринге ---
+  let displayReviews = reviews && reviews.length > 0 ? reviews.filter(r => r.is_approved) : mockReviews;
+
+  // Unique mock dates для дефолта — если вдруг дубликаты пришли из БД, заменим их на уникальные значения из mock (по индексу)
+  if (reviews && reviews.length > 0) {
+    displayReviews = reviews
+      .filter(r => r.is_approved)
+      .map((r, idx) => ({
+        ...r,
+        created_at:
+          r.created_at ||
+          mockReviews[idx % mockReviews.length].created_at
+      }));
+  }
+
+  // DEBUG: вывод src фото, если есть поле photo_url
+  if (displayReviews.some(r => r.photo_url)) {
+    displayReviews.forEach((r, i) => {
+      if (r.photo_url) {
+        console.log(`Отзывы: фото #${i + 1}:`, r.photo_url);
+      }
+    });
+  }
 
   return (
     <section id="reviews" className="py-20 bg-gray-50 relative">

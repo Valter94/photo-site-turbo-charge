@@ -126,9 +126,11 @@ const Index = () => {
           <Suspense fallback={<SectionLoader />}>
             <AdditionalServicesSection />
           </Suspense>
+          {/* ВАЖНО: отзывы идут ДО бронирования */}
           <Suspense fallback={<SectionLoader />}>
             <ReviewsSection />
           </Suspense>
+          {/* Теперь бронирование */}
           <div id="booking">
             <Suspense fallback={<SectionLoader />}>
               <EnhancedBookingCalendar />
@@ -138,7 +140,7 @@ const Index = () => {
             <FAQSection />
           </Suspense>
         </main>
-        {/* Футер строго в самом низу */}
+        {/* Footer только здесь! НЕ переносим выше */}
         <Suspense fallback={<div className="h-32 bg-gray-100"></div>}>
           <Footer />
         </Suspense>

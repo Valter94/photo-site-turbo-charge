@@ -60,6 +60,10 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     src.startsWith('https://api.telegram.org/file/bot') ||
     src.includes('api.telegram.org/file/bot');
 
+  if (isTelegramPhoto) {
+    console.log('[OptimizedImage] Отображается Telegram-фото:', src);
+  }
+
   const createOptimizedUrl = (
     url: string,
     format: 'webp' | 'avif' | 'jpeg' = 'webp'

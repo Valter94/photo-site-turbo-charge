@@ -10,7 +10,11 @@ import SiteAnalyticsDashboard from './SiteAnalyticsDashboard';
 import EnhancedAdminPanel from './EnhancedAdminPanel';
 import PhotoRetouchManager from './PhotoRetouchManager';
 
-const AllSectionsManager = () => {
+interface AllSectionsManagerProps {
+  onLogout?: () => void;
+}
+
+const AllSectionsManager = ({ onLogout }: AllSectionsManagerProps) => {
   const [activeTab, setActiveTab] = useState('portfolio');
 
   return (
@@ -103,7 +107,13 @@ const AllSectionsManager = () => {
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-6">
-            <EnhancedAdminPanel />
+            {onLogout ? (
+              <EnhancedAdminPanel onLogout={onLogout} />
+            ) : (
+              <div className="text-center p-8">
+                <p className="text-gray-500">Настройки доступны только через главную админ-панель</p>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>

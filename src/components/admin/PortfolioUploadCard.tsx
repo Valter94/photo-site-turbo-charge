@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Plus } from 'lucide-react';
-import { useCreatePortfolio } from '@/hooks/usePortfolio';
+import { useUpdatePortfolio } from '@/hooks/usePortfolio';
 import ImageUpload from './ImageUpload';
 
 const PortfolioUploadCard = () => {
@@ -22,7 +22,7 @@ const PortfolioUploadCard = () => {
     is_featured: false
   });
 
-  const createPortfolio = useCreatePortfolio();
+  const createPortfolio = useUpdatePortfolio();
 
   const categories = [
     { value: 'wedding', label: 'Свадебная съемка' },

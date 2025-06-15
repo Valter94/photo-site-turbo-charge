@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Edit, Save, X } from 'lucide-react';
-import { useUpdatePortfolio, useDeletePortfolio } from '@/hooks/usePortfolio';
+import { usePortfolioActions } from '@/hooks/usePortfolio';
 import { useToast } from '@/hooks/use-toast';
 import ImageUpload from './ImageUpload';
 
@@ -19,8 +19,7 @@ interface PortfolioImageCardProps {
 const PortfolioImageCard = ({ item }: PortfolioImageCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [itemForm, setItemForm] = useState(item);
-  const updatePortfolio = useUpdatePortfolio();
-  const deletePortfolio = useDeletePortfolio();
+  const { updatePortfolio, deletePortfolio } = usePortfolioActions();
   const { toast } = useToast();
 
   const categories = [

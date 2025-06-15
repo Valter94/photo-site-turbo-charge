@@ -37,11 +37,11 @@ const Index = () => {
           <div id="hero">
             <HeroSection />
           </div>
-          {/* ОТДЕЛЬНОЕ ПОРТФОЛИО УДАЛЕНО */}
+          {/* Теперь только Галерея */}
           <div id="gallery">
             <Gallery />
           </div>
-          {/* Остальные компоненты как были */}
+          {/* Остальные секции как были */}
           <Suspense fallback={<SectionLoader />}>
             <LocationsSection />
           </Suspense>

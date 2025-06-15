@@ -1,5 +1,5 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
-import { errorHandler } from '@/utils/errorHandler';
 
 interface OptimizedImageProps {
   src: string;
@@ -25,7 +25,6 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  // Исправим проблему instant preview при upload: всегда обновлять src
   useEffect(() => {
     setImageLoaded(false);
     setImageError(false);
@@ -36,13 +35,15 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     setImageError(false);
   }, []);
 
-  const handleImageError = useCallback((event: React.SyntheticEvent<HTMLImageElement>) => {
-    setImageError(true);
-    console.error('[OptimizedImage][Ошибка]: Не удалось загрузить', src);
-    if (fallbackUrl) {
-      (event.target as HTMLImageElement).src = fallbackUrl;
-    }
-  }, [src, fallbackUrl]);
+  const handleImageError = useCallback(
+    (event: React.SyntheticEvent<HTMLImageElement>) => {
+      setImageError(true);
+      if (fallbackUrl) {
+        (event.target as HTMLImageElement).src = fallbackUrl;
+      }
+    },
+    [fallbackUrl]
+  );
 
   if (!src) {
     return (
@@ -55,13 +56,14 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     );
   }
 
-  // Проверяем, является ли изображение из Supabase Storage
-  const isSupabaseImage = src?.includes('supabase.co') || src?.includes('ojrekbttkriwwyaupbox');
-  
-  // Создаем оптимизированные версии
-  const createOptimizedUrl = (url: string, format: 'webp' | 'avif' | 'jpeg' = 'webp') => {
-    if (isSupabaseImage) return url;
-    
+  const isSupabaseImage = src.includes('supabase.co') || src.includes('ojrekbttkriwwyaupbox');
+  const isTelegramPhoto = src.startsWith('https://api.telegram.org/file/bot');
+
+  const createOptimizedUrl = (
+    url: string,
+    format: 'webp' | 'avif' | 'jpeg' = 'webp'
+  ) => {
+    if (isSupabaseImage || isTelegramPhoto) return url;
     if (url?.includes('unsplash.com')) {
       const params = new URLSearchParams();
       if (width) params.append('w', width.toString());
@@ -71,7 +73,6 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       if (format !== 'jpeg') params.append('fm', format);
       return `${url}&${params.toString()}`;
     }
-    
     return url;
   };
 
@@ -86,9 +87,8 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-50 animate-shimmer"></div>
         </div>
       )}
-      
       <picture>
-        {!isSupabaseImage && (
+        {!(isSupabaseImage || isTelegramPhoto) && (
           <>
             <source srcSet={avifSrc} type="image/avif" />
             <source srcSet={webpSrc} type="image/webp" />
@@ -107,11 +107,12 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
             imageLoaded ? 'opacity-100' : 'opacity-0'
           } ${className}`}
           style={{
-            aspectRatio: width && height ? `${width}/${height}` : undefined
+            aspectRatio: width && height ? `${width}/${height}` : undefined,
+            objectFit: 'cover',
+            display: 'block',
           }}
         />
       </picture>
-
       {imageError && (
         <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
           <div className="text-gray-400 text-center">

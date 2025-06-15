@@ -53,7 +53,6 @@ export const processPhoto = async (deps: any, { message, chatId, userId }: any) 
         try {
           screenshotPreview = await screenshotService.takeScreenshot(fileUrl);
           if (screenshotPreview && typeof screenshotPreview === "string") {
-            // Отправить ссылку на скриншот
             await telegramAPI.sendPhoto(
               chatId,
               screenshotPreview,
@@ -61,7 +60,6 @@ export const processPhoto = async (deps: any, { message, chatId, userId }: any) 
             );
             console.log("[processPhoto] Скриншот успешно отправлен в чат:", screenshotPreview);
           } else if (screenshotPreview instanceof Uint8Array) {
-            // Отправить буфер (альтернативно)
             await telegramAPI.sendPhoto(
               chatId,
               screenshotPreview,
@@ -70,9 +68,11 @@ export const processPhoto = async (deps: any, { message, chatId, userId }: any) 
             console.log("[processPhoto] Скриншот (Uint8Array) отправлен.");
           } else {
             screenshotError = "Screenshot not available";
+            console.warn("[processPhoto] Screenshot не получен (preview пустой или неверный тип):", screenshotPreview);
           }
         } catch (err) {
-          screenshotError = "Ошибка screenshotService: " + err?.message;
+          screenshotError = "Ошибка screenshotService: " + (err?.message ?? err);
+          console.error("[processPhoto] Ошибка screenshotService:", err);
         }
         if (screenshotError) {
           await telegramAPI.sendMessage(chatId, "Не удалось сгенерировать скриншот, но фото принято!");

@@ -1,7 +1,6 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { usePricing } from '@/hooks/usePricing';
-import PricingCard from './PricingCard';
 import { Button } from '@/components/ui/button';
 
 const serviceNamesRu: Record<string, string> = {
@@ -9,90 +8,90 @@ const serviceNamesRu: Record<string, string> = {
   family: 'Семейная съёмка',
   lovestory: 'Love Story',
   wedding: 'Свадебная съёмка',
-  corporate: 'Корпоративная съёмка'
+  corporate: 'Корпоративная съёмка',
 };
+
+const defaultPricing = [
+  {
+    id: '1',
+    service_type: 'portrait',
+    price: 8000,
+    duration_hours: 1,
+    photos_count: '30-40',
+    features: [
+      'Индивидуальная портретная съемка',
+      'Профессиональная обработка',
+      'Готовые фото в течение 3 дней',
+      'Онлайн-галерея для скачивания',
+    ],
+    is_active: true,
+  },
+  {
+    id: '2',
+    service_type: 'family',
+    price: 12000,
+    duration_hours: 2,
+    photos_count: '50-70',
+    features: [
+      'Семейная фотосессия',
+      'Работа с детьми любого возраста',
+      'Естественные эмоции и улыбки',
+      'Быстрая обработка фотографий',
+    ],
+    is_active: true,
+    popular: true,
+  },
+  {
+    id: '3',
+    service_type: 'lovestory',
+    price: 15000,
+    duration_hours: 2,
+    photos_count: '80-100',
+    features: [
+      'Романтическая съемка для пары',
+      'Несколько локаций на выбор',
+      'Создание истории любви в кадрах',
+      'Индивидуальный подход к каждой паре',
+    ],
+    is_active: true,
+  },
+  {
+    id: '4',
+    service_type: 'wedding',
+    price: 35000,
+    duration_hours: 8,
+    photos_count: '200+',
+    features: [
+      'Полный день свадебной съемки',
+      'Репортажная и постановочная съемка',
+      'Съемка церемонии и банкета',
+      'Экспресс-обработка лучших кадров',
+    ],
+    is_active: true,
+    premium: true,
+  },
+];
+
+const getRussianName = (type: string) => serviceNamesRu[type] || type;
 
 const PricingSection = () => {
   const { data: pricing, isLoading } = usePricing();
 
-  const defaultPricing = [
-    {
-      id: '1',
-      service_type: 'portrait',
-      price: 8000,
-      duration_hours: 1,
-      photos_count: '30-40',
-      locations_count: '1',
-      features: [
-        'Индивидуальная портретная съемка',
-        'Профессиональная обработка',
-        'Готовые фото в течение 3 дней',
-        'Онлайн-галерея для скачивания'
-      ],
-      is_active: true
-    },
-    {
-      id: '2',
-      service_type: 'family',
-      price: 12000,
-      duration_hours: 2,
-      photos_count: '50-70',
-      locations_count: '1-2',
-      features: [
-        'Семейная фотосессия',
-        'Работа с детьми любого возраста',
-        'Естественные эмоции и улыбки',
-        'Быстрая обработка фотографий'
-      ],
-      is_active: true,
-      popular: true
-    },
-    {
-      id: '3',
-      service_type: 'lovestory',
-      price: 15000,
-      duration_hours: 2,
-      photos_count: '80-100',
-      locations_count: '2-3',
-      features: [
-        'Романтическая съемка для пары',
-        'Несколько локаций на выбор',
-        'Создание истории любви в кадрах',
-        'Индивидуальный подход к каждой паре'
-      ],
-      is_active: true
-    },
-    {
-      id: '4',
-      service_type: 'wedding',
-      price: 35000,
-      duration_hours: 8,
-      photos_count: '200+',
-      locations_count: 'без ограничений',
-      features: [
-        'Полный день свадебной съемки',
-        'Репортажная и постановочная съемка',
-        'Съемка церемонии и банкета',
-        'Экспресс-обработка лучших кадров'
-      ],
-      is_active: true,
-      premium: true
-    }
-  ];
+  const displayPricing = useMemo(
+    () =>
+      (pricing && pricing.length > 0 ? pricing : defaultPricing).filter((p) => p.is_active),
+    [pricing]
+  );
 
-  const displayPricing = pricing && pricing.length > 0 
-    ? pricing.filter(p => p.is_active) 
-    : defaultPricing;
-
-  // Ещё раз даём гарантию отображения только по-русски
-  const getRussianName = (type: string) => serviceNamesRu[type] || type;
-
-  const scrollToBooking = () => {
-    const bookingElement = document.getElementById('booking');
-    if (bookingElement) {
-      bookingElement.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+  // Группируем по категориям
+  const grouped = useMemo(() => {
+    const groups: { [cat: string]: any[] } = {};
+    displayPricing.forEach((plan) => {
+      if (!groups[plan.service_type]) groups[plan.service_type] = [];
+      groups[plan.service_type].push(plan);
+    });
+    return groups;
+  }, [displayPricing]);
 
   if (isLoading) {
     return (
@@ -106,38 +105,34 @@ const PricingSection = () => {
     );
   }
 
-  displayPricing.forEach(plan => {
-    if (!serviceNamesRu[plan.service_type]) {
-      console.warn('Неизвестный service_type в ценах:', plan.service_type);
-    }
-  });
-
   return (
     <section id="pricing" className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-8">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">Цены на фотосессии</h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Выберите подходящий пакет для вашей фотосессии. Все цены указаны с учетом профессиональной обработки
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Выберите подходящий формат. Раскрывайте детали — они появятся по клику или наведению!
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {displayPricing.map((plan) => (
-            <PricingCard
-              key={plan.id}
-              plan={plan}
-              russianName={getRussianName(plan.service_type)}
-              scrollToBooking={scrollToBooking}
-            />
+        <div className="divide-y">
+          {Object.keys(grouped).map((cat) => (
+            <div key={cat} className="py-8">
+              <div className="text-xl font-bold text-pink-600 mb-2">{getRussianName(cat)}</div>
+              <ul>
+                {grouped[cat].map((plan) => (
+                  <PriceLineDetail key={plan.id} plan={plan} />
+                ))}
+              </ul>
+            </div>
           ))}
         </div>
-        <div className="mt-12 text-center">
-          <p className="text-gray-600 mb-4">
-            Нужен индивидуальный пакет? Свяжитесь со мной для обсуждения деталей
-          </p>
-          <Button 
-            variant="outline" 
-            onClick={scrollToBooking}
+        <div className="mt-10 text-center">
+          <Button
+            variant="outline"
+            onClick={() => {
+              const booking = document.getElementById('booking');
+              if (booking) booking.scrollIntoView({ behavior: 'smooth' });
+            }}
             className="border-pink-500 text-pink-600 hover:bg-pink-50"
           >
             Индивидуальная консультация
@@ -145,6 +140,43 @@ const PricingSection = () => {
         </div>
       </div>
     </section>
+  );
+};
+
+const PriceLineDetail = ({ plan }: { plan: any }) => {
+  const [open, setOpen] = React.useState(false);
+  return (
+    <li
+      className={`flex items-center justify-between py-2 px-4 rounded-lg hover:bg-pink-50 cursor-pointer transition group relative`}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onClick={() => setOpen((v) => !v)}
+      tabIndex={0}
+      onFocus={() => setOpen(true)}
+      onBlur={() => setOpen(false)}
+    >
+      <div className="flex flex-col flex-1">
+        <span className="font-semibold text-gray-900">{plan.title ?? plan.service_type}</span>
+        {open && (
+          <div className="absolute z-10 left-0 top-full mt-2 w-full bg-white rounded-lg shadow-xl p-4 border border-pink-100 animate-fade-in">
+            <div className="text-gray-900 mb-1 font-semibold text-lg">
+              {plan.title ?? plan.service_type}
+            </div>
+            <div className="text-gray-600 text-sm mb-2">{plan.description}</div>
+            <ul className="mb-2 pl-4 list-disc space-y-1">
+              {Array.isArray(plan.features)
+                ? plan.features.map((f: string, i: number) => <li key={i}>{f}</li>)
+                : null}
+            </ul>
+            <div className="flex gap-4 text-xs">
+              <span>{plan.duration_hours} ч</span>
+              <span>{plan.photos_count} фото</span>
+            </div>
+          </div>
+        )}
+      </div>
+      <span className="font-bold text-pink-600 text-lg">{plan.price?.toLocaleString()} ₽</span>
+    </li>
   );
 };
 

@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { TelegramUpdate } from './types.ts'
@@ -291,19 +292,20 @@ serve(async (req) => {
           menuHandlers.getMainMenu()
         )
       }
-      // Выбор категории портфолио
-      else if (data?.startsWith('cat_')) {
+      // ИСПРАВЛЕННАЯ ЛОГИКА: Выбор категории портфолио
+      else if (data?.startsWith('portfolio_cat_')) {
         const session = getSession(userId)
-        if (session && session.step === 'choosing_category') {
+        if (session && session.step === 'choosing_category' && session.type === 'portfolio') {
           const categoryMap: { [key: string]: string } = {
             'wedding': 'Свадьба',
             'lovestory': 'Love Story',
             'portrait': 'Портрет',
             'family': 'Семья',
-            'corporate': 'Корпоратив'
+            'corporate': 'Корпоратив',
+            'maternity': 'Материнство'
           }
           
-          const category = data.replace('cat_', '')
+          const category = data.replace('portfolio_cat_', '')
           session.data.category = category
           session.step = 'waiting_description'
           setSession(userId, session)
@@ -480,7 +482,23 @@ serve(async (req) => {
             `📝 <b>Шаг 3: Выберите категорию</b>\n\n` +
             `🖼 Название: <b>${text}</b>\n\n` +
             `Выберите подходящую категорию:`,
-            menuHandlers.getCategoryKeyboard()
+            {
+              inline_keyboard: [
+                [
+                  { text: '💒 Свадебная', callback_data: 'portfolio_cat_wedding' },
+                  { text: '💕 Love Story', callback_data: 'portfolio_cat_lovestory' }
+                ],
+                [
+                  { text: '👤 Портретная', callback_data: 'portfolio_cat_portrait' },
+                  { text: '👨‍👩‍👧‍👦 Семейная', callback_data: 'portfolio_cat_family' }
+                ],
+                [
+                  { text: '🏢 Корпоративная', callback_data: 'portfolio_cat_corporate' },
+                  { text: '🤱 Материнство', callback_data: 'portfolio_cat_maternity' }
+                ],
+                [{ text: '❌ Отмена', callback_data: 'cancel' }]
+              ]
+            }
           )
         } else {
           // Для локации сразу переходим к описанию
@@ -564,7 +582,8 @@ serve(async (req) => {
               'lovestory': 'Love Story',
               'portrait': 'Портрет',
               'family': 'Семья',
-              'corporate': 'Корпоратив'
+              'corporate': 'Корпоратив',
+              'maternity': 'Материнство'
             }
 
             console.log(`✅ Добавлено в портфолио от пользователя ${userId}`)

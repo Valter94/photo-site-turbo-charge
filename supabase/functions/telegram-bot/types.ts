@@ -18,6 +18,6 @@ export interface TelegramUpdate {
 export interface UserSession {
   step: string
   data: any
-  type: 'portfolio' | 'location' | 'pricing' | 'service'
+  type: 'portfolio' | 'location' | 'pricing' | 'service' | 'photo_processing' | 'batch_processing'
   created_at: number
 }

@@ -16,7 +16,8 @@ export const createMessageHandlers = (deps: any) => {
 
       if (text.startsWith('/start')) {
         console.log('Получена команда /start. Передаём в processStart');
-        return processStart(deps, { chatId });
+        await processStart(deps, { chatId });
+        return;
       }
 
       if (text.startsWith('/stats')) {
@@ -27,7 +28,8 @@ export const createMessageHandlers = (deps: any) => {
 
       if (photo && photo.length > 0) {
         console.log('Получено фото, передаём в processPhoto');
-        return processPhoto(deps, { message, chatId, userId });
+        await processPhoto(deps, { message, chatId, userId });
+        return;
       }
 
       const session = deps.getSession(userId);
@@ -35,17 +37,21 @@ export const createMessageHandlers = (deps: any) => {
         console.log('[TelegramBot] Обнаружена сессия пользователя:', session.step);
         switch (session.step) {
           case 'waiting_title':
-            return processTitle(deps, { message, chatId, userId });
+            await processTitle(deps, { message, chatId, userId });
+            return;
           case 'waiting_description':
-            return processDescription(deps, { message, chatId, userId });
+            await processDescription(deps, { message, chatId, userId });
+            return;
           default:
             console.log('[TelegramBot] Неучтённый step сессии:', session.step);
-            return processFallback(deps, { message, chatId, userId });
+            await processFallback(deps, { message, chatId, userId });
+            return;
         }
       } else if (!text.startsWith('/')) {
         // Сообщение не команда, нет сессии — показываем главное меню
         console.log('[TelegramBot] Не команда и нет сессии, вызывается processFallback');
-        return processFallback(deps, { message, chatId, userId });
+        await processFallback(deps, { message, chatId, userId });
+        return;
       } else {
         // Лишний случай — неизвестная команда
         console.log('[TelegramBot] Неизвестная команда:', text);

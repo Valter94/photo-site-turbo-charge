@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { TelegramUpdate } from './types.ts'
@@ -67,8 +68,23 @@ serve(async (req) => {
     const portfolioHandlers = createEnhancedPortfolioHandlers(supabase)
     const locationsHandlers = createLocationsHandlers(supabase)
 
-    const callbackHandler = createCallbackHandlers({ telegramAPI, supabase, menuHandlers, portfolioHandlers, locationsHandlers, botMonitor })
-    const messageHandler = createMessageHandlers({ telegramAPI, supabase, menuHandlers, portfolioHandlers, locationsHandlers, botMonitor, validators, botToken })
+    // Создаём единый объект зависимостей для всех обработчиков
+    const allDeps = {
+      telegramAPI,
+      supabase,
+      menuHandlers,
+      portfolioHandlers,
+      locationsHandlers,
+      botMonitor,
+      validators,
+      botToken,
+      getSession,
+      setSession,
+      deleteSession
+    };
+
+    const callbackHandler = createCallbackHandlers(allDeps)
+    const messageHandler = createMessageHandlers(allDeps)
 
     let update: TelegramUpdate
     try {

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { errorHandler } from '@/utils/errorHandler';
 
 interface OptimizedImageProps {
@@ -10,6 +10,7 @@ interface OptimizedImageProps {
   height?: number;
   loading?: 'lazy' | 'eager';
   fallbackUrl?: string;
+  priority?: boolean;
 }
 
 const OptimizedImage: React.FC<OptimizedImageProps> = ({ 
@@ -19,21 +20,22 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   width, 
   height, 
   loading = 'lazy',
-  fallbackUrl
+  fallbackUrl,
+  priority = false
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  const handleImageLoad = () => {
+  const handleImageLoad = useCallback(() => {
     setImageLoaded(true);
     setImageError(false);
-  };
+  }, []);
 
-  const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
+  const handleImageError = useCallback((event: React.SyntheticEvent<HTMLImageElement>) => {
     console.error('Image failed to load:', src);
     setImageError(true);
     errorHandler.handleImageError(event.nativeEvent, fallbackUrl);
-  };
+  }, [src, fallbackUrl]);
 
   if (!src) {
     return (
@@ -49,49 +51,59 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   // Проверяем, является ли изображение из Supabase Storage
   const isSupabaseImage = src?.includes('supabase.co') || src?.includes('ojrekbttkriwwyaupbox');
   
-  // Создаем WebP версию только для внешних изображений
-  const webpSrc = !isSupabaseImage && src?.includes('unsplash.com') 
-    ? `${src}&fm=webp&q=80` 
-    : src;
+  // Создаем оптимизированные версии
+  const createOptimizedUrl = (url: string, format: 'webp' | 'avif' | 'jpeg' = 'webp') => {
+    if (isSupabaseImage) return url;
+    
+    if (url?.includes('unsplash.com')) {
+      const params = new URLSearchParams();
+      if (width) params.append('w', width.toString());
+      if (height) params.append('h', height.toString());
+      params.append('fit', 'crop');
+      params.append('q', '80');
+      if (format !== 'jpeg') params.append('fm', format);
+      return `${url}&${params.toString()}`;
+    }
+    
+    return url;
+  };
+
+  const webpSrc = createOptimizedUrl(src, 'webp');
+  const avifSrc = createOptimizedUrl(src, 'avif');
+  const jpegSrc = createOptimizedUrl(src, 'jpeg');
 
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {!imageLoaded && !imageError && (
-        <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
-          <div className="w-8 h-8 border-4 border-gray-300 border-t-rose-400 rounded-full animate-spin"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-pulse">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-50 animate-shimmer"></div>
         </div>
       )}
       
-      {isSupabaseImage ? (
+      <picture>
+        {!isSupabaseImage && (
+          <>
+            <source srcSet={avifSrc} type="image/avif" />
+            <source srcSet={webpSrc} type="image/webp" />
+          </>
+        )}
         <img
-          src={src}
+          src={isSupabaseImage ? src : jpegSrc}
           alt={alt}
           width={width}
           height={height}
-          loading={loading}
+          loading={priority ? 'eager' : loading}
+          decoding={priority ? 'sync' : 'async'}
           onLoad={handleImageLoad}
           onError={handleImageError}
           className={`transition-opacity duration-300 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'
           } ${className}`}
+          style={{
+            aspectRatio: width && height ? `${width}/${height}` : undefined
+          }}
         />
-      ) : (
-        <picture>
-          <source srcSet={webpSrc} type="image/webp" />
-          <img
-            src={src}
-            alt={alt}
-            width={width}
-            height={height}
-            loading={loading}
-            onLoad={handleImageLoad}
-            onError={handleImageError}
-            className={`transition-opacity duration-300 ${
-              imageLoaded ? 'opacity-100' : 'opacity-0'
-            } ${className}`}
-          />
-        </picture>
-      )}
+      </picture>
 
       {imageError && (
         <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">

@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { TelegramUpdate } from './types.ts'
@@ -10,6 +9,7 @@ import { createPricingHandlers } from './pricing-handlers.ts'
 import { createServicesHandlers } from './services-handlers.ts'
 import { createLocationsHandlers } from './locations-handlers.ts'
 import { createTutorialHandlers } from './tutorial-handlers.ts'
+import { createPhotoProcessingHandlers } from './photo-processing-handlers.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -44,6 +44,7 @@ serve(async (req) => {
     const servicesHandlers = createServicesHandlers(supabase)
     const locationsHandlers = createLocationsHandlers(supabase)
     const tutorialHandlers = createTutorialHandlers(supabase, telegramAPI)
+    const photoProcessingHandlers = createPhotoProcessingHandlers(supabase)
 
     let update: TelegramUpdate
     try {
@@ -78,6 +79,60 @@ serve(async (req) => {
       await telegramAPI.answerCallback(callbackQuery.id)
       const data = callbackQuery.data
       console.log('🔔 Получен callback:', data)
+
+      // Обработка фотографий
+      if (data === 'process_photos') {
+        try {
+          const result = photoProcessingHandlers.getProcessingMenu()
+          await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
+        } catch (error) {
+          console.error('❌ Ошибка получения меню обработки:', error)
+          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка получения меню обработки</b>')
+        }
+      }
+      // Выбор фильтра для обработки
+      else if (data?.startsWith('filter_')) {
+        const filterType = data.replace('filter_', '')
+        deleteSession(userId)
+        setSession(userId, {
+          step: 'waiting_photos_for_processing',
+          data: { filterType },
+          type: 'photo_processing',
+          created_at: Date.now()
+        })
+        
+        try {
+          const result = photoProcessingHandlers.startPhotoProcessing(filterType)
+          await telegramAPI.editMessage(chatId, messageId!, result.text, result.keyboard)
+        } catch (error) {
+          console.error('❌ Ошибка начала обработки:', error)
+          await telegramAPI.editMessage(chatId, messageId!, '❌ <b>Ошибка запуска обработки</b>')
+        }
+      }
+      // Пакетная обработка
+      else if (data === 'batch_process') {
+        deleteSession(userId)
+        setSession(userId, {
+          step: 'waiting_batch_photos',
+          data: { photos: [] },
+          type: 'batch_processing',
+          created_at: Date.now()
+        })
+        
+        await telegramAPI.editMessage(
+          chatId,
+          messageId!,
+          `📁 <b>Пакетная обработка</b>\n\n` +
+          `📸 Отправьте до 10 фотографий одним сообщением или по очереди\n` +
+          `После загрузки всех фото выберите фильтр для обработки.`,
+          {
+            inline_keyboard: [
+              [{ text: '✅ Завершить загрузку', callback_data: 'finish_upload' }],
+              [{ text: '❌ Отмена', callback_data: 'cancel' }]
+            ]
+          }
+        )
+      }
 
       // Основные действия добавления
       if (data?.startsWith('add_')) {
@@ -336,6 +391,50 @@ serve(async (req) => {
             `Отправьте название для этого ${session.type === 'portfolio' ? 'фото' : 'места'}:`,
             {
               inline_keyboard: [
+                [{ text: '❌ Отмена', callback_data: 'cancel' }]
+              ]
+            }
+          )
+        } else if (session && session.type === 'photo_processing' && session.step === 'waiting_photos_for_processing') {
+          const largestPhoto = photo[photo.length - 1]
+          session.data.photos = session.data.photos || []
+          session.data.photos.push({
+            file_id: largestPhoto.file_id,
+            caption: caption
+          })
+          
+          setSession(userId, session)
+          
+          await telegramAPI.sendMessage(
+            chatId,
+            `✅ <b>Фото получено! (${session.data.photos.length}/10)</b>\n\n` +
+            `🎨 Фильтр: ${photoProcessingHandlers.getFilterDescription(session.data.filterType).split('\n')[0]}\n\n` +
+            `Отправьте еще фото или нажмите "Обработать":`,
+            {
+              inline_keyboard: [
+                [{ text: '🎨 Обработать сейчас', callback_data: 'start_processing' }],
+                [{ text: '❌ Отмена', callback_data: 'cancel' }]
+              ]
+            }
+          )
+        }
+        else if (session && session.type === 'batch_processing' && session.step === 'waiting_batch_photos') {
+          const largestPhoto = photo[photo.length - 1]
+          session.data.photos = session.data.photos || []
+          session.data.photos.push({
+            file_id: largestPhoto.file_id,
+            caption: caption
+          })
+          
+          setSession(userId, session)
+          
+          await telegramAPI.sendMessage(
+            chatId,
+            `📁 <b>Фото добавлено в пакет! (${session.data.photos.length}/10)</b>\n\n` +
+            `Отправьте еще фото или завершите загрузку для выбора фильтра.`,
+            {
+              inline_keyboard: [
+                [{ text: '✅ Завершить загрузку', callback_data: 'finish_upload' }],
                 [{ text: '❌ Отмена', callback_data: 'cancel' }]
               ]
             }

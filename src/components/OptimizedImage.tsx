@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { errorHandler } from '@/utils/errorHandler';
 
 interface OptimizedImageProps {
@@ -12,18 +12,24 @@ interface OptimizedImageProps {
   priority?: boolean;
 }
 
-const OptimizedImage: React.FC<OptimizedImageProps> = ({ 
-  src, 
-  alt, 
-  className = '', 
-  width, 
-  height, 
+const OptimizedImage: React.FC<OptimizedImageProps> = ({
+  src,
+  alt,
+  className = '',
+  width,
+  height,
   loading = 'lazy',
   fallbackUrl,
-  priority = false
+  priority = false,
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+
+  // Исправим проблему instant preview при upload: всегда обновлять src
+  useEffect(() => {
+    setImageLoaded(false);
+    setImageError(false);
+  }, [src]);
 
   const handleImageLoad = useCallback(() => {
     setImageLoaded(true);

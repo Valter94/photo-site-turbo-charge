@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,12 +12,25 @@ const serviceIcons = {
   corporate: Camera
 };
 
-const PricingCard = ({ plan, russianName, scrollToBooking }: {
-  plan: any,
-  russianName: string,
+const russianLabels: Record<string, string> = {
+  portrait: "Портретная съемка",
+  family: "Семейная фотосессия",
+  lovestory: "Love Story",
+  wedding: "Свадебная съемка",
+  corporate: "Корпоративная съемка"
+};
+
+const PricingCard = ({
+  plan,
+  russianName,
+  scrollToBooking,
+}: {
+  plan: any;
+  russianName: string;
   scrollToBooking: () => void;
 }) => {
   const IconComponent = serviceIcons[plan.service_type as keyof typeof serviceIcons] || Camera;
+  const displayName = russianLabels[plan.service_type] || plan.service_type;
 
   return (
     <Card 
@@ -48,7 +60,7 @@ const PricingCard = ({ plan, russianName, scrollToBooking }: {
               plan.premium ? 'text-purple-600' : 'text-pink-600'
             }`} />
           </div>
-          <h3 className="text-lg font-bold text-gray-900 mb-2">{russianName}</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-2">{displayName}</h3>
           <div className="mb-2">
             <span className="text-2xl font-bold text-gray-900">
               {plan.price?.toLocaleString('ru-RU') ?? '—'} ₽

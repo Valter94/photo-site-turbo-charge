@@ -1,4 +1,3 @@
-
 import { Suspense, lazy } from 'react';
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
@@ -18,6 +17,7 @@ const FAQSection = lazy(() => import("@/components/FAQSection"));
 const Footer = lazy(() => import("@/components/Footer"));
 // LiveStats больше не используется на главной
 const FloatingReviews = lazy(() => import("@/components/FloatingReviews"));
+import Gallery from "./Gallery"; // Импортируем новую единую страницу галереи
 
 // Компонент загрузки
 const SectionLoader = () => (
@@ -37,46 +37,36 @@ const Index = () => {
           <div id="hero">
             <HeroSection />
           </div>
-
-          {/* LiveStats убран отсюда */}
-
-          <Suspense fallback={<SectionLoader />}>
-            <PortfolioSection />
-          </Suspense>
-
+          {/* ОТДЕЛЬНОЕ ПОРТФОЛИО УДАЛЕНО */}
+          <div id="gallery">
+            <Gallery />
+          </div>
+          {/* Остальные компоненты как были */}
           <Suspense fallback={<SectionLoader />}>
             <LocationsSection />
           </Suspense>
-
           <Suspense fallback={<SectionLoader />}>
             <PricingSection />
           </Suspense>
-
           <Suspense fallback={<SectionLoader />}>
             <AdditionalServicesSection />
           </Suspense>
-
           <Suspense fallback={<SectionLoader />}>
             <ReviewsSection />
           </Suspense>
-
           <div id="booking">
             <Suspense fallback={<SectionLoader />}>
               <EnhancedBookingCalendar />
             </Suspense>
           </div>
-
           <Suspense fallback={<SectionLoader />}>
             <FAQSection />
           </Suspense>
         </main>
-
         <Suspense fallback={<div className="h-32 bg-gray-100"></div>}>
           <Footer />
         </Suspense>
-
         <ScrollToTop />
-
         <Suspense fallback={null}>
           <FloatingReviews />
         </Suspense>
@@ -86,4 +76,3 @@ const Index = () => {
 };
 
 export default Index;
-

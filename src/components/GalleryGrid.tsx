@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,6 +28,11 @@ const GalleryGrid = ({ items, columns = 3 }: GalleryGridProps) => {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [likedItems, setLikedItems] = useState<Set<string>>(new Set());
+
+  // ДОБАВЛЯЕМ обновление состояния при изменении items для корректного отображения новых фото:
+  useEffect(() => {
+    setSelectedImageIndex(null);
+  }, [items]);
 
   const handleLike = (itemId: string, e: React.MouseEvent) => {
     e.stopPropagation();

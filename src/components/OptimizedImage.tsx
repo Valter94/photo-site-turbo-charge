@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 
 interface OptimizedImageProps {
@@ -23,10 +24,12 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [currentSrc, setCurrentSrc] = useState(src);
 
   useEffect(() => {
     setImageLoaded(false);
     setImageError(false);
+    setCurrentSrc(src);
   }, [src]);
 
   const handleImageLoad = useCallback(() => {
@@ -34,18 +37,21 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     setImageError(false);
   }, []);
 
-  const handleImageError = useCallback(
-    (event: React.SyntheticEvent<HTMLImageElement>) => {
-      setImageError(true);
-      const el = event.target as HTMLImageElement;
-      if (fallbackUrl && el.src !== fallbackUrl) {
-        el.src = fallbackUrl;
-      } else {
-        el.src = "/placeholder.svg";
-      }
-    },
-    [fallbackUrl]
-  );
+  const handleImageError = useCallback(() => {
+    console.log('Image failed to load:', currentSrc);
+    setImageError(true);
+    
+    // Попробуем fallback URL, если есть
+    if (fallbackUrl && currentSrc !== fallbackUrl) {
+      console.log('Trying fallback URL:', fallbackUrl);
+      setCurrentSrc(fallbackUrl);
+      setImageError(false);
+      return;
+    }
+    
+    // Иначе используем placeholder
+    setCurrentSrc("/placeholder.svg");
+  }, [fallbackUrl, currentSrc]);
 
   if (!src) {
     return (
@@ -58,32 +64,12 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     );
   }
 
+  const isTelegramPhoto = src.includes('api.telegram.org/file/bot') || src.startsWith('https://api.telegram.org/file/bot');
   const isSupabaseImage = src.includes('supabase.co') || src.includes('ojrekbttkriwwyaupbox');
-  const isTelegramPhoto = src.startsWith('https://api.telegram.org/file/bot') || src.includes('api.telegram.org/file/bot');
 
-  // Информация о проблемах и совет по загрузке
-  const warningInfo = (isTelegramPhoto || isSupabaseImage) ? (
-    <span className="block text-xs mt-1 text-red-500 text-left px-2">
-      {isTelegramPhoto && (
-        <>
-          <b>Фото с Telegram могут стать недоступны через 1-2 дня.</b> <br />
-          Рекомендуем загрузить фото через сайт — или отправлять сессией через админ-панель / Supabase.
-        </>
-      )}
-      {isSupabaseImage && (
-        <>
-          <b>Проверьте публичность хранения (Supabase Storage).</b>
-        </>
-      )}
-      <span className="block break-all opacity-60 mt-1">[{src?.slice(0, 80)}...]</span>
-    </span>
-  ) : null;
-
-  const createOptimizedUrl = (
-    url: string,
-    format: 'webp' | 'avif' | 'jpeg' = 'webp'
-  ) => {
-    if (isSupabaseImage || isTelegramPhoto) return url;
+  const createOptimizedUrl = (url: string, format: 'webp' | 'avif' | 'jpeg' = 'webp') => {
+    if (isTelegramPhoto || isSupabaseImage) return url;
+    
     if (url?.includes('unsplash.com')) {
       const params = new URLSearchParams();
       if (width) params.append('w', width.toString());
@@ -93,12 +79,12 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       if (format !== 'jpeg') params.append('fm', format);
       return `${url}&${params.toString()}`;
     }
+    
     return url;
   };
 
   const webpSrc = createOptimizedUrl(src, 'webp');
   const avifSrc = createOptimizedUrl(src, 'avif');
-  const jpegSrc = createOptimizedUrl(src, 'jpeg');
 
   return (
     <div className={`relative overflow-hidden ${className}`}>
@@ -107,15 +93,16 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-50 animate-shimmer"></div>
         </div>
       )}
+      
       <picture>
-        {!(isSupabaseImage || isTelegramPhoto) && (
+        {!isTelegramPhoto && !isSupabaseImage && (
           <>
             <source srcSet={avifSrc} type="image/avif" />
             <source srcSet={webpSrc} type="image/webp" />
           </>
         )}
         <img
-          src={src}
+          src={currentSrc}
           alt={alt}
           width={width}
           height={height}
@@ -125,27 +112,34 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
           onError={handleImageError}
           className={`transition-opacity duration-300 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'
-          } ${className}`}
+          } w-full h-full object-cover`}
           style={{
             aspectRatio: width && height ? `${width}/${height}` : undefined,
-            objectFit: 'cover',
-            display: 'block',
           }}
         />
       </picture>
+      
       {imageError && (
-        <div className="absolute inset-0 bg-gray-100 flex items-center justify-center z-10">
-          <div className="text-gray-400 text-center">
+        <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
+          <div className="text-gray-400 text-center p-4">
             <div className="text-2xl mb-2">📷</div>
-            <div className="text-sm">Изображение недоступно</div>
-            {warningInfo}
+            <div className="text-sm mb-2">Изображение недоступно</div>
+            {isTelegramPhoto && (
+              <div className="text-xs text-red-500">
+                Фото из Telegram могут стать недоступными через 1-2 дня
+              </div>
+            )}
           </div>
         </div>
       )}
-      {warningInfo && !imageError && (
-        <div className="absolute bottom-0 left-0 w-full bg-white/80 text-xs text-red-500 py-1 px-2">{warningInfo}</div>
+      
+      {isTelegramPhoto && imageLoaded && (
+        <div className="absolute bottom-0 left-0 right-0 bg-yellow-500/80 text-yellow-900 text-xs p-1 text-center">
+          ⚠️ Временная ссылка из Telegram
+        </div>
       )}
     </div>
   );
 };
+
 export default OptimizedImage;

@@ -1,3 +1,4 @@
+
 import { Suspense, lazy, useEffect, useState } from 'react';
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
@@ -22,9 +23,6 @@ import AchievementsBadges from "@/components/AchievementsBadges";
 import { usePricing } from '@/hooks/usePricing';
 import { usePortfolio } from '@/hooks/usePortfolio';
 import { useReviews } from '@/hooks/useReviews';
-
-// Sticky-footer обёртка
-const wrapperMinHeightClass = "min-h-screen flex flex-col bg-white";
 
 const SectionLoader = () => (
   <div className="w-full h-64 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-pulse rounded-lg">
@@ -91,44 +89,58 @@ const Index = () => {
 
   return (
     <HelmetProvider>
-      <div className={wrapperMinHeightClass} style={{ minHeight: '100vh', display: "flex", flexDirection: "column" }}>
+      <div className="flex min-h-screen flex-col">
         <SEOHead />
         <Analytics />
         <Navigation />
-        <main className="flex-grow flex flex-col">
-          <div id="hero"><HeroSection /></div>
+        
+        <main className="flex-1">
+          <div id="hero">
+            <HeroSection />
+          </div>
+          
           <LiveSiteActivity recentActivity={recentActivity} />
+          
           <div id="portfolio_and_gallery">
             <Suspense fallback={<SectionLoader />}>
               <PortfolioSection />
             </Suspense>
             <Gallery />
           </div>
+          
           <AchievementsBadges />
+          
           <Suspense fallback={<SectionLoader />}>
             <LocationsSection />
           </Suspense>
+          
           <Suspense fallback={<SectionLoader />}>
             <PricingSection />
           </Suspense>
+          
           <Suspense fallback={<SectionLoader />}>
             <AdditionalServicesSection />
           </Suspense>
+          
           <Suspense fallback={<SectionLoader />}>
             <ReviewsSection />
           </Suspense>
+          
           <div id="booking">
             <Suspense fallback={<SectionLoader />}>
               <EnhancedBookingCalendar />
             </Suspense>
           </div>
+          
           <Suspense fallback={<SectionLoader />}>
             <FAQSection />
           </Suspense>
         </main>
+
         <Suspense fallback={<div className="h-32 bg-gray-100"></div>}>
           <Footer />
         </Suspense>
+        
         <ScrollToTop />
         <Suspense fallback={null}>
           <FloatingReviews />

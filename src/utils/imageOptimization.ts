@@ -21,7 +21,16 @@ export const getOptimizedImageUrl = (src: string, options: ImageOptions = {}): s
     fit = 'crop'
   } = options;
 
-  // Для Unsplash изображений
+  // Проверяем источник изображения
+  const isTelegramPhoto = src.includes('api.telegram.org/file/bot');
+  const isSupabaseImage = src.includes('supabase.co') || src.includes('ojrekbttkriwwyaupbox');
+
+  // Для Telegram и Supabase возвращаем оригинальный URL
+  if (isTelegramPhoto || isSupabaseImage) {
+    return src;
+  }
+
+  // Для Unsplash изображений применяем оптимизацию
   if (src.includes('unsplash.com')) {
     const params = new URLSearchParams();
     params.append('w', width.toString());
@@ -35,7 +44,6 @@ export const getOptimizedImageUrl = (src: string, options: ImageOptions = {}): s
     return `${src}&${params.toString()}`;
   }
 
-  // Для локальных изображений - возвращаем оригинальный URL
   return src;
 };
 
@@ -74,33 +82,14 @@ export const preloadImage = (src: string, options: ImageOptions = {}): Promise<v
 };
 
 /**
- * Ленивая загрузка изображений с Intersection Observer
+ * Проверка доступности изображения
  */
-export const setupLazyLoading = () => {
-  if ('IntersectionObserver' in window) {
-    const imageObserver = new IntersectionObserver((entries, observer) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const img = entry.target as HTMLImageElement;
-          const dataSrc = img.getAttribute('data-src');
-          
-          if (dataSrc) {
-            img.src = dataSrc;
-            img.removeAttribute('data-src');
-            img.classList.add('loaded');
-            observer.unobserve(img);
-          }
-        }
-      });
-    }, {
-      rootMargin: '50px 0px',
-      threshold: 0.01
-    });
-
-    // Находим все изображения с data-src
-    document.querySelectorAll('img[data-src]').forEach(img => {
-      imageObserver.observe(img);
-    });
+export const checkImageAvailability = async (src: string): Promise<boolean> => {
+  try {
+    const response = await fetch(src, { method: 'HEAD' });
+    return response.ok;
+  } catch {
+    return false;
   }
 };
 
@@ -118,46 +107,17 @@ export const supportsWebP = (): Promise<boolean> => {
 };
 
 /**
- * Компрессия изображений на клиенте (для загрузки пользователями)
+ * Получение размеров изображения
  */
-export const compressImage = (file: File, quality: number = 0.8): Promise<Blob> => {
-  return new Promise((resolve) => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d')!;
+export const getImageDimensions = (src: string): Promise<{ width: number; height: number }> => {
+  return new Promise((resolve, reject) => {
     const img = new Image();
-
     img.onload = () => {
-      // Определяем размеры для сжатия
-      const maxWidth = 1920;
-      const maxHeight = 1080;
-      
-      let { width, height } = img;
-      
-      if (width > height) {
-        if (width > maxWidth) {
-          height = (height * maxWidth) / width;
-          width = maxWidth;
-        }
-      } else {
-        if (height > maxHeight) {
-          width = (width * maxHeight) / height;
-          height = maxHeight;
-        }
-      }
-
-      canvas.width = width;
-      canvas.height = height;
-
-      // Рисуем и сжимаем
-      ctx.drawImage(img, 0, 0, width, height);
-      
-      canvas.toBlob(
-        (blob) => resolve(blob!),
-        'image/jpeg',
-        quality
-      );
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
     };
-
-    img.src = URL.createObjectURL(file);
+    img.onerror = () => {
+      reject(new Error('Failed to load image'));  
+    };
+    img.src = src;
   });
 };

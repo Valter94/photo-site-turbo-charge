@@ -7,19 +7,6 @@ import Analytics from "@/components/Analytics";
 import ScrollToTop from "@/components/ScrollToTop";
 import { HelmetProvider } from 'react-helmet-async';
 
-const PortfolioSection = lazy(() => import("@/components/PortfolioSection"));
-const LocationsSection = lazy(() => import("@/components/LocationsSection"));
-const PricingSection = lazy(() => import("@/components/PricingSection"));
-const AdditionalServicesSection = lazy(() => import("@/components/AdditionalServicesSection"));
-const ReviewsSection = lazy(() => import("@/components/ReviewsSection"));
-const EnhancedBookingCalendar = lazy(() => import("@/components/EnhancedBookingCalendar"));
-const FAQSection = lazy(() => import("@/components/FAQSection"));
-const Footer = lazy(() => import("@/components/Footer"));
-const FloatingReviews = lazy(() => import("@/components/FloatingReviews"));
-import Gallery from "./Gallery";
-import LiveSiteActivity from "@/components/LiveSiteActivity";
-import AchievementsBadges from "@/components/AchievementsBadges";
-
 import { usePricing } from '@/hooks/usePricing';
 import { usePortfolio } from '@/hooks/usePortfolio';
 import { useReviews } from '@/hooks/useReviews';
@@ -105,7 +92,6 @@ const Index = () => {
             <Suspense fallback={<SectionLoader />}>
               <PortfolioSection />
             </Suspense>
-            <Gallery />
           </div>
           
           <AchievementsBadges />

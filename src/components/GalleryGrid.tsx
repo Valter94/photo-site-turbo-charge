@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Eye, Heart, Download, Star, MapPin, Calendar, User } from 'lucide-react';
 import OptimizedImage from './OptimizedImage';
 import ImageViewer from './ImageViewer';
-import StoryCarousel from "./StoryCarousel";
 import GalleryGridCard from "./gallery/GalleryGridCard";
 
 interface GalleryItem {
@@ -82,7 +81,6 @@ const GalleryGrid = ({ items, columns = 3 }: GalleryGridProps) => {
 
   return (
     <>
-      <StoryCarousel />
       <div
         className={`grid ${
           gridCols[columns as keyof typeof gridCols] || gridCols[3]

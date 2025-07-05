@@ -116,10 +116,10 @@ const FAQSection = () => {
             <CardContent>
               <p className="text-gray-600 mb-4">Детальные вопросы по почте</p>
               <a 
-                href="mailto:irina@photo.ru" 
+                href="mailto:info@irinaphoto.ru" 
                 className="inline-block bg-rose-400 text-white px-4 py-2 rounded-lg hover:bg-rose-500 transition-colors"
               >
-                irina@photo.ru
+                info@irinaphoto.ru
               </a>
             </CardContent>
           </Card>

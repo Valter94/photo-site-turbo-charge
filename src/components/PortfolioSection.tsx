@@ -3,18 +3,56 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { usePortfolio } from '@/hooks/usePortfolio';
 import GalleryGrid from './GalleryGrid';
-import { useNavigate } from 'react-router-dom';
-import { Sparkles, ArrowRight, Camera } from 'lucide-react';
+import GalleryFilters from './gallery/GalleryFilters';
+import { ALL_SERVICE_TYPES } from '@/lib/serviceTypes';
+import { Sparkles, Camera } from 'lucide-react';
+
+// Определения категорий для фильтров
+const categories = [
+  { id: 'all', name: 'Все работы' },
+  ...ALL_SERVICE_TYPES.map(t => ({ id: t.value, name: t.label })),
+];
 
 const PortfolioSection = () => {
   const { data: portfolio, isLoading } = usePortfolio();
-  const navigate = useNavigate();
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('recent');
 
-  const handleViewGallery = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    navigate('/gallery');
-  };
+  // Фильтрация и сортировка портфолио
+  const filteredAndSortedPortfolio = React.useMemo(() => {
+    if (!portfolio) return [];
+
+    let filtered = portfolio;
+
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(item => item.category === selectedCategory);
+    }
+    if (searchQuery) {
+      filtered = filtered.filter(item =>
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.client_name?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    switch (sortBy) {
+      case 'recent':
+        return filtered.sort((a, b) =>
+          new Date(b.shoot_date || b.created_at).getTime() - new Date(a.shoot_date || a.created_at).getTime()
+        );
+      case 'oldest':
+        return filtered.sort((a, b) =>
+          new Date(a.shoot_date || a.created_at).getTime() - new Date(b.shoot_date || b.created_at).getTime()
+        );
+      case 'title':
+        return filtered.sort((a, b) => a.title.localeCompare(b.title));
+      case 'featured':
+        return filtered.sort((a, b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0));
+      default:
+        return filtered;
+    }
+  }, [portfolio, selectedCategory, searchQuery, sortBy]);
 
   if (isLoading) {
     return (
@@ -36,13 +74,8 @@ const PortfolioSection = () => {
     );
   }
 
-  // Используем базу данных если есть, иначе моковые данные
-  const displayPortfolio = portfolio || [];
-  
-  // Показываем только 8 лучших работ на главной странице
-  const featuredPortfolio = displayPortfolio
-    .filter(item => item.is_featured)
-    .slice(0, 8);
+  // Используем базу данных если есть, иначе пустой массив
+  const displayPortfolio = filteredAndSortedPortfolio || [];
 
   return (
     <section id="portfolio" className="py-20 bg-gradient-to-br from-white via-pink-50/30 to-purple-50/30 relative overflow-hidden">
@@ -88,30 +121,65 @@ const PortfolioSection = () => {
           </div>
         </div>
 
-        {/* Рекомендуемые работы с улучшенной сеткой */}
-        <div className="animate-slide-up animation-delay-200">
-          <GalleryGrid items={featuredPortfolio} columns={4} />
+        {/* Фильтры галереи */}
+        <GalleryFilters
+          categories={categories}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+        />
+
+        {/* Результаты поиска */}
+        <div className="mb-8 text-center">
+          <p className="text-gray-600">
+            Найдено работ: <span className="font-semibold text-pink-600">{displayPortfolio.length}</span>
+            {selectedCategory !== 'all' && (
+              <span className="ml-2 text-sm text-gray-500">
+                в категории "{categories.find(c => c.id === selectedCategory)?.name}"
+              </span>
+            )}
+          </p>
         </div>
 
-        <div className="mt-16 text-center animate-scale-in animation-delay-400">
-          <div className="bg-white/80 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-pink-100 max-w-2xl mx-auto">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              🌟 Хотите увидеть больше волшебства?
-            </h3>
-            <p className="text-gray-600 mb-6">
-              В полной галерее вас ждут сотни потрясающих фотографий из разных локаций Москвы
-            </p>
-            <Button 
-              className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg transform transition-all duration-300 hover:scale-105 hover:-translate-y-1"
-              onClick={handleViewGallery}
-              type="button"
-            >
-              <Sparkles className="w-5 h-5 mr-2" />
-              Открыть полную галерею
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-          </div>
+        {/* Галерея работ */}
+        <div className="animate-slide-up animation-delay-200">
+          <GalleryGrid items={displayPortfolio} columns={3} />
         </div>
+
+        {displayPortfolio.length === 0 && (
+          <div className="text-center py-12">
+            <div className="max-w-md mx-auto">
+              <div className="text-6xl mb-4">🖼️</div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                {searchQuery || selectedCategory !== 'all'
+                  ? 'По вашему запросу ничего не найдено'
+                  : 'Работы пока не добавлены'
+                }
+              </h3>
+              <p className="text-gray-600 mb-6">
+                {searchQuery || selectedCategory !== 'all'
+                  ? 'Попробуйте изменить фильтры или поисковый запрос'
+                  : 'Скоро здесь появятся новые фотографии'
+                }
+              </p>
+              {(searchQuery || selectedCategory !== 'all') && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedCategory('all');
+                  }}
+                  className="border-pink-500 text-pink-600 hover:bg-pink-50"
+                >
+                  Сбросить фильтры
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

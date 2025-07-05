@@ -112,7 +112,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
           onError={handleImageError}
           className={`transition-opacity duration-300 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'
-          } w-full h-full object-cover`}
+          } w-full h-full object-contain`}
           style={{
             aspectRatio: width && height ? `${width}/${height}` : undefined,
           }}

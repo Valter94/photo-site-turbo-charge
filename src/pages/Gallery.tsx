@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
 import { usePortfolio } from '@/hooks/usePortfolio';
 import GalleryHeader from '@/components/gallery/GalleryHeader';
 import GalleryFilters from '@/components/gallery/GalleryFilters';
@@ -59,7 +58,6 @@ const Gallery = () => {
       <div className="min-h-screen bg-gray-50">
         <Navigation />
         <GalleryHeader isLoading />
-        <Footer />
       </div>
     );
   }
@@ -96,7 +94,6 @@ const Gallery = () => {
           />
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

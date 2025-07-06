@@ -129,9 +129,6 @@ const Index = () => {
             </Suspense>
           </div>
           
-          <Suspense fallback={<SectionLoader />}>
-            <FAQSection />
-          </Suspense>
         </main>
 
         <Suspense fallback={<div className="h-32 bg-gray-100"></div>}>

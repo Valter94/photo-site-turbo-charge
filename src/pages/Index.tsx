@@ -5,6 +5,17 @@ import HeroSection from "@/components/HeroSection";
 import SEOHead from "@/components/SEOHead";
 import Analytics from "@/components/Analytics";
 import ScrollToTop from "@/components/ScrollToTop";
+import LiveSiteActivity from "@/components/LiveSiteActivity";
+import PortfolioSection from "@/components/PortfolioSection";
+import AchievementsBadges from "@/components/AchievementsBadges";
+import LocationsSection from "@/components/LocationsSection";
+import PricingSection from "@/components/PricingSection";
+import AdditionalServicesSection from "@/components/AdditionalServicesSection";
+import ReviewsSection from "@/components/ReviewsSection";
+import EnhancedBookingCalendar from "@/components/EnhancedBookingCalendar";
+import FAQSection from "@/components/FAQSection";
+import Footer from "@/components/Footer";
+import FloatingReviews from "@/components/FloatingReviews";
 import { HelmetProvider } from 'react-helmet-async';
 
 import { usePricing } from '@/hooks/usePricing';

@@ -13,6 +13,7 @@ import SiteSettingsManager from './SiteSettingsManager';
 import SiteAnalyticsDashboard from './SiteAnalyticsDashboard';
 import ExportManager from './ExportManager';
 import AnalyticsSetup from './AnalyticsSetup';
+import AIAdminBot from './AIAdminBot';
 import { 
   Camera, 
   MapPin, 
@@ -40,6 +41,7 @@ const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
     { id: "pricing", label: "Цены", icon: DollarSign },
     { id: "services", label: "Доп. услуги", icon: Plus },
     { id: "reviews", label: "Отзывы", icon: Star },
+    { id: "ai-bot", label: "🤖 AI Помощник", icon: Bot },
     { id: "telegram", label: "Telegram", icon: MessageSquare },
     { id: "bot", label: "Бот", icon: Bot },
     { id: "settings", label: "Настройки", icon: Settings },
@@ -155,6 +157,23 @@ const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
               </CardHeader>
               <CardContent>
                 <ReviewsManager />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="ai-bot" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bot className="h-5 w-5 text-blue-500" />
+                  🤖 AI Администратор
+                  <span className="ml-auto text-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2 py-1 rounded-full">
+                    Неограниченно
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AIAdminBot />
               </CardContent>
             </Card>
           </TabsContent>

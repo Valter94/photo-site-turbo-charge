@@ -13,9 +13,9 @@ import PricingSection from "@/components/PricingSection";
 import AdditionalServicesSection from "@/components/AdditionalServicesSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import EnhancedBookingCalendar from "@/components/EnhancedBookingCalendar";
-import FAQSection from "@/components/FAQSection";
 import Footer from "@/components/Footer";
 import FloatingReviews from "@/components/FloatingReviews";
+import ErrorResolver from "@/components/ErrorResolver";
 import { HelmetProvider } from 'react-helmet-async';
 
 import { usePricing } from '@/hooks/usePricing';
@@ -139,6 +139,8 @@ const Index = () => {
         <Suspense fallback={null}>
           <FloatingReviews />
         </Suspense>
+        
+        <ErrorResolver />
       </div>
     </HelmetProvider>
   );

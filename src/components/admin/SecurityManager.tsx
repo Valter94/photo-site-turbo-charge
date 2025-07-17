@@ -19,7 +19,11 @@ const SecurityManager = () => {
   const [activeTab, setActiveTab] = useState("settings");
 
   const handleSettingUpdate = async (key: string, value: any) => {
-    await updateSetting.mutateAsync({ setting_key: key, setting_value: value });
+    try {
+      await updateSetting.mutateAsync({ setting_key: key, setting_value: value });
+    } catch (error) {
+      console.error('Error updating setting:', error);
+    }
   };
 
   const getSettingValue = (key: string) => {
@@ -43,6 +47,16 @@ const SecurityManager = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  if (settingsLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center">Загрузка настроек безопасности...</div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">

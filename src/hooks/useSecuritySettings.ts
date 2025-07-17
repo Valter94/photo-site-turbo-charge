@@ -3,6 +3,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+// Define the security settings type
+interface SecuritySetting {
+  id: string;
+  setting_key: string;
+  setting_value: any;
+  description?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export const useSecuritySettings = () => {
   return useQuery({
     queryKey: ['security_settings'],
@@ -12,8 +22,12 @@ export const useSecuritySettings = () => {
         .select('*')
         .order('setting_key');
       
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error('Error fetching security settings:', error);
+        throw error;
+      }
+      
+      return data as SecuritySetting[];
     }
   });
 };
@@ -34,7 +48,10 @@ export const useUpdateSecuritySetting = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating security setting:', error);
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
@@ -44,7 +61,8 @@ export const useUpdateSecuritySetting = () => {
         description: "Настройки безопасности обновлены",
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Failed to update security setting:', error);
       toast({
         title: "Ошибка",
         description: "Не удалось обновить настройки безопасности",

@@ -21,7 +21,7 @@ export const useAuditLog = (limit = 100) => {
   return useQuery({
     queryKey: ['audit_log', limit],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('audit_log')
         .select('*')
         .order('created_at', { ascending: false })

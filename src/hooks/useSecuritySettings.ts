@@ -17,7 +17,7 @@ export const useSecuritySettings = () => {
   return useQuery({
     queryKey: ['security_settings'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('security_settings')
         .select('*')
         .order('setting_key');
@@ -38,7 +38,7 @@ export const useUpdateSecuritySetting = () => {
   
   return useMutation({
     mutationFn: async ({ setting_key, setting_value }: { setting_key: string; setting_value: any }) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('security_settings')
         .upsert({
           setting_key,

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +15,8 @@ import SiteAnalyticsDashboard from './SiteAnalyticsDashboard';
 import ExportManager from './ExportManager';
 import AnalyticsSetup from './AnalyticsSetup';
 import AIAdminBot from './AIAdminBot';
+import SecurityManager from './SecurityManager';
+import SecurityDashboard from './SecurityDashboard';
 import { 
   Camera, 
   MapPin, 
@@ -25,7 +28,8 @@ import {
   BarChart3,
   Download,
   Plus,
-  LogOut
+  LogOut,
+  Shield
 } from 'lucide-react';
 
 interface EnhancedAdminPanelProps {
@@ -33,9 +37,10 @@ interface EnhancedAdminPanelProps {
 }
 
 const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
-  const [activeTab, setActiveTab] = useState("portfolio");
+  const [activeTab, setActiveTab] = useState("security");
 
   const tabs = [
+    { id: "security", label: "🔐 Безопасность", icon: Shield },
     { id: "portfolio", label: "Портфолио", icon: Camera },
     { id: "locations", label: "Локации", icon: MapPin },
     { id: "pricing", label: "Цены", icon: DollarSign },
@@ -73,7 +78,7 @@ const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <Card>
             <CardContent className="p-4">
-              <TabsList className="grid grid-cols-5 lg:grid-cols-10 gap-2 h-auto bg-transparent">
+              <TabsList className="grid grid-cols-6 lg:grid-cols-12 gap-2 h-auto bg-transparent">
                 {tabs.map((tab) => {
                   const IconComponent = tab.icon;
                   return (
@@ -90,6 +95,22 @@ const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
               </TabsList>
             </CardContent>
           </Card>
+
+          <TabsContent value="security" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Центр безопасности
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SecurityDashboard />
+              </CardContent>
+            </Card>
+            
+            <SecurityManager />
+          </TabsContent>
 
           <TabsContent value="portfolio" className="space-y-6">
             <Card>

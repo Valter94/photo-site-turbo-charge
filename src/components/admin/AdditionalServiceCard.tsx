@@ -6,96 +6,137 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Edit, Save, X } from 'lucide-react';
-import { useUpdateAdditionalService, useDeleteAdditionalService } from '@/hooks/useAdditionalServices';
+import { Trash2, Edit, Save, X, Plus } from 'lucide-react';
+import { useAdditionalServices } from '@/hooks/useAdditionalServices';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AdditionalServiceCardProps {
   service: any;
+  formatPrice: (price: number) => string;
 }
 
-const AdditionalServiceCard = ({ service }: AdditionalServiceCardProps) => {
+const AdditionalServiceCard = ({ service, formatPrice }: AdditionalServiceCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [serviceForm, setServiceForm] = useState<any>({});
-  const updateService = useUpdateAdditionalService();
-  const deleteService = useDeleteAdditionalService();
+  const [editForm, setEditForm] = useState(service);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
 
   const handleEdit = () => {
     setIsEditing(true);
-    setServiceForm(service);
+    setEditForm(service);
   };
 
   const handleSave = async () => {
+    setIsUpdating(true);
     try {
-      await updateService.mutateAsync(serviceForm);
+      const { error } = await supabase
+        .from('additional_services')
+        .update({
+          name: editForm.name,
+          description: editForm.description,
+          price: parseInt(editForm.price) || 0,
+          is_active: editForm.is_active
+        })
+        .eq('id', service.id);
+
+      if (error) throw error;
+
       toast({
         title: "Успешно",
         description: "Услуга обновлена",
       });
+
       setIsEditing(false);
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Ошибка",
-        description: "Не удалось обновить услугу",
+        description: error.message || "Не удалось обновить услугу",
         variant: "destructive"
       });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
   const handleDelete = async () => {
     if (!confirm('Вы уверены, что хотите удалить эту услугу?')) return;
     
+    setIsDeleting(true);
     try {
-      await deleteService.mutateAsync(service.id);
+      const { error } = await supabase
+        .from('additional_services')
+        .delete()
+        .eq('id', service.id);
+
+      if (error) throw error;
+
       toast({
         title: "Успешно",
         description: "Услуга удалена",
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Ошибка",
-        description: "Не удалось удалить услугу",
+        description: error.message || "Не удалось удалить услугу",
         variant: "destructive"
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   if (isEditing) {
     return (
-      <Card>
+      <Card className="border-2 border-green-200">
         <CardContent className="p-4">
-          <div className="space-y-3">
+          <div className="space-y-4">
             <Input
-              value={serviceForm.name}
-              onChange={(e) => setServiceForm({...serviceForm, name: e.target.value})}
+              value={editForm.name || ''}
+              onChange={(e) => setEditForm({...editForm, name: e.target.value})}
               placeholder="Название услуги"
             />
+            
             <Textarea
-              value={serviceForm.description || ''}
-              onChange={(e) => setServiceForm({...serviceForm, description: e.target.value})}
-              placeholder="Описание"
+              value={editForm.description || ''}
+              onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+              placeholder="Описание услуги"
               rows={3}
             />
+            
             <Input
               type="number"
-              value={serviceForm.price || ''}
-              onChange={(e) => setServiceForm({...serviceForm, price: parseInt(e.target.value)})}
-              placeholder="Цена"
+              value={editForm.price || ''}
+              onChange={(e) => setEditForm({...editForm, price: e.target.value})}
+              placeholder="Цена (руб)"
             />
+            
             <div className="flex items-center space-x-2">
               <Switch
-                checked={serviceForm.is_active}
-                onCheckedChange={(checked) => setServiceForm({...serviceForm, is_active: checked})}
+                checked={editForm.is_active}
+                onCheckedChange={(checked) => setEditForm({...editForm, is_active: checked})}
               />
-              <label className="text-sm">Активная</label>
+              <label className="text-sm">Активная услуга</label>
             </div>
+            
             <div className="flex gap-2">
-              <Button onClick={handleSave} size="sm" disabled={updateService.isPending}>
-                <Save className="h-4 w-4" />
+              <Button 
+                onClick={handleSave} 
+                size="sm" 
+                disabled={isUpdating}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Save className="h-4 w-4 mr-1" />
+                Сохранить
               </Button>
-              <Button onClick={() => setIsEditing(false)} variant="outline" size="sm">
-                <X className="h-4 w-4" />
+              <Button 
+                onClick={() => setIsEditing(false)} 
+                variant="outline" 
+                size="sm"
+              >
+                <X className="h-4 w-4 mr-1" />
+                Отмена
               </Button>
             </div>
           </div>
@@ -105,31 +146,46 @@ const AdditionalServiceCard = ({ service }: AdditionalServiceCardProps) => {
   }
 
   return (
-    <Card>
+    <Card className="hover:shadow-lg transition-shadow">
       <CardContent className="p-4">
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="flex justify-between items-start">
-            <h4 className="font-medium">{service.name}</h4>
-            <p className="font-bold text-rose-400">{service.price?.toLocaleString()} ₽</p>
-          </div>
-          <p className="text-sm text-gray-600">{service.description}</p>
-          <div className="flex justify-between items-center">
+            <h4 className="font-semibold text-lg text-gray-900">
+              {service.name}
+            </h4>
             <Badge variant={service.is_active ? "default" : "secondary"}>
               {service.is_active ? "Активная" : "Неактивная"}
             </Badge>
-            <div className="flex gap-1">
-              <Button onClick={handleEdit} variant="outline" size="sm">
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button 
-                onClick={handleDelete} 
-                variant="destructive" 
-                size="sm"
-                disabled={deleteService.isPending}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
+          </div>
+          
+          <div className="text-2xl font-bold text-green-600">
+            {formatPrice(service.price || 0)}
+          </div>
+          
+          {service.description && (
+            <p className="text-sm text-gray-600 leading-relaxed">
+              {service.description}
+            </p>
+          )}
+          
+          <div className="flex gap-2 pt-2">
+            <Button 
+              onClick={handleEdit} 
+              variant="outline" 
+              size="sm"
+              className="flex-1"
+            >
+              <Edit className="h-4 w-4 mr-1" />
+              Изменить
+            </Button>
+            <Button 
+              onClick={handleDelete} 
+              variant="destructive" 
+              size="sm"
+              disabled={isDeleting}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </CardContent>

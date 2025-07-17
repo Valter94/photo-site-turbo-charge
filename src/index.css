@@ -19,6 +19,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  overflow-x: hidden;
 }
 
 /* Предзагрузка критических ресурсов */
@@ -130,6 +131,14 @@ img {
   gap: 1rem;
 }
 
+/* Адаптивная сетка портфолио */
+@media (max-width: 768px) {
+  .portfolio-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
 /* Улучшение производительности скроллинга */
 .smooth-scroll {
   scroll-behavior: smooth;
@@ -162,5 +171,30 @@ img {
   :root {
     --primary: 346 100% 40%;
     --border: 220 13% 70%;
+  }
+}
+
+/* Улучшение кликабельности на мобильных устройствах */
+@media (max-width: 768px) {
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Плавная прокрутка к якорям */
+.scroll-mt-20 {
+  scroll-margin-top: 5rem;
+}
+
+/* Скрытие горизонтальной прокрутки */
+.overflow-x-hidden {
+  overflow-x: hidden;
+}
+
+/* Оптимизация для touch устройств */
+@media (hover: none) and (pointer: coarse) {
+  .group:hover .group-hover\:scale-110 {
+    transform: scale(1.05);
   }
 }

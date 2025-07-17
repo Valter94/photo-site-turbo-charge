@@ -1,89 +1,59 @@
-import { UserSession } from '../types.ts'
 
 export const processDescription = async (deps: any, { message, chatId, userId }: any) => {
-  const { telegramAPI, getSession, setSession, supabase, validators, menuHandlers } = deps
+  const { telegramAPI, getSession, setSession, deleteSession, menuHandlers, portfolioHandlers, locationsHandlers } = deps
+  const description = message.text?.trim()
   let session = getSession(userId)
-  const text = message.text || ''
 
-  if (!session) {
-    await telegramAPI.sendMessage(chatId, '❓ Сессия не найдена. Начните заново:', menuHandlers.getMainMenu())
-    return
-  }
+  console.log('[processDescription] Начало обработки описания:', { description, session });
 
-  if (!validators.isValidDescription(text)) {
+  if (!session || session.step !== 'waiting_description') {
     await telegramAPI.sendMessage(
       chatId,
-      `❌ <b>Описание должно быть от 10 до 500 символов.</b>\nПопробуйте еще раз:`,
-      { inline_keyboard: [[{ text: '❌ Отмена', callback_data: 'cancel' }]] }
+      `❌ <b>Сейчас описание не требуется.</b>\n\nНачните с главного меню:`,
+      menuHandlers.getMainMenu()
     )
     return
   }
 
-  session.data.description = validators.sanitizeText(text)
-
-  // Добавляем фото в портфолио (Тип: portfolio)
-  if (session.type === 'portfolio') {
-    // Добавление записи в таблицу portfolio
-    const { data, error } = await supabase
-      .from('portfolio')
-      .insert([{
-        title: session.data.title,
-        category: session.data.category || 'other',
-        description: session.data.description,
-        image_url: session.data.photo_file_id,
-        created_at: new Date().toISOString(),
-        // можно добавить client_name, location, tags и т.д.
-      }]);
-
-    if (error) {
-      await telegramAPI.sendMessage(
-        chatId,
-        `❌ <b>Ошибка при добавлении фото:</b> ${error.message}`,
-        menuHandlers.getMainMenu()
-      )
-      return
-    }
-
-    // Завершаем сессию
-    deps.deleteSession(userId);
-
+  if (!description || description.length < 10 || description.length > 500) {
     await telegramAPI.sendMessage(
       chatId,
-      `✅ <b>Фотография добавлена в портфолио!</b>\nСпасибо!`,
-      menuHandlers.getMainMenu()
+      `❌ <b>Некорректное описание</b>\n\nОписание должно быть от 10 до 500 символов.\nТекущая длина: ${description?.length || 0}\n\nПопробуйте еще раз:`,
+      {
+        inline_keyboard: [[{ text: '❌ Отмена', callback_data: 'cancel' }]]
+      }
     )
-    return;
+    return
   }
 
-  // Если сценарий — локация (можно расширить по аналогии)
-  if (session.type === 'location') {
-    // Добавление записи в таблицу locations
-    const { data, error } = await supabase
-      .from('locations')
-      .insert([{
-        title: session.data.title,
-        description: session.data.description,
-        image_url: session.data.photo_file_id,
-        created_at: new Date().toISOString(),
-      }]);
+  session.data.description = description
 
-    if (error) {
-      await telegramAPI.sendMessage(
-        chatId,
-        `❌ <b>Ошибка при добавлении локации:</b> ${error.message}`,
-        menuHandlers.getMainMenu()
-      )
-      return
+  try {
+    let result;
+    
+    if (session.action_type === 'add_portfolio') {
+      // Добавляем в портфолио
+      result = await portfolioHandlers.addPortfolioItem(session.data)
+    } else if (session.action_type === 'add_location') {
+      // Добавляем локацию
+      result = await locationsHandlers.addLocation(session.data)
+    } else {
+      throw new Error('Неизвестный тип действия')
     }
 
-    // Завершаем сессию
-    deps.deleteSession(userId);
+    // Очищаем сессию после успешного добавления
+    deleteSession(userId)
 
+    await telegramAPI.sendMessage(chatId, result.text, result.keyboard)
+    
+    console.log('[processDescription] Успешно добавлено:', session.action_type);
+
+  } catch (error) {
+    console.error('[processDescription] Ошибка:', error);
     await telegramAPI.sendMessage(
       chatId,
-      `✅ <b>Локация добавлена!</b>\nСпасибо!`,
+      `❌ <b>Ошибка при сохранении</b>\n\nПопробуйте еще раз или обратитесь к администратору.`,
       menuHandlers.getMainMenu()
     )
-    return;
   }
 }

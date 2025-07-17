@@ -44,6 +44,49 @@ export const createEnhancedPortfolioHandlers = (supabase: SupabaseClient) => {
     }
   }
 
+  const addPortfolioItem = async (sessionData: any) => {
+    try {
+      const { data: portfolioData, error } = await supabase
+        .from('portfolio')
+        .insert({
+          title: sessionData.title,
+          category: sessionData.category,
+          description: sessionData.description || 'Добавлено через Telegram бот',
+          image_url: sessionData.image_url,
+          location: sessionData.location || null,
+          client_name: sessionData.client_name || null,
+          is_featured: false
+        })
+        .select()
+        .single()
+
+      if (error) {
+        logger.error('Error adding portfolio item', error)
+        throw error
+      }
+
+      return {
+        text: `✅ <b>Фото добавлено в портфолио!</b>\n\n` +
+              `📷 Название: ${portfolioData.title}\n` +
+              `🏷 Категория: ${portfolioData.category}\n` +
+              `📝 Описание: ${portfolioData.description}\n\n` +
+              `🌐 Фото уже доступно на сайте!`,
+        keyboard: {
+          inline_keyboard: [
+            [
+              { text: '📸 Добавить еще фото', callback_data: 'add_portfolio' },
+              { text: '🎨 Управление портфолио', callback_data: 'manage_portfolio' }
+            ],
+            [{ text: '🏠 Главное меню', callback_data: 'main_menu' }]
+          ]
+        }
+      }
+    } catch (error) {
+      logger.error('Error adding portfolio item', error)
+      throw error
+    }
+  }
+
   const getDeleteList = async () => {
     try {
       const { data: portfolioData, error } = await supabase
@@ -127,12 +170,36 @@ export const createEnhancedPortfolioHandlers = (supabase: SupabaseClient) => {
 
   const deletePhoto = async (photoId: string) => {
     try {
-      const { error } = await supabase
+      const { data: photo, error: selectError } = await supabase
+        .from('portfolio')
+        .select('image_url')
+        .eq('id', photoId)
+        .single()
+
+      if (selectError) throw selectError
+
+      // Удаляем запись из базы данных
+      const { error: deleteError } = await supabase
         .from('portfolio')
         .delete()
         .eq('id', photoId)
 
-      if (error) throw error
+      if (deleteError) throw deleteError
+
+      // Пытаемся удалить файл из Storage
+      if (photo?.image_url) {
+        try {
+          const urlParts = photo.image_url.split('/')
+          const bucketIndex = urlParts.findIndex(part => part === 'images')
+          
+          if (bucketIndex !== -1) {
+            const filePath = urlParts.slice(bucketIndex + 1).join('/')
+            await supabase.storage.from('images').remove([filePath])
+          }
+        } catch (storageError) {
+          console.warn('Ошибка удаления файла из Storage:', storageError)
+        }
+      }
 
       return {
         text: '✅ <b>Фото успешно удалено!</b>',
@@ -151,95 +218,11 @@ export const createEnhancedPortfolioHandlers = (supabase: SupabaseClient) => {
     }
   }
 
-  const processPhotoUpload = async (userId: number, fileId: string, sessionData: any) => {
-    try {
-      logger.log('Processing photo upload', { userId, fileId, sessionData })
-
-      // Получаем информацию о файле
-      const response = await fetch(`https://api.telegram.org/bot${Deno.env.get('TELEGRAM_BOT_TOKEN')}/getFile?file_id=${fileId}`)
-      const fileInfo = await response.json()
-
-      if (!fileInfo.ok) {
-        throw new Error('Failed to get file info')
-      }
-
-      // Загружаем файл
-      const fileUrl = `https://api.telegram.org/file/bot${Deno.env.get('TELEGRAM_BOT_TOKEN')}/${fileInfo.result.file_path}`
-      const fileResponse = await fetch(fileUrl)
-
-      if (!fileResponse.ok) {
-        throw new Error('Failed to download file')
-      }
-
-      const fileBlob = await fileResponse.blob()
-      const fileName = `portfolio-${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`
-
-      // Загружаем в Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('images')
-        .upload(`portfolio/${fileName}`, fileBlob, {
-          contentType: 'image/jpeg',
-          cacheControl: '3600'
-        })
-
-      if (uploadError) {
-        logger.error('Upload error', uploadError)
-        throw uploadError
-      }
-
-      // Получаем публичный URL
-      const { data: urlData } = supabase.storage
-        .from('images')
-        .getPublicUrl(`portfolio/${fileName}`)
-
-      const imageUrl = urlData.publicUrl
-
-      // Сохраняем в базу данных
-      const { data: portfolioData, error: dbError } = await supabase
-        .from('portfolio')
-        .insert({
-          title: sessionData.title || 'Новое фото',
-          category: sessionData.category || 'portrait',
-          description: sessionData.description || 'Описание добавлено через Telegram бот',
-          image_url: imageUrl,
-          location: sessionData.location || null,
-          client_name: sessionData.client_name || null
-        })
-        .select()
-        .single()
-
-      if (dbError) {
-        logger.error('Database error', dbError)
-        throw dbError
-      }
-
-      logger.log('Photo successfully uploaded', { portfolioData })
-
-      return {
-        text: `✅ <b>Фото успешно добавлено!</b>\n\n` +
-              `📷 Название: ${portfolioData.title}\n` +
-              `🏷 Категория: ${portfolioData.category}\n` +
-              `📝 Описание: ${portfolioData.description}`,
-        keyboard: {
-          inline_keyboard: [
-            [
-              { text: '📸 Добавить еще', callback_data: 'add_portfolio' },
-              { text: '🔙 Главное меню', callback_data: 'main_menu' }
-            ]
-          ]
-        }
-      }
-    } catch (error) {
-      logger.error('Error processing photo upload', error)
-      throw error
-    }
-  }
-
   return {
     getPortfolioList,
+    addPortfolioItem,
     getDeleteList,
     getPhotoInfo,
-    deletePhoto,
-    processPhotoUpload
+    deletePhoto
   }
 }

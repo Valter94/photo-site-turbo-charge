@@ -112,7 +112,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
           onError={handleImageError}
           className={`transition-opacity duration-300 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'
-          } w-full h-full object-contain`}
+          } w-full h-full object-cover`}
           style={{
             aspectRatio: width && height ? `${width}/${height}` : undefined,
           }}
@@ -126,16 +126,16 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
             <div className="text-sm mb-2">Изображение недоступно</div>
             {isTelegramPhoto && (
               <div className="text-xs text-red-500">
-                Фото из Telegram могут стать недоступными через 1-2 дня
+                Временная ссылка из Telegram
               </div>
             )}
           </div>
         </div>
       )}
       
-      {isTelegramPhoto && imageLoaded && (
-        <div className="absolute bottom-0 left-0 right-0 bg-yellow-500/80 text-yellow-900 text-xs p-1 text-center">
-          ⚠️ Временная ссылка из Telegram
+      {isSupabaseImage && imageLoaded && (
+        <div className="absolute bottom-0 left-0 right-0 bg-green-500/80 text-white text-xs p-1 text-center">
+          ✅ Сохранено постоянно
         </div>
       )}
     </div>

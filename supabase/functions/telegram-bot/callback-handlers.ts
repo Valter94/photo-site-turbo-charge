@@ -1,40 +1,50 @@
 
-import { createBotMonitor } from './bot-monitor.ts'
 import { createLogger } from './logger.ts'
-// УДАЛЁН СТАРЫЙ: import { getSession, setSession, deleteSession } from './enhanced-session-manager.ts'
+
+const logger = createLogger('CallbackHandlers')
 
 export const createCallbackHandlers = (deps: any) => {
-  const { telegramAPI, menuHandlers, portfolioHandlers, locationsHandlers, botMonitor } = deps
-  const logger = createLogger('CallbackHandlers')
+  return async function handleCallback({ callbackQuery, chatId, userId, messageId }: any) {
+    const { telegramAPI, menuHandlers, portfolioHandlers, locationsHandlers, getSession, setSession, deleteSession } = deps
+    const callbackData = callbackQuery.data
 
-  return async function handleCallbackQuery({ callbackQuery, chatId, userId, messageId }: any) {
-    await telegramAPI.answerCallback(callbackQuery.id)
-    const data = callbackQuery.data
-
-    logger.info('Processing callback', { data, userId })
+    console.log('[CallbackHandlers] Обработка callback:', callbackData)
 
     try {
-      await botMonitor.logBotActivity(userId, `callback:${data}`, true)
+      // Отвечаем на callback query
+      await deps.telegramAPI.answerCallback(callbackQuery.id)
 
-      // --- Стандартные callback...
-      if (data?.startsWith('add_')) {
-        deps.deleteSession(userId)
-        const type = data.split('_')[1] as 'portfolio' | 'location'
-        deps.setSession(userId, {
+      // Обработка главного меню
+      if (callbackData === 'main_menu') {
+        const mainMenu = menuHandlers.getMainMenu()
+        await telegramAPI.editMessage(chatId, messageId, mainMenu.text, mainMenu.keyboard)
+        return
+      }
+
+      // Управление портфолио
+      if (callbackData === 'manage_portfolio') {
+        const portfolioList = await portfolioHandlers.getPortfolioList()
+        await telegramAPI.editMessage(chatId, messageId, portfolioList.text, portfolioList.keyboard)
+        return
+      }
+
+      // Добавление фото в портфолио
+      if (callbackData === 'add_portfolio') {
+        const session = {
           step: 'waiting_photo',
+          action_type: 'add_portfolio',
           data: {},
-          type,
-          created_at: Date.now()
-        })
-
-        const typeText = type === 'portfolio'
-          ? '🎨 Добавляем в портфолио'
-          : '📍 Добавляем локацию'
-
+          created_at: new Date().toISOString()
+        }
+        setSession(userId, session)
+        
         await telegramAPI.editMessage(
           chatId,
           messageId,
-          `📸 <b>Шаг 1: Отправьте фото</b>\n\n${typeText}\n\nПожалуйста, прикрепите фото, которое хотите добавить.`,
+          `📸 <b>Добавление фото в портфолио</b>\n\n` +
+          `<b>Шаг 1: Отправьте фото</b>\n` +
+          `📤 Пришлите фотографию, которую хотите добавить в портфолио.\n\n` +
+          `💡 <i>Фото будет автоматически сохранено и станет доступно на сайте</i>`,
           {
             inline_keyboard: [[{ text: '❌ Отмена', callback_data: 'cancel' }]]
           }
@@ -42,151 +52,117 @@ export const createCallbackHandlers = (deps: any) => {
         return
       }
 
-      // --- Категория портфолио (после названия) ---
-      else if (data?.startsWith('portfolio_cat_')) {
-        const session = deps.getSession(userId)
-        if (session && session.type === 'portfolio' && session.step === 'choosing_category') {
-          const categoryMap: { [key: string]: string } = {
-            'wedding': 'Свадебная фотосессия',
-            'lovestory': 'Love Story',
-            'portrait': 'Портрет',
-            'family': 'Семья',
-            'event': 'Мероприятие'
-          }
-          const category = data.replace('portfolio_cat_', '')
-          session.data.category = category
-          session.step = 'waiting_description'
-          deps.setSession(userId, session)
-          await telegramAPI.editMessage(
-            chatId,
-            messageId,
-            `📝 <b>Шаг 3: Описание</b>\n\n` +
-            `✅ Категория: <b>${categoryMap[category] || category}</b>\n` +
-            `🖼 Название: <b>${session.data.title}</b>\n\n` +
-            `Отправьте описание (10-500 символов):`,
-            {
-              inline_keyboard: [[{ text: '❌ Отмена', callback_data: 'cancel' }]]
-            }
-          )
-          return
-        } else {
-          deps.deleteSession(userId)
-          await telegramAPI.editMessage(chatId, messageId, '❌ Ошибка сессии. Начните заново:', menuHandlers.getMainMenu())
+      // Выбор категории для портфолио
+      if (callbackData.startsWith('category_')) {
+        const session = getSession(userId)
+        if (!session || session.step !== 'waiting_category') {
+          await telegramAPI.editMessage(chatId, messageId, '❌ Сессия истекла. Начните заново.', menuHandlers.getMainMenu().keyboard)
           return
         }
-      }
 
-      // Portfolio management
-      else if (data === 'manage_portfolio') {
-        const result = await portfolioHandlers.getPortfolioList()
-        await telegramAPI.editMessage(chatId, messageId, result.text, result.keyboard)
-      }
-      else if (data === 'delete_portfolio') {
-        const result = await portfolioHandlers.getDeleteList()
-        await telegramAPI.editMessage(chatId, messageId, result.text, result.keyboard)
-      }
-      else if (data?.startsWith('delete_photo_')) {
-        const photoId = data.replace('delete_photo_', '')
-        const result = await portfolioHandlers.getPhotoInfo(photoId)
-        await telegramAPI.editMessage(chatId, messageId, result.text, result.keyboard)
-      }
-      else if (data?.startsWith('confirm_delete_')) {
-        const photoId = data.replace('confirm_delete_', '')
-        const result = await portfolioHandlers.deletePhoto(photoId)
-        await telegramAPI.editMessage(chatId, messageId, result.text, result.keyboard)
-      }
-      // Location management - FIXED
-      else if (data === 'manage_locations') {
-        const result = await locationsHandlers.getLocationsList()
-        await telegramAPI.editMessage(chatId, messageId, result.text, result.keyboard)
-      }
-      else if (data === 'delete_location') {
-        const result = await locationsHandlers.getDeleteLocationList()
-        await telegramAPI.editMessage(chatId, messageId, result.text, result.keyboard)
-      }
-      else if (data?.startsWith('delete_location_')) {
-        const locationId = data.replace('delete_location_', '')
-        const result = await locationsHandlers.getLocationInfo(locationId)
-        await telegramAPI.editMessage(chatId, messageId, result.text, result.keyboard)
-      }
-      else if (data?.startsWith('confirm_delete_location_')) {
-        const locationId = data.replace('confirm_delete_location_', '')
-        const result = await locationsHandlers.deleteLocation(locationId)
-        await telegramAPI.editMessage(chatId, messageId, result.text, result.keyboard)
-      }
-      else if (data === 'change_location_photo') {
-        const result = await locationsHandlers.getLocationChangePhotoList()
-        await telegramAPI.editMessage(chatId, messageId, result.text, result.keyboard)
-      }
-      // Main menu
-      else if (data === 'main_menu' || data === 'start') {
+        const categoryMap = {
+          'category_wedding': 'wedding',
+          'category_portrait': 'portrait',
+          'category_family': 'family',
+          'category_lovestory': 'lovestory',
+          'category_corporate': 'corporate',
+          'category_maternity': 'maternity'
+        }
+
+        const categoryLabels = {
+          'wedding': 'Свадебная съемка',
+          'portrait': 'Портретная съемка',
+          'family': 'Семейная фотосессия',
+          'lovestory': 'Love Story',
+          'corporate': 'Корпоративная съемка',
+          'maternity': 'Материнство'
+        }
+
+        const category = categoryMap[callbackData as keyof typeof categoryMap]
+        session.data.category = category
+        session.step = 'waiting_description'
+        setSession(userId, session)
+
         await telegramAPI.editMessage(
           chatId,
           messageId,
-          `🤖 <b>Главное меню</b>\n\nВыберите действие:`,
-          menuHandlers.getMainMenu()
-        )
-      }
-      // Stats
-      else if (data === 'stats') {
-        const result = await menuHandlers.getStats()
-        await telegramAPI.editMessage(chatId, messageId, result.text, result.keyboard)
-      }
-      // Help - FIXED
-      else if (data === 'help') {
-        await telegramAPI.editMessage(
-          chatId,
-          messageId,
-          `❓ <b>Помощь по боту</b>\n\n` +
-          `🤖 <b>Как использовать:</b>\n\n` +
-          `📸 <b>Добавить фото в портфолио:</b>\n` +
-          `1. "Добавить в портфолио"\n` +
-          `2. Отправьте фото\n` +
-          `3. Введите название\n` +
-          `4. Выберите категорию\n` +
-          `5. Добавьте описание\n\n` +
-          `📍 <b>Добавить локацию:</b>\n` +
-          `1. "Добавить локацию"\n` +
-          `2. Отправьте фото места\n` +
-          `3. Введите название\n` +
-          `4. Добавьте описание\n\n` +
-          `🗑 <b>Удалить:</b>\n` +
-          `Используйте соответствующие разделы управления\n\n` +
-          `💡 <b>Совет:</b> Всегда используйте кнопки!`,
+          `✅ <b>Категория выбрана:</b> ${categoryLabels[category as keyof typeof categoryLabels]}\n\n` +
+          `<b>Шаг 4: Введите описание</b>\n` +
+          `📝 Опишите фотографию (10–500 символов):`,
           {
-            inline_keyboard: [[{ text: '🏠 Главное меню', callback_data: 'main_menu' }]]
+            inline_keyboard: [[{ text: '❌ Отмена', callback_data: 'cancel' }]]
           }
         )
+        return
       }
-      // Cancel
-      else if (data === 'cancel') {
-        deps.deleteSession(userId)
+
+      // Добавление локации
+      if (callbackData === 'add_location') {
+        const session = {
+          step: 'waiting_photo',
+          action_type: 'add_location',
+          data: {},
+          created_at: new Date().toISOString()
+        }
+        setSession(userId, session)
+        
         await telegramAPI.editMessage(
           chatId,
           messageId,
-          '❌ <b>Операция отменена</b>\n\nВыберите действие:',
-          menuHandlers.getMainMenu()
+          `📍 <b>Добавление локации</b>\n\n` +
+          `<b>Шаг 1: Отправьте фото</b>\n` +
+          `📤 Пришлите фотографию локации для фотосессии.\n\n` +
+          `💡 <i>Фото будет сохранено и станет доступно в разделе локаций</i>`,
+          {
+            inline_keyboard: [[{ text: '❌ Отмена', callback_data: 'cancel' }]]
+          }
         )
+        return
       }
-      // Fallback for unhandled callbacks
-      else {
-        logger.warn('Unhandled callback', { data })
-        await telegramAPI.editMessage(
-          chatId,
-          messageId,
-          '❓ <b>Неизвестная команда</b>\n\nВыберите действие:',
-          menuHandlers.getMainMenu()
-        )
+
+      // Удаление фотографий
+      if (callbackData === 'delete_portfolio') {
+        const deleteList = await portfolioHandlers.getDeleteList()
+        await telegramAPI.editMessage(chatId, messageId, deleteList.text, deleteList.keyboard)
+        return
       }
+
+      if (callbackData.startsWith('delete_photo_')) {
+        const photoId = callbackData.replace('delete_photo_', '')
+        const photoInfo = await portfolioHandlers.getPhotoInfo(photoId)
+        await telegramAPI.editMessage(chatId, messageId, photoInfo.text, photoInfo.keyboard)
+        return
+      }
+
+      if (callbackData.startsWith('confirm_delete_')) {
+        const photoId = callbackData.replace('confirm_delete_', '')
+        const result = await portfolioHandlers.deletePhoto(photoId)
+        await telegramAPI.editMessage(chatId, messageId, result.text, result.keyboard)
+        return
+      }
+
+      // Статистика
+      if (callbackData === 'stats') {
+        const stats = await menuHandlers.getStats()
+        await telegramAPI.editMessage(chatId, messageId, stats.text, stats.keyboard)
+        return
+      }
+
+      // Отмена
+      if (callbackData === 'cancel') {
+        deleteSession(userId)
+        const mainMenu = menuHandlers.getMainMenu()
+        await telegramAPI.editMessage(chatId, messageId, '❌ Действие отменено.\n\n' + mainMenu.text, mainMenu.keyboard)
+        return
+      }
+
+      // Неизвестный callback
+      console.log('[CallbackHandlers] Неизвестный callback:', callbackData)
+      await telegramAPI.editMessage(chatId, messageId, '❌ Неизвестная команда.', menuHandlers.getMainMenu().keyboard)
+
     } catch (error) {
-      logger.error('Callback processing error', error)
-      await telegramAPI.editMessage(
-        chatId,
-        messageId,
-        '❌ <b>Произошла ошибка</b>\n\nПопробуйте еще раз:',
-        menuHandlers.getMainMenu()
-      )
+      logger.error('Error handling callback', error)
+      await telegramAPI.sendMessage(chatId, '❌ Произошла ошибка. Попробуйте снова.')
     }
   }
 }
-

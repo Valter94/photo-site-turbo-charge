@@ -54,7 +54,7 @@ export const useLogAction = () => {
       old_values?: any;
       new_values?: any;
     }) => {
-      const { error } = await supabase.rpc('log_action', {
+      const { error } = await (supabase as any).rpc('log_action', {
         p_action: action,
         p_table_name: table_name,
         p_record_id: record_id,

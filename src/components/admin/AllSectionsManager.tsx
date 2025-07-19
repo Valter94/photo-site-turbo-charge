@@ -22,8 +22,10 @@ import {
   Wand2,
   BarChart3,
   Download,
-  Play
+  Play,
+  Image
 } from 'lucide-react';
+import LocationImageUpdater from './LocationImageUpdater';
 
 const AllSectionsManager = () => {
   const [activeTab, setActiveTab] = useState('portfolio');
@@ -31,6 +33,7 @@ const AllSectionsManager = () => {
   const tabs = [
     { id: 'portfolio', label: 'Портфолио', icon: Camera },
     { id: 'locations', label: 'Локации', icon: MapPin },
+    { id: 'location-images', label: 'Обновить фото локаций', icon: Image },
     { id: 'pricing', label: 'Цены', icon: DollarSign },
     { id: 'reviews', label: 'Отзывы', icon: Star },
     { id: 'retouch', label: 'Ретушь', icon: Wand2 },
@@ -104,6 +107,10 @@ const AllSectionsManager = () => {
 
         <TabsContent value="tutorials" className="mt-6">
           <VideoTutorials />
+        </TabsContent>
+
+        <TabsContent value="location-images" className="mt-6">
+          <LocationImageUpdater />
         </TabsContent>
 
         <TabsContent value="settings" className="mt-6">

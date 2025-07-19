@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -84,18 +85,10 @@ const ImageViewer = ({ images, initialIndex, isOpen, onClose }: ImageViewerProps
     return names[category as keyof typeof names] || category;
   };
 
-  // Новый обработчик ошибок изображений для отлова target == null
-  const handleImageError = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    if (!event.target || !(event.target instanceof HTMLImageElement)) {
-      console.warn('Image error event or target is null (handled gracefully)');
-      return;
-    }
-    // Можно добавить fallback/заглушку при необходимости
-    event.target.src = 'https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?w=400&h=300&fit=crop&auto=format&q=50';
-    event.target.alt = 'Изображение недоступно';
-  };
-
   if (!currentImage) return null;
+
+  // Определяем, является ли изображение с бота
+  const isBotImage = currentImage.image_url?.includes('supabase.co') || currentImage.image_url?.includes('ojrekbttkriwwyaupbox');
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -147,15 +140,17 @@ const ImageViewer = ({ images, initialIndex, isOpen, onClose }: ImageViewerProps
 
           {/* Основное изображение */}
           <div className="relative w-full h-full flex items-center justify-center p-4">
-            <OptimizedImage
-              src={currentImage.image_url}
-              alt={currentImage.title}
-              className="max-w-full max-h-full object-contain"
-              width={1200}
-              height={800}
-              // handle error graceful, optional
-              // onError={handleImageError}
-            />
+            <div className="max-w-full max-h-full flex items-center justify-center">
+              <OptimizedImage
+                src={currentImage.image_url}
+                alt={currentImage.title}
+                className={`${isBotImage ? 'max-w-full max-h-full' : 'max-w-full max-h-full object-contain'}`}
+                width={1200}
+                height={800}
+                preserveAspectRatio={true}
+                priority={true}
+              />
+            </div>
           </div>
           <ImageViewerInfoPanel
             currentImage={currentImage}
@@ -170,4 +165,5 @@ const ImageViewer = ({ images, initialIndex, isOpen, onClose }: ImageViewerProps
     </Dialog>
   );
 };
+
 export default ImageViewer;

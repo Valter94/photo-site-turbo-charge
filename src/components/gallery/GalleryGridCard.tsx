@@ -42,6 +42,9 @@ const GalleryGridCard: React.FC<GalleryGridCardProps> = ({
 }) => {
   const { isMobile } = useResponsive();
 
+  // Определяем, является ли изображение с бота
+  const isBotImage = item.image_url?.includes('supabase.co') || item.image_url?.includes('ojrekbttkriwwyaupbox');
+
   return (
     <Card
       className={`overflow-hidden group cursor-pointer transition-all duration-500 ${
@@ -59,9 +62,10 @@ const GalleryGridCard: React.FC<GalleryGridCardProps> = ({
         <OptimizedImage
           src={item.image_url}
           alt={item.title}
-          className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+          className="w-full h-full"
           width={600}
           height={400}
+          preserveAspectRatio={isBotImage} // Сохраняем пропорции для изображений с бота
         />
         
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

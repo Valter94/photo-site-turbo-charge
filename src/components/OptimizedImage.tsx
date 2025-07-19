@@ -10,6 +10,7 @@ interface OptimizedImageProps {
   loading?: 'lazy' | 'eager';
   fallbackUrl?: string;
   priority?: boolean;
+  preserveAspectRatio?: boolean;
 }
 
 const OptimizedImage: React.FC<OptimizedImageProps> = ({
@@ -21,18 +22,26 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   loading = 'lazy',
   fallbackUrl,
   priority = false,
+  preserveAspectRatio = true,
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [currentSrc, setCurrentSrc] = useState(src);
+  const [imageDimensions, setImageDimensions] = useState<{width: number, height: number} | null>(null);
 
   useEffect(() => {
     setImageLoaded(false);
     setImageError(false);
     setCurrentSrc(src);
+    setImageDimensions(null);
   }, [src]);
 
-  const handleImageLoad = useCallback(() => {
+  const handleImageLoad = useCallback((event: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = event.target as HTMLImageElement;
+    setImageDimensions({
+      width: img.naturalWidth,
+      height: img.naturalHeight
+    });
     setImageLoaded(true);
     setImageError(false);
   }, []);
@@ -68,6 +77,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const isSupabaseImage = src.includes('supabase.co') || src.includes('ojrekbttkriwwyaupbox');
 
   const createOptimizedUrl = (url: string, format: 'webp' | 'avif' | 'jpeg' = 'webp') => {
+    // Для Telegram и Supabase изображений возвращаем оригинальный URL без изменений
     if (isTelegramPhoto || isSupabaseImage) return url;
     
     if (url?.includes('unsplash.com')) {
@@ -75,7 +85,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       if (width) params.append('w', width.toString());
       if (height) params.append('h', height.toString());
       params.append('fit', 'crop');
-      params.append('q', '80');
+      params.append('q', '90'); // Увеличиваем качество
       if (format !== 'jpeg') params.append('fm', format);
       return `${url}&${params.toString()}`;
     }
@@ -85,6 +95,30 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   const webpSrc = createOptimizedUrl(src, 'webp');
   const avifSrc = createOptimizedUrl(src, 'avif');
+
+  // Определяем стили для изображения в зависимости от источника
+  const getImageStyles = () => {
+    let baseStyles = 'transition-opacity duration-300';
+    
+    if (imageLoaded) {
+      baseStyles += ' opacity-100';
+    } else {
+      baseStyles += ' opacity-0';
+    }
+
+    // Для изображений с бота сохраняем пропорции и предотвращаем обрезание
+    if (isTelegramPhoto || isSupabaseImage) {
+      if (preserveAspectRatio) {
+        baseStyles += ' w-full h-auto object-contain';
+      } else {
+        baseStyles += ' w-full h-full object-cover';
+      }
+    } else {
+      baseStyles += ' w-full h-full object-cover';
+    }
+
+    return baseStyles;
+  };
 
   return (
     <div className={`relative overflow-hidden ${className}`}>
@@ -110,11 +144,11 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
           decoding={priority ? 'sync' : 'async'}
           onLoad={handleImageLoad}
           onError={handleImageError}
-          className={`transition-opacity duration-300 ${
-            imageLoaded ? 'opacity-100' : 'opacity-0'
-          } w-full h-full object-cover`}
+          className={getImageStyles()}
           style={{
-            aspectRatio: width && height ? `${width}/${height}` : undefined,
+            aspectRatio: width && height && preserveAspectRatio ? `${width}/${height}` : 'auto',
+            maxWidth: '100%',
+            height: preserveAspectRatio ? 'auto' : undefined,
           }}
         />
       </picture>
@@ -136,6 +170,13 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       {isSupabaseImage && imageLoaded && (
         <div className="absolute bottom-0 left-0 right-0 bg-green-500/80 text-white text-xs p-1 text-center">
           ✅ Сохранено постоянно
+        </div>
+      )}
+
+      {/* Показываем размеры изображения для отладки */}
+      {imageDimensions && (isTelegramPhoto || isSupabaseImage) && (
+        <div className="absolute top-0 left-0 bg-black/60 text-white text-xs p-1 rounded-br">
+          {imageDimensions.width}×{imageDimensions.height}
         </div>
       )}
     </div>

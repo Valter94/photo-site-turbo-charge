@@ -5,22 +5,37 @@ export const createLocationsHandlers = (supabase: SupabaseClient) => {
   const getLocationsList = async () => {
     const { data: locationsData, error } = await supabase
       .from('photoshoot_locations')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(10)
+      .select(`
+        *,
+        location_categories(name, description)
+      `)
+      .order('name', { ascending: true });
 
-    if (error) throw error
+    if (error) {
+      console.error('Error fetching locations:', error);
+      throw error;
+    }
 
-    let locationsList = `📍 <b>Управление локациями</b>\n\n`
+    let locationsList = `📍 <b>Управление локациями фотосессий</b>\n\n`;
+    
     if (locationsData && locationsData.length > 0) {
-      locationsData.forEach((item, index) => {
-        locationsList += `${index + 1}. <b>${item.name}</b>\n`
-        locationsList += `   📝 ${item.description?.substring(0, 50) || 'Без описания'}${item.description && item.description.length > 50 ? '...' : ''}\n`
-        locationsList += `   🏠 ${item.indoor ? 'Помещение' : 'Улица'}\n`
-        locationsList += `   📸 ${item.image_url ? 'Есть фото' : 'Нет фото'}\n\n`
-      })
+      locationsList += `<i>Всего локаций: ${locationsData.length}</i>\n\n`;
+      
+      locationsData.forEach((location, index) => {
+        const category = location.location_categories?.name || 'Без категории';
+        const indoor = location.indoor ? '🏠' : '🌳';
+        const hasPhoto = location.image_url ? '📸' : '❌';
+        
+        locationsList += `${index + 1}. <b>${location.name}</b> ${indoor}\n`;
+        locationsList += `   📂 <i>${category}</i>\n`;
+        locationsList += `   📝 ${location.description?.substring(0, 60)}${location.description && location.description.length > 60 ? '...' : ''}\n`;
+        locationsList += `   📍 ${location.address || 'Адрес не указан'}\n`;
+        locationsList += `   ⏰ ${location.best_time || 'Время не указано'}\n`;
+        locationsList += `   ${hasPhoto} Фото: ${location.image_url ? 'Есть' : 'Отсутствует'}\n\n`;
+      });
     } else {
-      locationsList += `Локации не добавлены\n\n`
+      locationsList += `📭 <i>Локации пока не добавлены</i>\n\n`;
+      locationsList += `Используйте кнопку "➕ Добавить локацию" для создания первой локации.\n\n`;
     }
 
     return {
@@ -28,17 +43,21 @@ export const createLocationsHandlers = (supabase: SupabaseClient) => {
       keyboard: {
         inline_keyboard: [
           [
-            { text: '🗑️ Удалить локацию', callback_data: 'delete_location' },
-            { text: '➕ Добавить локацию', callback_data: 'add_location' }
+            { text: '➕ Добавить локацию', callback_data: 'add_location' },
+            { text: '📸 Загрузить фото', callback_data: 'change_location_photo' }
           ],
           [
-            { text: '📸 Изменить фото локации', callback_data: 'change_location_photo' }
+            { text: '✏️ Редактировать', callback_data: 'edit_location_list' },
+            { text: '🗑️ Удалить', callback_data: 'delete_location' }
           ],
-          [{ text: '🔙 Назад', callback_data: 'main_menu' }]
+          [
+            { text: '🔄 Обновить список', callback_data: 'manage_locations' },
+            { text: '🔙 Главное меню', callback_data: 'main_menu' }
+          ]
         ]
       }
-    }
-  }
+    };
+  };
 
   const getLocationChangePhotoList = async () => {
     const { data: locationsData, error } = await supabase

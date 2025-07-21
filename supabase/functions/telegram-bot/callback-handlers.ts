@@ -5,7 +5,7 @@ const logger = createLogger('CallbackHandlers')
 
 export const createCallbackHandlers = (deps: any) => {
   return async function handleCallback({ callbackQuery, chatId, userId, messageId }: any) {
-    const { telegramAPI, menuHandlers, portfolioHandlers, locationsHandlers, getSession, setSession, deleteSession } = deps
+    const { telegramAPI, menuHandlers, portfolioHandlers, managementHandlers, locationsHandlers, getSession, setSession, deleteSession } = deps
     const callbackData = callbackQuery.data
 
     console.log('[CallbackHandlers] Обработка callback:', callbackData)
@@ -145,6 +145,29 @@ export const createCallbackHandlers = (deps: any) => {
       if (callbackData === 'stats') {
         const stats = await menuHandlers.getStats()
         await telegramAPI.editMessage(chatId, messageId, stats.text, stats.keyboard)
+        return
+      }
+
+      // === НОВЫЕ ENHANCED HANDLERS ===
+      
+      // Portfolio Management
+      if (callbackData === 'portfolio_management') {
+        const portfolioMgmt = await managementHandlers.getPortfolioManagement()
+        await telegramAPI.editMessage(chatId, messageId, portfolioMgmt.text, portfolioMgmt.keyboard)
+        return
+      }
+
+      // AI Photo Processing
+      if (callbackData === 'ai_photo_processing') {
+        const aiMenu = await managementHandlers.getAIPhotoMenu()
+        await telegramAPI.editMessage(chatId, messageId, aiMenu.text, aiMenu.keyboard)
+        return
+      }
+
+      // About Bot
+      if (callbackData === 'about_bot') {
+        const aboutBot = menuHandlers.getAboutBot()
+        await telegramAPI.editMessage(chatId, messageId, aboutBot.text, aboutBot.keyboard)
         return
       }
 

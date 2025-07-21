@@ -26,6 +26,7 @@ import {
   Image
 } from 'lucide-react';
 import LocationImageUpdater from './LocationImageUpdater';
+import AIPhotoStudio from './AIPhotoStudio';
 
 const AllSectionsManager = () => {
   const [activeTab, setActiveTab] = useState('portfolio');
@@ -34,6 +35,7 @@ const AllSectionsManager = () => {
     { id: 'portfolio', label: 'Портфолио', icon: Camera },
     { id: 'locations', label: 'Локации', icon: MapPin },
     { id: 'location-images', label: 'Обновить фото локаций', icon: Image },
+    { id: 'ai-photo-studio', label: 'AI Студия фото', icon: Wand2 },
     { id: 'pricing', label: 'Цены', icon: DollarSign },
     { id: 'reviews', label: 'Отзывы', icon: Star },
     { id: 'retouch', label: 'Ретушь', icon: Wand2 },
@@ -111,6 +113,10 @@ const AllSectionsManager = () => {
 
         <TabsContent value="location-images" className="mt-6">
           <LocationImageUpdater />
+        </TabsContent>
+        
+        <TabsContent value="ai-photo-studio" className="mt-6">
+          <AIPhotoStudio />
         </TabsContent>
 
         <TabsContent value="settings" className="mt-6">

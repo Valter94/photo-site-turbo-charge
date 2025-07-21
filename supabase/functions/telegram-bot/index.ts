@@ -4,6 +4,7 @@ import { TelegramUpdate, UserSession } from './types.ts'
 import { createTelegramAPI } from './telegram-api.ts'
 import { createMenuHandlers } from './menu-handlers.ts'
 import { createEnhancedPortfolioHandlers } from './enhanced-portfolio-handlers.ts'
+import { createEnhancedManagementHandlers } from './enhanced-management-handlers.ts'
 import { createLocationsHandlers } from './locations-handlers.ts'
 import { 
   getSession as dbGetSession, 
@@ -73,6 +74,7 @@ serve(async (req) => {
     const telegramAPI = createTelegramAPI(botToken)
     const menuHandlers = createMenuHandlers(supabase)
     const portfolioHandlers = createEnhancedPortfolioHandlers(supabase)
+    const managementHandlers = createEnhancedManagementHandlers(supabase)
     const locationsHandlers = createLocationsHandlers(supabase)
 
     let update: TelegramUpdate
@@ -125,6 +127,7 @@ serve(async (req) => {
       supabase,
       menuHandlers,
       portfolioHandlers,
+      managementHandlers,
       locationsHandlers,
       botMonitor,
       validators,

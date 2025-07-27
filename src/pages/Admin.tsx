@@ -1,24 +1,26 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import AdminPanel from '../components/AdminPanel';
 import AdminLogin from '../components/AdminLogin';
+import { useAuth } from '../hooks/useAuth';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const Admin = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isAuthenticated, isAdmin, loading } = useAuth();
 
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-  };
-
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-  };
-
-  if (!isLoggedIn) {
-    return <AdminLogin onLogin={handleLogin} />;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
-  return <AdminPanel onLogout={handleLogout} />;
+  if (!isAuthenticated || !isAdmin) {
+    return <AdminLogin onLogin={() => {}} />;
+  }
+
+  return <AdminPanel onLogout={() => {}} />;
 };
 
 export default Admin;

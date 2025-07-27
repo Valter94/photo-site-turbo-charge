@@ -38,6 +38,13 @@ export const useUpdateSecuritySetting = () => {
   
   return useMutation({
     mutationFn: async ({ setting_key, setting_value }: { setting_key: string; setting_value: any }) => {
+      // Get old value for audit log
+      const { data: oldSetting } = await (supabase as any)
+        .from('security_settings')
+        .select('setting_value')
+        .eq('setting_key', setting_key)
+        .single();
+
       const { data, error } = await (supabase as any)
         .from('security_settings')
         .upsert({
@@ -52,10 +59,21 @@ export const useUpdateSecuritySetting = () => {
         console.error('Error updating security setting:', error);
         throw error;
       }
+
+      // Log the action
+      await (supabase as any).rpc('log_action', {
+        p_action: 'UPDATE',
+        p_table_name: 'security_settings',
+        p_record_id: data.id,
+        p_old_values: oldSetting ? { setting_value: oldSetting.setting_value } : null,
+        p_new_values: { setting_value: setting_value }
+      });
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['security_settings'] });
+      queryClient.invalidateQueries({ queryKey: ['audit_log'] });
       toast({
         title: "Успешно",
         description: "Настройки безопасности обновлены",

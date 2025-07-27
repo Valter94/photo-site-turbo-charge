@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useAuth } from '@/hooks/useAuth';
 import PortfolioManager from './PortfolioManager';
 import LocationsManager from './LocationsManager';
 import PricingManager from './PricingManager';
@@ -38,6 +39,7 @@ interface EnhancedAdminPanelProps {
 
 const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
   const [activeTab, setActiveTab] = useState("security");
+  const { signOut, profile } = useAuth();
 
   const tabs = [
     { id: "security", label: "🔐 Безопасность", icon: Shield },
@@ -63,14 +65,19 @@ const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
               <CardTitle className="text-2xl font-bold">
                 🎨 Панель управления сайтом фотографа
               </CardTitle>
-              <Button 
-                onClick={onLogout}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <LogOut className="h-4 w-4" />
-                Выйти
-              </Button>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-gray-600">
+                  Добро пожаловать, {profile?.username || 'Администратор'}
+                </span>
+                <Button 
+                  onClick={signOut}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Выйти
+                </Button>
+              </div>
             </div>
           </CardHeader>
         </Card>

@@ -4,178 +4,70 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check, Crown, Heart, Users, Camera, Sparkles } from 'lucide-react';
+import { serviceTypeName } from '@/lib/serviceTypes';
 
 const PricingSection = () => {
   const { data: pricing, isLoading } = usePricing();
 
-  const pricingPlans = [
-    // ПОРТРЕТНАЯ СЪЕМКА
-    {
-      id: 'portrait-basic',
-      category: 'Портретная съемка',
-      title: 'Персональный портрет',
-      price: 8000,
-      duration: '1.5 часа',
-      photos: '25-35 фото',
-      icon: Camera,
-      color: 'from-blue-500 to-indigo-600',
-      features: [
-        'Индивидуальная портретная съемка',
-        'Профессиональная цветокоррекция',
-        'Готовые фото в течение 5 дней',
-        'Онлайн-галерея для скачивания',
-        'Помощь в выборе образа'
-      ]
-    },
-    {
-      id: 'portrait-premium',
-      category: 'Портретная съемка',
-      title: 'Портрет + Макияж',
-      price: 15000,
-      duration: '2.5 часа',
-      photos: '50-70 фото',
-      icon: Sparkles,
-      color: 'from-purple-500 to-pink-600',
-      popular: true,
-      features: [
-        'Портретная съемка с визажистом',
-        'Профессиональный макияж включён',
-        'Смена 2-3 образов',
-        'Студийная или уличная съемка',
-        'Экспресс-обработка за 3 дня'
-      ]
-    },
+  // Преобразуем данные из БД в планы отображения
+  const typeIconMap: Record<string, any> = {
+    wedding: Crown,
+    wedding_preparations: Camera,
+    wedding_ceremony: Crown,
+    wedding_full_day: Crown,
+    lovestory: Heart,
+    portrait: Camera,
+    family: Users,
+    corporate: Users,
+  };
 
-    // СЕМЕЙНАЯ СЪЕМКА
-    {
-      id: 'family-basic',
-      category: 'Семейная съемка',
-      title: 'Семейная фотосессия',
-      price: 12000,
-      duration: '2 часа',
-      photos: '60-80 фото',
-      icon: Users,
-      color: 'from-green-500 to-teal-600',
-      features: [
-        'Семейная фотосессия до 4 человек',
-        'Работа с детьми любого возраста',
-        'Естественные эмоции и улыбки',
-        'Смена 1-2 локаций',
-        'Готовые фото через 7 дней'
-      ]
-    },
-    {
-      id: 'family-extended',
-      category: 'Семейная съемка',
-      title: 'Большая семья',
-      price: 18000,
-      duration: '3 часа',
-      photos: '80-120 фото',
-      icon: Users,
-      color: 'from-emerald-500 to-green-600',
-      features: [
-        'Семейная съемка от 5 человек',
-        'Несколько поколений в кадре',
-        'Групповые и индивидуальные портреты',
-        'Парковая или студийная съемка',
-        'Индивидуальный подход к каждому'
-      ]
-    },
+  const typeColorMap: Record<string, string> = {
+    wedding: 'from-amber-500 to-orange-600',
+    wedding_preparations: 'from-amber-500 to-orange-600',
+    wedding_ceremony: 'from-yellow-500 to-amber-600',
+    wedding_full_day: 'from-purple-600 to-pink-600',
+    lovestory: 'from-rose-500 to-pink-600',
+    portrait: 'from-purple-500 to-pink-600',
+    family: 'from-green-500 to-teal-600',
+    corporate: 'from-blue-500 to-indigo-600',
+  };
 
-    // LOVE STORY
-    {
-      id: 'lovestory-basic',
-      category: 'Love Story',
-      title: 'Love Story',
-      price: 15000,
-      duration: '2 часа',
-      photos: '70-100 фото',
-      icon: Heart,
-      color: 'from-rose-500 to-pink-600',
-      popular: true,
-      features: [
-        'Романтическая съемка для пары',
-        'До 3 локаций на выбор',
-        'Создание истории любви в кадрах',
-        'Помощь в позировании',
-        'Стилистические рекомендации'
-      ]
-    },
-    {
-      id: 'lovestory-premium',
-      category: 'Love Story',
-      title: 'Love Story Премиум',
-      price: 22000,
-      duration: '3 часа',
-      photos: '120-150 фото',
-      icon: Heart,
-      color: 'from-pink-500 to-rose-600',
-      features: [
-        'Расширенная Love Story съемка',
-        'Смена 3-4 образов',
-        'Необычные локации Москвы',
-        'Реквизит и декор включены',
-        'Экспресс-обработка за 3 дня'
-      ]
-    },
+  type Plan = {
+    id: string;
+    category: string;
+    title: string;
+    price: number;
+    duration: string;
+    photos: string;
+    icon: any;
+    color: string;
+    features: string[];
+    popular?: boolean;
+    premium?: boolean;
+    gift?: string;
+  };
 
-    // СВАДЕБНЫЕ ПАКЕТЫ
-    {
-      id: 'wedding-prep',
-      category: 'Свадебная съемка',
-      title: 'Утренние сборы',
-      price: 20000,
-      duration: '4 часа',
-      photos: '100-150 фото',
-      icon: Camera,
-      color: 'from-amber-500 to-orange-600',
-      features: [
-        'Съемка утренних сборов невесты',
-        'Детали и эмоции подготовки',
-        'Работа с близкими и друзьями',
-        'Естественный репортаж',
-        'Готовые фото через 10 дней'
-      ]
-    },
-    {
-      id: 'wedding-ceremony',
-      category: 'Свадебная съемка',
-      title: 'Свадебная церемония',
-      price: 35000,
-      duration: '6 часов',
-      photos: '200-300 фото',
-      icon: Crown,
-      color: 'from-yellow-500 to-amber-600',
-      features: [
-        'Съемка свадебной церемонии',
-        'ЗАГС или выездная регистрация',
-        'Репортажная и постановочная съемка',
-        'Работа с гостями',
-        'Ключевые моменты дня'
-      ]
-    },
-    {
-      id: 'wedding-full',
-      category: 'Свадебная съемка',
-      title: 'Полный свадебный день',
-      price: 65000,
-      duration: '12 часов',
-      photos: '400-600 фото',
-      icon: Crown,
-      color: 'from-purple-600 to-pink-600',
-      premium: true,
-      gift: 'Визажист в подарок!',
-      features: [
-        'Полное сопровождение свадебного дня',
-        'От сборов до банкета',
-        'Репортажная съемка всех событий',
-        'Постановочные кадры пары',
-        'Второй фотограф в команде',
-        'Экспресс-обработка 50 фото в день свадьбы',
-        '🎁 Профессиональный визажист БЕСПЛАТНО'
-      ]
-    }
-  ];
+  const plans: Plan[] = (pricing ?? []).map((p: any) => {
+    const Icon = typeIconMap[p.service_type] || Camera;
+    const color = typeColorMap[p.service_type] || 'from-blue-500 to-indigo-600';
+    const duration = p.duration_hours ? `${p.duration_hours} ч` : '—';
+    const photos = p.photos_count || '—';
+    const features = Array.isArray(p.features) ? p.features : [];
+
+    return {
+      id: p.id,
+      category: serviceTypeName(p.service_type),
+      title: serviceTypeName(p.service_type),
+      price: p.price || 0,
+      duration,
+      photos,
+      icon: Icon,
+      color,
+      features,
+      popular: false,
+      premium: false,
+    };
+  });
 
   const scrollToBooking = () => {
     const element = document.getElementById('booking');

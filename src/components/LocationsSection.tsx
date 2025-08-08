@@ -10,7 +10,7 @@ const LocationsSection = () => {
       id: 1,
       name: 'Парк Царицыно',
       description: 'Дворцово-парковый ансамбль с великолепной архитектурой XVIII века. Идеальное место для торжественных и романтических фотосессий.',
-      image: 'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=800&h=600&fit=crop&auto=format&q=80',
+      image: '/locations/tsaritsyno-new.jpg',
       category: 'Исторические места',
       address: 'ул. Дольская, 1, Москва',
       bestTime: 'Золотой час (за час до заката)',
@@ -32,7 +32,7 @@ const LocationsSection = () => {
       id: 3,
       name: 'Красная площадь',
       description: 'Главная площадь России с видом на Кремль и Собор Василия Блаженного. Символичное место для особенных фотосессий.',
-      image: 'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=800&h=600&fit=crop&auto=format&q=80',
+      image: '/locations/red-square-new.jpg',
       category: 'Исторические места',
       address: 'Красная площадь, Москва',
       bestTime: 'Раннее утро до 8:00',
@@ -43,7 +43,7 @@ const LocationsSection = () => {
       id: 4,
       name: 'Воробьевы горы',
       description: 'Смотровая площадка с потрясающим панорамным видом на Москву. Идеально для романтических фотосессий на закате.',
-      image: 'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=800&h=600&fit=crop&auto=format&q=80',
+      image: '/locations/vorobyovy-gory-new.jpg',
       category: 'Смотровые площадки',
       address: 'Воробьевы горы, Москва',
       bestTime: 'На закате',
@@ -76,7 +76,7 @@ const LocationsSection = () => {
       id: 7,
       name: 'ВДНХ',
       description: 'Выставочный комплекс с знаменитыми павильонами, фонтанами и современными арт-объектами.',
-      image: 'https://images.unsplash.com/photo-1493397212122-2b85dda8106b?w=800&h=600&fit=crop&auto=format&q=80',
+      image: '/locations/vdnkh-new.jpg',
       category: 'Выставочные комплексы',
       address: 'просп. Мира, 119, Москва',
       bestTime: 'Днем и вечером',
@@ -87,7 +87,7 @@ const LocationsSection = () => {
       id: 8,
       name: 'Коломенское',
       description: 'Музей-заповедник с древними храмами и панорамным видом на Москву-реку.',
-      image: 'https://images.unsplash.com/photo-1466442929976-97f336a657be?w=800&h=600&fit=crop&auto=format&q=80',
+      image: '/locations/kolomenskoye-new.jpg',
       category: 'Исторические места',
       address: 'Андропова пр-т, 39, Москва',
       bestTime: 'Рассвет и золотой час',
@@ -121,7 +121,8 @@ const LocationsSection = () => {
               <div className="relative overflow-hidden">
                 <img 
                   src={location.image} 
-                  alt={location.name}
+                  alt={`${location.name} - фотолокация в Москве`}
+                  loading="lazy"
                   className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

@@ -74,17 +74,13 @@ export const trackError = (error: Error, errorInfo?: any, updateAnalytics?: () =
 
 // Обработчик ошибок изображений
 const handleImageError = (event: Event, fallbackUrl?: string) => {
-  console.log('Image error event or target is null');
-  const target = event.target as HTMLImageElement;
-  
-  if (target && target.tagName === 'IMG') {
-    if (fallbackUrl) {
-      target.src = fallbackUrl;
-    } else {
-      target.src = 'https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?w=400&h=300&fit=crop&auto=format&q=50';
-    }
-    target.alt = 'Изображение недоступно';
+  const target = (event?.target as HTMLImageElement) || null;
+  if (!target || target.tagName !== 'IMG') {
+    console.debug('Image error: no target or not IMG');
+    return;
   }
+  target.src = fallbackUrl || 'https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?w=400&h=300&fit=crop&auto=format&q=50';
+  target.alt = 'Изображение недоступно';
 };
 
 // Обработчик сетевых ошибок

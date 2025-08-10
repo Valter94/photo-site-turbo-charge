@@ -119,7 +119,14 @@ export const createCallbackHandlers = (deps: any) => {
         )
         return
       }
-
+ 
+      // Управление локациями
+      if (callbackData === 'manage_locations') {
+        const locations = await locationsHandlers.getLocationsList()
+        await telegramAPI.editMessage(chatId, messageId, locations.text, locations.keyboard)
+        return
+      }
+ 
       // Удаление фотографий
       if (callbackData === 'delete_portfolio') {
         const deleteList = await portfolioHandlers.getDeleteList()
@@ -154,6 +161,34 @@ export const createCallbackHandlers = (deps: any) => {
       if (callbackData === 'portfolio_management') {
         const portfolioMgmt = await managementHandlers.getPortfolioManagement()
         await telegramAPI.editMessage(chatId, messageId, portfolioMgmt.text, portfolioMgmt.keyboard)
+        return
+      }
+
+      // Pricing Management
+      if (callbackData === 'pricing_management') {
+        const pricingMgmt = await managementHandlers.getPricingManagement()
+        await telegramAPI.editMessage(chatId, messageId, pricingMgmt.text, pricingMgmt.keyboard)
+        return
+      }
+
+      // Запуск добавления пакета цен
+      if (callbackData === 'add_pricing_package') {
+        const session = {
+          step: 'waiting_pricing',
+          action_type: 'add_pricing',
+          data: {},
+          created_at: new Date().toISOString()
+        }
+        setSession(userId, session)
+
+        await telegramAPI.editMessage(
+          chatId,
+          messageId,
+          `💰 <b>Добавление пакета услуг</b>\n\n` +
+          `Отправьте данные одним сообщением в формате:\n` +
+          `<code>Название: Свадебная съемка\nЦена: 15000\nЧасы: 3\nФото: 50\nЛокации: 2</code>`,
+          { inline_keyboard: [[{ text: '❌ Отмена', callback_data: 'cancel' }]] }
+        )
         return
       }
 

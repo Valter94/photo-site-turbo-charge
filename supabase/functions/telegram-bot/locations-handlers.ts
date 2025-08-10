@@ -277,12 +277,41 @@ export const createLocationsHandlers = (supabase: SupabaseClient) => {
     }
   }
 
+  const addLocation = async (sessionData: any) => {
+    const { data, error } = await supabase
+      .from('photoshoot_locations')
+      .insert({
+        name: sessionData.title,
+        description: sessionData.description || 'Добавлено через Telegram бот',
+        image_url: sessionData.image_url || null,
+        address: sessionData.address || null,
+        best_time: sessionData.best_time || null,
+        indoor: !!sessionData.indoor || false,
+        category_id: null
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+
+    return {
+      text: `✅ <b>Локация добавлена!</b>\n\n📍 ${data.name}\n📝 ${data.description}`,
+      keyboard: {
+        inline_keyboard: [
+          [{ text: '📍 К локациям', callback_data: 'manage_locations' }],
+          [{ text: '🏠 Главное меню', callback_data: 'main_menu' }]
+        ]
+      }
+    }
+  }
+
   return { 
     getLocationsList,
     getLocationChangePhotoList,
     getDeleteLocationList,
     deleteLocation,
     getLocationInfo,
-    updateLocationPhoto
+    updateLocationPhoto,
+    addLocation
   }
 }

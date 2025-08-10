@@ -46,6 +46,32 @@ export const processDescription = async (deps: any, { message, chatId, userId }:
 
     await telegramAPI.sendMessage(chatId, result.text, result.keyboard)
     
+    // Отправляем скриншот страницы для подтверждения
+    try {
+      const targetUrl = deps.siteUrl + (session.action_type === 'add_portfolio' ? '/gallery' : '/')
+      // Сначала пробуем получить бинарный скриншот
+      const simpleShot = await deps.screenshotService.takeSimpleScreenshot(targetUrl)
+      if (simpleShot) {
+        await telegramAPI.sendPhoto(
+          chatId,
+          simpleShot,
+          `🖼️ <b>Предпросмотр обновленного раздела</b>\n${targetUrl}`
+        )
+      } else {
+        // Фолбэк: сервис, который возвращает URL изображения
+        const shotUrl = await deps.screenshotService.takeScreenshot(targetUrl)
+        if (shotUrl) {
+          await telegramAPI.sendPhoto(
+            chatId,
+            shotUrl,
+            `🖼️ <b>Предпросмотр обновленного раздела</b>\n${targetUrl}`
+          )
+        }
+      }
+    } catch (sErr) {
+      console.warn('[processDescription] Не удалось отправить скриншот:', sErr)
+    }
+    
     console.log('[processDescription] Успешно добавлено:', session.action_type);
 
   } catch (error) {

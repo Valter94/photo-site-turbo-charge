@@ -18,6 +18,7 @@ import { createCacheManager } from './cache-manager.ts'
 import { validators } from './validators.ts'
 import { createCallbackHandlers } from './callback-handlers.ts'
 import { createMessageHandlers } from './message-handlers.ts'
+import { createScreenshotService } from './screenshot-service.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -76,6 +77,8 @@ serve(async (req) => {
     const portfolioHandlers = createEnhancedPortfolioHandlers(supabase)
     const managementHandlers = createEnhancedManagementHandlers(supabase)
     const locationsHandlers = createLocationsHandlers(supabase)
+    const screenshotService = createScreenshotService()
+    const siteUrl = Deno.env.get('SITE_URL') || 'http://localhost:3000'
 
     let update: TelegramUpdate
     try {
@@ -132,6 +135,8 @@ serve(async (req) => {
       botMonitor,
       validators,
       botToken,
+      screenshotService,
+      siteUrl,
       getSession: getSessionSync,
       setSession: setSessionSync,
       deleteSession: deleteSessionSync,

@@ -5,6 +5,7 @@ import { processPhoto } from './processPhoto.ts'
 import { processTitle } from './processTitle.ts'
 import { processDescription } from './processDescription.ts'
 import { processFallback } from './processFallback.ts'
+import { processPricing } from './processPricing.ts'
 
 export const createMessageHandlers = (deps: any) => {
   return async function handleMessage({ message, chatId, userId }: any) {
@@ -41,6 +42,9 @@ export const createMessageHandlers = (deps: any) => {
             return;
           case 'waiting_description':
             await processDescription(deps, { message, chatId, userId });
+            return;
+          case 'waiting_pricing':
+            await processPricing(deps, { message, chatId, userId });
             return;
           default:
             console.log('[TelegramBot] Неучтённый step сессии:', session.step);

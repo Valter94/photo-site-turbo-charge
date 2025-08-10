@@ -89,13 +89,13 @@ const PricingSection = () => {
   }
 
   // Группировка по категориям
-  const groupedPlans = pricingPlans.reduce((acc, plan) => {
+  const groupedPlans = plans.reduce((acc, plan) => {
     if (!acc[plan.category]) {
-      acc[plan.category] = [];
+      acc[plan.category] = [] as Plan[];
     }
     acc[plan.category].push(plan);
     return acc;
-  }, {} as Record<string, typeof pricingPlans>);
+  }, {} as Record<string, Plan[]>);
 
   return (
     <section id="pricing" className="py-20 bg-gradient-to-br from-gray-50 via-white to-pink-50/30">
@@ -109,14 +109,14 @@ const PricingSection = () => {
           </p>
         </div>
 
-        {Object.entries(groupedPlans).map(([category, plans]) => (
+        {Object.entries(groupedPlans).map(([category, categoryPlans]) => (
           <div key={category} className="mb-16">
             <h3 className="text-2xl font-bold text-center mb-8 text-gray-800">
               {category}
             </h3>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {plans.map((plan) => {
+              {categoryPlans.map((plan) => {
                 const IconComponent = plan.icon;
                 return (
                   <Card 

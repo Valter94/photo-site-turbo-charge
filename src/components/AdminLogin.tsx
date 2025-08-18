@@ -45,6 +45,17 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
     setIsLoading(true);
 
     try {
+      // Temporary hardcoded admin access for Irina
+      if (email === 'oriparty@ya.ru' && password === 'Ameliya2024') {
+        toast({
+          title: "Успешный вход",
+          description: "Добро пожаловать в админ-панель, Ирина!",
+        });
+        onLogin();
+        return;
+      }
+
+      // Regular Supabase authentication
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,

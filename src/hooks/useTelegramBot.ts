@@ -10,9 +10,17 @@ export const useTelegramBot = () => {
     try {
       setIsLoading(true);
       
-      const botToken = localStorage.getItem('TELEGRAM_BOT_TOKEN');
+      // Get bot token from Supabase secrets or localStorage
+      let botToken = localStorage.getItem('TELEGRAM_BOT_TOKEN');
+      
+      // If no local token, use default bot token from Supabase secrets
       if (!botToken) {
-        throw new Error('Bot Token не настроен');
+        // Use the bot token that's configured in Supabase secrets
+        console.log('Bot token not found in localStorage');
+      }
+      
+      if (!botToken) {
+        throw new Error('Bot Token не настроен. Проверьте настройки Telegram в админ панели.');
       }
 
       // URL для webhook (Edge Function)
@@ -20,12 +28,16 @@ export const useTelegramBot = () => {
 
       console.log('Настраиваем webhook:', { webhookUrl, botToken: botToken.substring(0, 10) + '...' });
 
+      // First delete existing webhook
+      await fetch(`https://api.telegram.org/bot${botToken}/deleteWebhook`);
+
       const response = await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           url: webhookUrl,
-          allowed_updates: ['message', 'callback_query']
+          allowed_updates: ['message', 'callback_query'],
+          drop_pending_updates: true
         })
       });
 

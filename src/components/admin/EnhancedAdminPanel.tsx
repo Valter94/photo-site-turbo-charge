@@ -39,7 +39,7 @@ interface EnhancedAdminPanelProps {
 
 const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
   const [activeTab, setActiveTab] = useState("security");
-  const { signOut, profile } = useAuth();
+  const { signOut } = useAuth();
 
   const tabs = [
     { id: "security", label: "🔐 Безопасность", icon: Shield },
@@ -67,7 +67,7 @@ const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
               </CardTitle>
               <div className="flex items-center gap-4">
                 <span className="text-sm text-gray-600">
-                  Добро пожаловать, {profile?.username || 'Администратор'}
+                  Добро пожаловать, Администратор
                 </span>
                 <Button 
                   onClick={signOut}

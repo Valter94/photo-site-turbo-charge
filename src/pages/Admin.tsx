@@ -7,16 +7,14 @@ import LoadingSpinner from '../components/LoadingSpinner';
 
 const Admin = () => {
   const { isAuthenticated, isAdmin, loading } = useAuth();
-  const [showLogin, setShowLogin] = useState(true);
 
   const handleLogin = () => {
-    console.log('Admin login successful, hiding login form');
-    setShowLogin(false);
+    // Force re-check of auth state after login
+    window.location.reload();
   };
 
   const handleLogout = () => {
-    console.log('Admin logout, showing login form');
-    setShowLogin(true);
+    // Page will reload after logout to show login form
   };
 
   if (loading) {
@@ -27,8 +25,8 @@ const Admin = () => {
     );
   }
 
-  // Show login if not authenticated, not admin, or showLogin is true
-  if (!isAuthenticated || !isAdmin || showLogin) {
+  // Show login if not authenticated or not admin
+  if (!isAuthenticated || !isAdmin) {
     return <AdminLogin onLogin={handleLogin} />;
   }
 

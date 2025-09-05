@@ -1,99 +1,114 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Lock, User, Mail } from 'lucide-react';
+import { Lock, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { safeLocalStorage } from '@/utils/storageUtils';
 
 interface AdminLoginProps {
   onLogin: () => void;
 }
 
+const ADMIN_EMAIL = 'otiparty@ya.ru';
+const ADMIN_PASSWORD = 'Ameliya2024';
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes
+
 const AdminLogin = ({ onLogin }: AdminLoginProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('signin');
   const [loginAttempts, setLoginAttempts] = useState(0);
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockoutTime, setLockoutTime] = useState<Date | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    // Check if user is already logged in
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        // Check if user is admin
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (profile?.role === 'admin') {
-          onLogin();
-        }
+  // Check for existing lockout on component mount
+  React.useEffect(() => {
+    const lockoutData = safeLocalStorage.getItem('admin_lockout');
+    if (lockoutData) {
+      const lockout = JSON.parse(lockoutData);
+      const lockoutEnd = new Date(lockout.until);
+      if (new Date() < lockoutEnd) {
+        setIsLocked(true);
+        setLockoutTime(lockoutEnd);
+        setLoginAttempts(lockout.attempts);
+      } else {
+        safeLocalStorage.setItem('admin_lockout', '');
       }
-    };
-    checkAuth();
-  }, [onLogin]);
+    }
+  }, []);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isLocked) {
+      toast({
+        title: "Доступ заблокирован",
+        description: `Слишком много неудачных попыток. Попробуйте через ${Math.ceil((lockoutTime!.getTime() - new Date().getTime()) / 60000)} минут.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      // Temporary hardcoded admin access for Irina
-      if (email === 'oriparty@ya.ru' && password === 'Ameliya2024') {
+      // Check hardcoded credentials
+      if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+        // Clear any lockout data
+        safeLocalStorage.setItem('admin_lockout', '');
+        setLoginAttempts(0);
+        
+        // Store admin session
+        safeLocalStorage.setItem('admin_session', JSON.stringify({
+          isAdmin: true,
+          loginTime: new Date().toISOString(),
+          email: ADMIN_EMAIL
+        }));
+        
         toast({
           title: "Успешный вход",
-          description: "Добро пожаловать в админ-панель, Ирина!",
+          description: "Добро пожаловать в админ-панель!",
         });
+        
         onLogin();
         return;
       }
 
-      // Regular Supabase authentication
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        setLoginAttempts(prev => prev + 1);
+      // Failed login
+      const newAttempts = loginAttempts + 1;
+      setLoginAttempts(newAttempts);
+      
+      if (newAttempts >= MAX_ATTEMPTS) {
+        const lockoutUntil = new Date(Date.now() + LOCKOUT_TIME);
+        setIsLocked(true);
+        setLockoutTime(lockoutUntil);
+        
+        safeLocalStorage.setItem('admin_lockout', JSON.stringify({
+          attempts: newAttempts,
+          until: lockoutUntil.toISOString()
+        }));
+        
         toast({
-          title: "Ошибка входа",
-          description: error.message,
+          title: "Доступ заблокирован",
+          description: `Слишком много неудачных попыток. Доступ заблокирован на 15 минут.`,
           variant: "destructive"
         });
-        return;
+      } else {
+        toast({
+          title: "Неверные данные",
+          description: `Неправильный email или пароль. Осталось попыток: ${MAX_ATTEMPTS - newAttempts}`,
+          variant: "destructive"
+        });
       }
-
-      if (data.user) {
-        // Check if user is admin
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', data.user.id)
-          .single();
-        
-        if (profile?.role === 'admin') {
-          toast({
-            title: "Успешный вход",
-            description: "Добро пожаловать в админ-панель!",
-          });
-          onLogin();
-        } else {
-          await supabase.auth.signOut();
-          toast({
-            title: "Доступ запрещен",
-            description: "У вас нет прав администратора",
-            variant: "destructive"
-          });
-        }
-      }
+      
+      // Clear form for security
+      setEmail('');
+      setPassword('');
+      
     } catch (error: any) {
       toast({
         title: "Ошибка",
@@ -105,167 +120,81 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
     }
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/admin`
-        }
-      });
-
-      if (error) {
-        toast({
-          title: "Ошибка регистрации",
-          description: error.message,
-          variant: "destructive"
-        });
-        return;
-      }
-
-      toast({
-        title: "Регистрация успешна",
-        description: "Проверьте email для подтверждения аккаунта",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Ошибка",
-        description: "Произошла ошибка при регистрации",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50 flex items-center justify-center p-6">
+      <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-rose-400 rounded-full flex items-center justify-center mb-4">
+          <div className="mx-auto w-12 h-12 bg-gradient-to-r from-rose-400 to-pink-500 rounded-full flex items-center justify-center mb-4">
             <Lock className="h-6 w-6 text-white" />
           </div>
-          <CardTitle className="text-2xl font-bold">Админ-панель</CardTitle>
-          <p className="text-gray-600">Безопасный вход</p>
+          <CardTitle className="text-2xl font-bold text-gray-900">Админ-панель</CardTitle>
+          <p className="text-gray-600">Безопасный вход в систему</p>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Вход</TabsTrigger>
-              <TabsTrigger value="signup">Регистрация</TabsTrigger>
-            </TabsList>
+          <form onSubmit={handleSignIn} className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                Email администратора
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Введите email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10"
+                  required
+                  disabled={isLocked}
+                />
+              </div>
+            </div>
             
-            <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium">
-                    Email
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="admin@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <label htmlFor="password" className="text-sm font-medium">
-                    Пароль
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="Введите пароль"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-                
-                {loginAttempts >= 3 && (
-                  <div className="text-sm text-amber-600 bg-amber-50 p-2 rounded">
-                    ⚠️ Слишком много попыток входа. Попробуйте позже.
-                  </div>
-                )}
-                
-                <Button 
-                  type="submit" 
-                  className="w-full bg-rose-400 hover:bg-rose-500"
-                  disabled={isLoading || loginAttempts >= 5}
-                >
-                  {isLoading ? 'Вход...' : 'Войти'}
-                </Button>
-              </form>
-            </TabsContent>
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                Пароль
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Введите пароль"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10"
+                  required
+                  disabled={isLocked}
+                />
+              </div>
+            </div>
             
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="signup-email" className="text-sm font-medium">
-                    Email
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="admin@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <label htmlFor="signup-password" className="text-sm font-medium">
-                    Пароль
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      placeholder="Минимум 8 символов"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10"
-                      required
-                      minLength={8}
-                    />
-                  </div>
-                </div>
-                
-                <div className="text-sm text-gray-600 bg-blue-50 p-2 rounded">
-                  ℹ️ Новые аккаунты требуют подтверждения администратора
-                </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full bg-rose-400 hover:bg-rose-500"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Регистрация...' : 'Зарегистрироваться'}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+            {isLocked && lockoutTime && (
+              <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">
+                🔒 Доступ заблокирован до {lockoutTime.toLocaleTimeString('ru-RU')} из-за множественных неудачных попыток входа.
+              </div>
+            )}
+            
+            {loginAttempts > 0 && loginAttempts < MAX_ATTEMPTS && !isLocked && (
+              <div className="text-sm text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
+                ⚠️ Неудачных попыток: {loginAttempts}/{MAX_ATTEMPTS}
+              </div>
+            )}
+            
+            <Button 
+              type="submit" 
+              className="w-full bg-gradient-to-r from-rose-400 to-pink-500 hover:from-rose-500 hover:to-pink-600 transition-all duration-200"
+              disabled={isLoading || isLocked}
+            >
+              {isLoading ? 'Проверка данных...' : 'Войти в админ-панель'}
+            </Button>
+            
+            <div className="text-xs text-center text-gray-500 mt-4">
+              Только для авторизованных администраторов
+            </div>
+          </form>
         </CardContent>
       </Card>
     </div>

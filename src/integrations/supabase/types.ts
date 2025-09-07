@@ -44,6 +44,45 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_id: string | null
+          created_at: string | null
+          details: Json | null
+          id: string
+          ip_address: unknown | null
+          resource: string
+          resource_id: string | null
+          success: boolean | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          admin_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          resource: string
+          resource_id?: string | null
+          success?: boolean | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          resource?: string
+          resource_id?: string | null
+          success?: boolean | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       audit_log: {
         Row: {
           action: string
@@ -492,6 +531,51 @@ export type Database = {
         }
         Relationships: []
       }
+      site_configuration: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          display_name: string | null
+          id: string
+          is_visible: boolean | null
+          section: string
+          setting_key: string
+          setting_type: string | null
+          setting_value: Json | null
+          updated_at: string | null
+          validation_rules: Json | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_name?: string | null
+          id?: string
+          is_visible?: boolean | null
+          section: string
+          setting_key: string
+          setting_type?: string | null
+          setting_value?: Json | null
+          updated_at?: string | null
+          validation_rules?: Json | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_name?: string | null
+          id?: string
+          is_visible?: boolean | null
+          section?: string
+          setting_key?: string
+          setting_type?: string | null
+          setting_value?: Json | null
+          updated_at?: string | null
+          validation_rules?: Json | null
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           contact_address: string | null
@@ -600,6 +684,16 @@ export type Database = {
           p_old_values?: Json
           p_record_id?: string
           p_table_name: string
+        }
+        Returns: undefined
+      }
+      log_admin_action: {
+        Args: {
+          p_action: string
+          p_details?: Json
+          p_resource: string
+          p_resource_id?: string
+          p_success?: boolean
         }
         Returns: undefined
       }

@@ -42,24 +42,29 @@ export const createMenuHandlers = (supabase: SupabaseClient) => {
     };
   };
 
-  const getCategoryKeyboard = () => ({
-    inline_keyboard: [
-      [
-        { text: '💒 Свадьба', callback_data: 'cat_wedding' },
-        { text: '💕 Love Story', callback_data: 'cat_lovestory' }
-      ],
-      [
-        { text: '👤 Портрет', callback_data: 'cat_portrait' },
-        { text: '👨‍👩‍👧‍👦 Семья', callback_data: 'cat_family' }
-      ],
-      [
-        { text: '🏢 Корпоратив', callback_data: 'cat_corporate' }
-      ],
-      [
-        { text: '❌ Отмена', callback_data: 'cancel' }
-      ]
-    ]
-  })
+  const getCategoryKeyboard = () => {
+    return {
+      text: "📂 Выберите категорию:",
+      keyboard: {
+        inline_keyboard: [
+          [
+            { text: '💒 Свадьба', callback_data: 'category_wedding' },
+            { text: '💕 Love Story', callback_data: 'category_lovestory' }
+          ],
+          [
+            { text: '👤 Портрет', callback_data: 'category_portrait' },
+            { text: '👨‍👩‍👧‍👦 Семья', callback_data: 'category_family' }
+          ],
+          [
+            { text: '🏢 Корпоратив', callback_data: 'category_corporate' }
+          ],
+          [
+            { text: '❌ Отмена', callback_data: 'cancel' }
+          ]
+        ]
+      }
+    }
+  }
 
   const getStats = async () => {
     try {

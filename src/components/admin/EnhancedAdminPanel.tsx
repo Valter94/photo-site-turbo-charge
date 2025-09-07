@@ -30,8 +30,12 @@ import {
   Download,
   Plus,
   LogOut,
-  Shield
+  Shield,
+  Edit,
+  Image
 } from 'lucide-react';
+import UniversalSiteEditor from './UniversalSiteEditor';
+import RealLocationPhotos from './RealLocationPhotos';
 
 interface EnhancedAdminPanelProps {
   onLogout: () => void;
@@ -43,6 +47,8 @@ const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
 
   const tabs = [
     { id: "security", label: "🔐 Безопасность", icon: Shield },
+    { id: "universal-editor", label: "🎨 Редактор", icon: Edit },
+    { id: "real-photos", label: "📸 Реальные фото", icon: Image },
     { id: "portfolio", label: "Портфолио", icon: Camera },
     { id: "locations", label: "Локации", icon: MapPin },
     { id: "pricing", label: "Цены", icon: DollarSign },
@@ -117,6 +123,34 @@ const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
             </Card>
             
             <SecurityManager />
+          </TabsContent>
+
+          <TabsContent value="universal-editor" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Edit className="h-5 w-5" />
+                  Универсальный редактор сайта
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <UniversalSiteEditor />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="real-photos" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Image className="h-5 w-5" />
+                  Замена фото локаций реальными
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <RealLocationPhotos />
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="portfolio" className="space-y-6">

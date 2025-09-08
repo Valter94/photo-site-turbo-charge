@@ -36,6 +36,8 @@ import {
 } from 'lucide-react';
 import UniversalSiteEditor from './UniversalSiteEditor';
 import RealLocationPhotos from './RealLocationPhotos';
+import SecurityEnhancer from './SecurityEnhancer';
+import ImageFixer from './ImageFixer';
 
 interface EnhancedAdminPanelProps {
   onLogout: () => void;
@@ -47,6 +49,8 @@ const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
 
   const tabs = [
     { id: "security", label: "🔐 Безопасность", icon: Shield },
+    { id: "security-enhancer", label: "🛡️ Центр безопасности", icon: Shield },
+    { id: "image-fixer", label: "🖼️ Менеджер изображений", icon: Image },
     { id: "universal-editor", label: "🎨 Редактор", icon: Edit },
     { id: "real-photos", label: "📸 Реальные фото", icon: Image },
     { id: "portfolio", label: "Портфолио", icon: Camera },
@@ -137,6 +141,14 @@ const EnhancedAdminPanel = ({ onLogout }: EnhancedAdminPanelProps) => {
                 <UniversalSiteEditor />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="security-enhancer" className="space-y-6">
+            <SecurityEnhancer />
+          </TabsContent>
+
+          <TabsContent value="image-fixer" className="space-y-6">
+            <ImageFixer />
           </TabsContent>
 
           <TabsContent value="real-photos" className="space-y-6">

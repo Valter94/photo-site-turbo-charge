@@ -111,9 +111,9 @@ export const createMenuHandlers = (supabase: SupabaseClient) => {
             `   • Резервное копирование\n\n` +
             `⚡ Бот работает 24/7 и мгновенно обновляет ваш сайт!`,
       keyboard: {
-        inline_keyboard: [
-          [{ text: '🔙 Главное меню', callback_data: 'main_menu' }]
-        ]
+      inline_keyboard: [
+        [{ text: '🔙 Главное меню', callback_data: 'main_menu' }]
+      ]
       }
     };
   };

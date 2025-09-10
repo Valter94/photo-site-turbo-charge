@@ -35,6 +35,7 @@ import {
   Image
 } from 'lucide-react';
 import UniversalSiteEditor from './UniversalSiteEditor';
+import EnhancedImageOptimizer from './EnhancedImageOptimizer';
 import RealLocationPhotos from './RealLocationPhotos';
 import SecurityEnhancer from './SecurityEnhancer';
 import ImageFixer from './ImageFixer';

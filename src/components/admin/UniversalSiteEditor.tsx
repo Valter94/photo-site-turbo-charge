@@ -1,192 +1,132 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
-import { Save, Eye, EyeOff, Palette, Type, Globe, BarChart3, Phone, Mail, MapPin } from 'lucide-react';
-
-interface SiteConfiguration {
-  id: string;
-  section: string;
-  setting_key: string;
-  setting_value: any;
-  setting_type: string;
-  display_name: string;
-  description: string;
-  category: string;
-  is_visible: boolean;
-  validation_rules?: any;
-}
+import { useSystemSettings, useUpdateSystemSetting, useCreateConfigBackup, useConfigBackups } from '@/hooks/useSystemSettings';
+import { useSiteSettings, useUpdateSiteSettings } from '@/hooks/useSiteSettings';
+import { useToast } from '@/hooks/use-toast';
+import { Save, Download, Upload, RefreshCw, Globe, Search, Palette, Phone, Shield, Zap } from 'lucide-react';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const UniversalSiteEditor = () => {
-  const [changes, setChanges] = useState<Record<string, any>>({});
+  const { toast } = useToast();
   const [previewMode, setPreviewMode] = useState(false);
-  const queryClient = useQueryClient();
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  const { data: systemSettings, isLoading: systemLoading } = useSystemSettings();
+  const { data: siteSettings, isLoading: siteLoading } = useSiteSettings();
+  const { data: backups } = useConfigBackups();
+  
+  const updateSystemSetting = useUpdateSystemSetting();
+  const updateSiteSettings = useUpdateSiteSettings();
+  const createBackup = useCreateConfigBackup();
 
-  const { data: configurations, isLoading } = useQuery({
-    queryKey: ['site_configuration'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('site_configuration')
-        .select('*')
-        .order('category, section, setting_key');
-      
-      if (error) throw error;
-      return data as SiteConfiguration[];
-    }
-  });
+  const [localSettings, setLocalSettings] = useState<Record<string, any>>({});
 
-  const updateConfiguration = useMutation({
-    mutationFn: async ({ id, setting_value }: { id: string; setting_value: any }) => {
-      const { error } = await supabase
-        .from('site_configuration')
-        .update({ setting_value, updated_at: new Date().toISOString() })
-        .eq('id', id);
-      
-      if (error) throw error;
-      
-      // Log admin action
-      await supabase.rpc('log_admin_action', {
-        p_action: 'UPDATE',
-        p_resource: 'site_configuration',
-        p_resource_id: id,
-        p_details: { setting_value }
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['site_configuration'] });
-      toast.success('Настройка обновлена');
-    },
-    onError: (error) => {
-      toast.error('Ошибка обновления: ' + error.message);
-    }
-  });
-
-  const handleChange = (configId: string, value: any) => {
-    setChanges(prev => ({ ...prev, [configId]: value }));
+  const handleSystemSettingChange = (category: string, key: string, value: any) => {
+    const settingKey = `${category}.${key}`;
+    setLocalSettings(prev => ({
+      ...prev,
+      [settingKey]: value
+    }));
   };
 
-  const handleSave = (config: SiteConfiguration) => {
-    const newValue = changes[config.id] ?? config.setting_value;
-    updateConfiguration.mutate({ id: config.id, setting_value: newValue });
-    setChanges(prev => {
-      const updated = { ...prev };
-      delete updated[config.id];
-      return updated;
+  const handleSaveSystemSetting = async (category: string, key: string, setting: any) => {
+    const settingKey = `${category}.${key}`;
+    const value = localSettings[settingKey] !== undefined ? localSettings[settingKey] : setting.setting_value;
+    
+    await updateSystemSetting.mutateAsync({
+      category,
+      key,
+      value: JSON.stringify(value),
+      displayName: setting.display_name,
+      description: setting.description,
+      type: setting.setting_type
+    });
+    
+    // Remove from local state after saving
+    setLocalSettings(prev => {
+      const newState = { ...prev };
+      delete newState[settingKey];
+      return newState;
     });
   };
 
-  const renderInput = (config: SiteConfiguration) => {
-    const currentValue = changes[config.id] ?? (typeof config.setting_value === 'string' ? JSON.parse(config.setting_value) : config.setting_value);
-    const hasChanges = config.id in changes;
+  const handleCreateBackup = async () => {
+    const backupName = `Backup_${new Date().toISOString().split('T')[0]}_${Date.now()}`;
+    await createBackup.mutateAsync({
+      name: backupName,
+      description: 'Автоматический бэкап конфигурации'
+    });
+  };
 
-    switch (config.setting_type) {
-      case 'text':
+  const groupedSettings = systemSettings?.reduce((acc, setting) => {
+    if (!acc[setting.setting_category]) {
+      acc[setting.setting_category] = [];
+    }
+    acc[setting.setting_category].push(setting);
+    return acc;
+  }, {} as Record<string, typeof systemSettings>) || {};
+
+  const filteredSettings = Object.entries(groupedSettings).filter(([category, settings]) =>
+    searchQuery === '' || 
+    category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    settings.some(s => 
+      s.setting_key.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.display_name?.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  );
+
+  const renderSettingInput = (setting: any, category: string) => {
+    const settingKey = `${category}.${setting.setting_key}`;
+    const currentValue = localSettings[settingKey] !== undefined 
+      ? localSettings[settingKey] 
+      : (typeof setting.setting_value === 'string' ? JSON.parse(setting.setting_value) : setting.setting_value);
+    
+    const hasUnsavedChanges = localSettings[settingKey] !== undefined;
+
+    switch (setting.setting_type) {
+      case 'boolean':
         return (
-          <Input
-            value={currentValue || ''}
-            onChange={(e) => handleChange(config.id, e.target.value)}
-            placeholder={config.description}
-            className={hasChanges ? 'border-yellow-500' : ''}
-          />
+          <div className="flex items-center space-x-2">
+            <Switch
+              checked={currentValue}
+              onCheckedChange={(value) => handleSystemSettingChange(category, setting.setting_key, value)}
+            />
+            <span className="text-sm">{currentValue ? 'Включено' : 'Отключено'}</span>
+          </div>
         );
       
       case 'textarea':
         return (
           <Textarea
             value={currentValue || ''}
-            onChange={(e) => handleChange(config.id, e.target.value)}
-            placeholder={config.description}
-            className={hasChanges ? 'border-yellow-500' : ''}
+            onChange={(e) => handleSystemSettingChange(category, setting.setting_key, e.target.value)}
+            placeholder={setting.description}
             rows={3}
-          />
-        );
-      
-      case 'email':
-        return (
-          <Input
-            type="email"
-            value={currentValue || ''}
-            onChange={(e) => handleChange(config.id, e.target.value)}
-            placeholder={config.description}
-            className={hasChanges ? 'border-yellow-500' : ''}
-          />
-        );
-      
-      case 'phone':
-        return (
-          <Input
-            type="tel"
-            value={currentValue || ''}
-            onChange={(e) => handleChange(config.id, e.target.value)}
-            placeholder={config.description}
-            className={hasChanges ? 'border-yellow-500' : ''}
-          />
-        );
-      
-      case 'url':
-        return (
-          <Input
-            type="url"
-            value={currentValue || ''}
-            onChange={(e) => handleChange(config.id, e.target.value)}
-            placeholder={config.description}
-            className={hasChanges ? 'border-yellow-500' : ''}
           />
         );
       
       case 'color':
         return (
-          <div className="flex gap-2">
+          <div className="flex items-center space-x-2">
             <Input
               type="color"
-              value={currentValue?.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/) ? 
-                `hsl(${currentValue.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/)[1]}, ${currentValue.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/)[2]}%, ${currentValue.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/)[3]}%)` : 
-                '#3b82f6'}
-              onChange={(e) => {
-                const hex = e.target.value;
-                // Convert hex to HSL
-                const r = parseInt(hex.slice(1, 3), 16) / 255;
-                const g = parseInt(hex.slice(3, 5), 16) / 255;
-                const b = parseInt(hex.slice(5, 7), 16) / 255;
-                
-                const max = Math.max(r, g, b);
-                const min = Math.min(r, g, b);
-                let h: number, s: number, l = (max + min) / 2;
-
-                if (max === min) {
-                  h = s = 0;
-                } else {
-                  const d = max - min;
-                  s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-                  switch (max) {
-                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-                    case g: h = (b - r) / d + 2; break;
-                    case b: h = (r - g) / d + 4; break;
-                    default: h = 0;
-                  }
-                  h /= 6;
-                }
-
-                const hslValue = `hsl(${Math.round(h * 360)}, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%)`;
-                handleChange(config.id, hslValue);
-              }}
-              className="w-16"
+              value={currentValue || '#000000'}
+              onChange={(e) => handleSystemSettingChange(category, setting.setting_key, e.target.value)}
+              className="w-16 h-10"
             />
             <Input
+              type="text"
               value={currentValue || ''}
-              onChange={(e) => handleChange(config.id, e.target.value)}
-              placeholder="hsl(220, 90%, 56%)"
-              className={`flex-1 ${hasChanges ? 'border-yellow-500' : ''}`}
+              onChange={(e) => handleSystemSettingChange(category, setting.setting_key, e.target.value)}
+              placeholder="#000000"
             />
           </div>
         );
@@ -194,10 +134,10 @@ const UniversalSiteEditor = () => {
       default:
         return (
           <Input
+            type="text"
             value={currentValue || ''}
-            onChange={(e) => handleChange(config.id, e.target.value)}
-            placeholder={config.description}
-            className={hasChanges ? 'border-yellow-500' : ''}
+            onChange={(e) => handleSystemSettingChange(category, setting.setting_key, e.target.value)}
+            placeholder={setting.description}
           />
         );
     }
@@ -205,149 +145,234 @@ const UniversalSiteEditor = () => {
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'content': return Type;
-      case 'design': return Palette;
-      case 'seo': return Globe;
-      case 'analytics': return BarChart3;
-      case 'contact': return Phone;
-      case 'social': return Mail;
-      default: return MapPin;
+      case 'general': return <Globe className="h-4 w-4" />;
+      case 'seo': return <Search className="h-4 w-4" />;
+      case 'appearance': return <Palette className="h-4 w-4" />;
+      case 'contact': return <Phone className="h-4 w-4" />;
+      case 'security': return <Shield className="h-4 w-4" />;
+      default: return <Zap className="h-4 w-4" />;
     }
   };
 
-  const groupedConfigs = configurations?.reduce((acc, config) => {
-    if (!acc[config.category]) {
-      acc[config.category] = {};
+  const getCategoryTitle = (category: string) => {
+    switch (category) {
+      case 'general': return 'Общие настройки';
+      case 'seo': return 'SEO и метатеги';
+      case 'appearance': return 'Внешний вид';
+      case 'contact': return 'Контактная информация';
+      case 'security': return 'Безопасность';
+      default: return category.charAt(0).toUpperCase() + category.slice(1);
     }
-    if (!acc[config.category][config.section]) {
-      acc[config.category][config.section] = [];
-    }
-    acc[config.category][config.section].push(config);
-    return acc;
-  }, {} as Record<string, Record<string, SiteConfiguration[]>>) || {};
+  };
 
-  if (isLoading) {
-    return <div className="flex items-center justify-center p-8">Загрузка настроек...</div>;
+  if (systemLoading || siteLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Универсальный редактор сайта</h2>
+          <h1 className="text-3xl font-bold">Универсальный редактор сайта</h1>
           <p className="text-muted-foreground">
-            Полный контроль над всеми аспектами сайта
+            Редактируйте все настройки сайта в одном месте
           </p>
         </div>
-        
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Eye className="h-4 w-4" />
-            <Switch
-              checked={previewMode}
-              onCheckedChange={setPreviewMode}
-            />
-            <EyeOff className="h-4 w-4" />
-          </div>
-          <Badge variant="secondary">
-            {Object.keys(changes).length} изменений
-          </Badge>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            onClick={handleCreateBackup}
+            disabled={createBackup.isPending}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Создать бэкап
+          </Button>
+          <Button
+            variant={previewMode ? "default" : "outline"}
+            onClick={() => setPreviewMode(!previewMode)}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            {previewMode ? 'Выйти из превью' : 'Режим превью'}
+          </Button>
         </div>
       </div>
 
-      <Tabs defaultValue="content" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
-          {Object.keys(groupedConfigs).map((category) => {
-            const Icon = getCategoryIcon(category);
-            return (
-              <TabsTrigger key={category} value={category}>
-                <Icon className="h-4 w-4 mr-2" />
-                {category === 'content' && 'Контент'}
-                {category === 'design' && 'Дизайн'}
-                {category === 'seo' && 'SEO'}
-                {category === 'analytics' && 'Аналитика'}
-                {category === 'contact' && 'Контакты'}
-                {category === 'social' && 'Соцсети'}
-              </TabsTrigger>
-            );
-          })}
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Поиск настроек..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10"
+        />
+      </div>
+
+      <Tabs defaultValue="system" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="system">Системные настройки</TabsTrigger>
+          <TabsTrigger value="site">Настройки сайта</TabsTrigger>
+          <TabsTrigger value="backups">Бэкапы</TabsTrigger>
         </TabsList>
 
-        {Object.entries(groupedConfigs).map(([category, sections]) => (
-          <TabsContent key={category} value={category} className="space-y-6">
-            {Object.entries(sections).map(([section, configs]) => (
-              <Card key={section}>
-                <CardHeader>
-                  <CardTitle className="capitalize">{section}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {configs.map((config) => (
-                    <div key={config.id} className="space-y-2">
+        <TabsContent value="system" className="space-y-4">
+          {filteredSettings.map(([category, settings]) => (
+            <Card key={category}>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  {getCategoryIcon(category)}
+                  <span>{getCategoryTitle(category)}</span>
+                  <Badge variant="secondary">{settings.length}</Badge>
+                </CardTitle>
+                <CardDescription>
+                  Настройки категории {getCategoryTitle(category).toLowerCase()}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {settings.map((setting) => {
+                  const settingKey = `${category}.${setting.setting_key}`;
+                  const hasUnsavedChanges = localSettings[settingKey] !== undefined;
+                  
+                  return (
+                    <div key={setting.id} className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label htmlFor={config.id} className="text-sm font-medium">
-                          {config.display_name}
-                        </Label>
-                        <div className="flex items-center gap-2">
-                          {config.id in changes && (
-                            <Badge variant="outline" className="text-xs">
-                              Изменено
-                            </Badge>
+                        <div>
+                          <Label className="flex items-center space-x-2">
+                            <span>{setting.display_name || setting.setting_key}</span>
+                            {hasUnsavedChanges && (
+                              <Badge variant="outline" className="text-xs">
+                                Не сохранено
+                              </Badge>
+                            )}
+                          </Label>
+                          {setting.description && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {setting.description}
+                            </p>
                           )}
+                        </div>
+                        {hasUnsavedChanges && (
                           <Button
                             size="sm"
-                            variant="outline"
-                            onClick={() => handleSave(config)}
-                            disabled={!(config.id in changes)}
+                            onClick={() => handleSaveSystemSetting(category, setting.setting_key, setting)}
+                            disabled={updateSystemSetting.isPending}
                           >
-                            <Save className="h-3 w-3" />
+                            <Save className="h-3 w-3 mr-1" />
+                            Сохранить
                           </Button>
-                        </div>
+                        )}
                       </div>
-                      
-                      {renderInput(config)}
-                      
-                      {config.description && (
-                        <p className="text-xs text-muted-foreground">
-                          {config.description}
-                        </p>
-                      )}
-                      
-                      <Separator className="my-2" />
+                      {renderSettingInput(setting, category)}
                     </div>
-                  ))}
-                </CardContent>
-              </Card>
-            ))}
-          </TabsContent>
-        ))}
-      </Tabs>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          ))}
+        </TabsContent>
 
-      {Object.keys(changes).length > 0 && (
-        <Card className="border-yellow-500 bg-yellow-50 dark:bg-yellow-950">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium">Несохраненные изменения</h3>
-                <p className="text-sm text-muted-foreground">
-                  У вас есть {Object.keys(changes).length} несохраненных изменений
-                </p>
+        <TabsContent value="site" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Основные настройки сайта</CardTitle>
+              <CardDescription>
+                Настройки фотографа и контактной информации
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {siteSettings && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Имя фотографа</Label>
+                    <Input
+                      value={siteSettings.photographer_name || ''}
+                      onChange={(e) => {/* Implement site settings update */}}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Email</Label>
+                    <Input
+                      type="email"
+                      value={siteSettings.contact_email || ''}
+                      onChange={(e) => {/* Implement site settings update */}}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Телефон</Label>
+                    <Input
+                      value={siteSettings.contact_phone || ''}
+                      onChange={(e) => {/* Implement site settings update */}}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Адрес</Label>
+                    <Input
+                      value={siteSettings.contact_address || ''}
+                      onChange={(e) => {/* Implement site settings update */}}
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Описание фотографа</Label>
+                    <Textarea
+                      value={siteSettings.photographer_description || ''}
+                      onChange={(e) => {/* Implement site settings update */}}
+                      rows={3}
+                    />
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="backups" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Управление бэкапами</CardTitle>
+              <CardDescription>
+                Создавайте и восстанавливайте резервные копии конфигурации
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {backups?.map((backup) => (
+                  <div key={backup.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">{backup.backup_name}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(backup.created_at).toLocaleString('ru-RU')}
+                      </p>
+                      {backup.description && (
+                        <p className="text-sm text-muted-foreground">{backup.description}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button variant="outline" size="sm">
+                        <Download className="h-4 w-4 mr-2" />
+                        Скачать
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Upload className="h-4 w-4 mr-2" />
+                        Восстановить
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                {!backups?.length && (
+                  <p className="text-center text-muted-foreground py-8">
+                    Нет сохраненных бэкапов
+                  </p>
+                )}
               </div>
-              <Button
-                onClick={() => {
-                  configurations?.forEach(config => {
-                    if (config.id in changes) {
-                      handleSave(config);
-                    }
-                  });
-                }}
-                className="bg-yellow-600 hover:bg-yellow-700"
-              >
-                Сохранить все изменения
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

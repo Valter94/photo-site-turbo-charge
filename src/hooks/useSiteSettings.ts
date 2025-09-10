@@ -9,7 +9,7 @@ export const useSiteSettings = () => {
       const { data, error } = await supabase
         .from('site_settings')
         .select('*')
-        .maybeSingle();
+        .single(); // Changed from maybeSingle to single since we only have one record
       
       if (error) {
         console.error('Error fetching site settings:', error);

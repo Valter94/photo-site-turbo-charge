@@ -15,7 +15,7 @@ export const createMenuHandlers = (supabase: SupabaseClient) => {
             `⚡ <b>Быстрые действия</b> - Часто используемые функции\n` +
             `🤖 <b>AI обработка</b> - Улучшение фотографий с помощью ИИ\n` +
             `📚 <b>Обучение</b> - Инструкции по использованию`,
-      keyboard: {
+      reply_markup: {
         inline_keyboard: [
           [
             { text: '🎨 Портфолио', callback_data: 'portfolio_management' },
@@ -45,7 +45,7 @@ export const createMenuHandlers = (supabase: SupabaseClient) => {
   const getCategoryKeyboard = () => {
     return {
       text: "📂 Выберите категорию:",
-      keyboard: {
+      reply_markup: {
         inline_keyboard: [
           [
             { text: '💒 Свадьба', callback_data: 'category_wedding' },
@@ -82,7 +82,7 @@ export const createMenuHandlers = (supabase: SupabaseClient) => {
               `⭐ Отзывов: <b>${reviewsResult.count || 0}</b>\n` +
               `📍 Локаций: <b>${locationsResult.count || 0}</b>\n\n` +
               `🕐 Обновлено: ${new Date().toLocaleString('ru-RU')}`,
-        keyboard: {
+        reply_markup: {
           inline_keyboard: [
             [{ text: '🔙 Назад', callback_data: 'main_menu' }]
           ]
@@ -110,10 +110,10 @@ export const createMenuHandlers = (supabase: SupabaseClient) => {
             `   • Оптимизация изображений\n` +
             `   • Резервное копирование\n\n` +
             `⚡ Бот работает 24/7 и мгновенно обновляет ваш сайт!`,
-      keyboard: {
-      inline_keyboard: [
-        [{ text: '🔙 Главное меню', callback_data: 'main_menu' }]
-      ]
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '🔙 Главное меню', callback_data: 'main_menu' }]
+        ]
       }
     };
   };

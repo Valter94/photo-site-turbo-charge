@@ -253,6 +253,33 @@ export type Database = {
           },
         ]
       }
+      config_backups: {
+        Row: {
+          backup_data: Json
+          backup_name: string
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+        }
+        Insert: {
+          backup_data: Json
+          backup_name: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+        }
+        Update: {
+          backup_data?: Json
+          backup_name?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
       location_categories: {
         Row: {
           created_at: string
@@ -614,6 +641,45 @@ export type Database = {
           photographer_description?: string | null
           photographer_name?: string
           photographer_photo?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      system_settings: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_name: string | null
+          id: string
+          is_visible: boolean | null
+          setting_category: string
+          setting_key: string
+          setting_type: string | null
+          setting_value: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_name?: string | null
+          id?: string
+          is_visible?: boolean | null
+          setting_category: string
+          setting_key: string
+          setting_type?: string | null
+          setting_value?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_name?: string | null
+          id?: string
+          is_visible?: boolean | null
+          setting_category?: string
+          setting_key?: string
+          setting_type?: string | null
+          setting_value?: Json | null
           updated_at?: string | null
         }
         Relationships: []

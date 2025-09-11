@@ -27,6 +27,11 @@ const UniversalSiteEditor = () => {
   const updateSiteSettings = useUpdateSiteSettings();
   const createBackup = useCreateConfigBackup();
 
+  const handleUpdateSiteField = (field: string, value: any) => {
+    if (!siteSettings) return;
+    updateSiteSettings.mutate({ ...siteSettings, [field]: value });
+  };
+
   const [localSettings, setLocalSettings] = useState<Record<string, any>>({});
 
   const handleSystemSettingChange = (category: string, key: string, value: any) => {

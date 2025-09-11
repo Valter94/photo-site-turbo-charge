@@ -27,6 +27,12 @@ major_version = 15
 [functions.telegram-bot]
 verify_jwt = false
 
+[functions.admin-location-image-update]
+verify_jwt = false
+
+[functions.admin-site-settings-upsert]
+verify_jwt = false
+
 [edge-runtime]
 enabled = true
 port = 54323

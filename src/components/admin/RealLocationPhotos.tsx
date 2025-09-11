@@ -46,20 +46,10 @@ const RealLocationPhotos = () => {
 
   const updateLocationImage = useMutation({
     mutationFn: async ({ locationId, imageUrl }: { locationId: string; imageUrl: string }) => {
-      const { error } = await supabase
-        .from('photoshoot_locations')
-        .update({ image_url: imageUrl })
-        .eq('id', locationId);
-      
-      if (error) throw error;
-
-      // Log admin action
-      await supabase.rpc('log_admin_action', {
-        p_action: 'UPDATE_LOCATION_IMAGE',
-        p_resource: 'photoshoot_locations',
-        p_resource_id: locationId,
-        p_details: { new_image_url: imageUrl }
+      const { data, error } = await supabase.functions.invoke('admin-location-image-update', {
+        body: { locationId, imageUrl }
       });
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['photoshoot_locations'] });

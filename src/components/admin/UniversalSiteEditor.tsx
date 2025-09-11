@@ -12,6 +12,7 @@ import { useSystemSettings, useUpdateSystemSetting, useCreateConfigBackup, useCo
 import { useSiteSettings, useUpdateSiteSettings } from '@/hooks/useSiteSettings';
 import { useToast } from '@/hooks/use-toast';
 import { Save, Download, Upload, RefreshCw, Globe, Search, Palette, Phone, Shield, Zap } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 const UniversalSiteEditor = () => {
@@ -27,9 +28,19 @@ const UniversalSiteEditor = () => {
   const updateSiteSettings = useUpdateSiteSettings();
   const createBackup = useCreateConfigBackup();
 
-  const handleUpdateSiteField = (field: string, value: any) => {
+  const handleUpdateSiteField = async (field: string, value: any) => {
     if (!siteSettings) return;
-    updateSiteSettings.mutate({ ...siteSettings, [field]: value });
+    const updated = { ...siteSettings, [field]: value };
+    try {
+      const { error } = await supabase.functions.invoke('admin-site-settings-upsert', {
+        body: updated,
+      });
+      if (error) throw error;
+    } catch (e) {
+      console.error('Failed to update site settings via edge function', e);
+      // Fallback to direct mutation if edge fails (may be blocked by RLS)
+      updateSiteSettings.mutate(updated);
+    }
   };
 
   const [localSettings, setLocalSettings] = useState<Record<string, any>>({});

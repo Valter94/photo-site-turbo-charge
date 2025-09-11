@@ -143,6 +143,7 @@ const HeroSection = () => {
                 <img
                   src={photographerPhoto}
                   alt={`Фотограф ${photographerName} - профессиональная фотосъемка в Москве`}
+                  data-autofix="false"
                   className="relative w-full h-full rounded-3xl object-cover border-4 border-white/30 shadow-2xl group-hover:scale-105 transition-all duration-500 hover-lift"
                   onError={(e) => {
                     console.log('Ошибка загрузки фото фотографа, используем запасное изображение');

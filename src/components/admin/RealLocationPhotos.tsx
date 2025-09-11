@@ -46,10 +46,19 @@ const RealLocationPhotos = () => {
 
   const updateLocationImage = useMutation({
     mutationFn: async ({ locationId, imageUrl }: { locationId: string; imageUrl: string }) => {
-      const { data, error } = await supabase.functions.invoke('admin-location-image-update', {
-        body: { locationId, imageUrl }
-      });
-      if (error) throw error;
+      try {
+        const { error } = await supabase.functions.invoke('admin-location-image-update', {
+          body: { locationId, imageUrl }
+        });
+        if (error) throw error;
+      } catch (e) {
+        // Фоллбэк: прямое обновление таблицы
+        const { error: upErr } = await supabase
+          .from('photoshoot_locations')
+          .update({ image_url: imageUrl })
+          .eq('id', locationId);
+        if (upErr) throw upErr;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['photoshoot_locations'] });

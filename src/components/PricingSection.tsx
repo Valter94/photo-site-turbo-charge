@@ -109,83 +109,70 @@ const PricingSection = () => {
           </p>
         </div>
 
-        {Object.entries(groupedPlans).map(([category, categoryPlans]) => (
-          <div key={category} className="mb-16">
-            <h3 className="text-2xl font-bold text-center mb-8 text-gray-800">
-              {category}
-            </h3>
-            
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {categoryPlans.map((plan) => {
-                const IconComponent = plan.icon;
-                return (
-                  <Card 
-                    key={plan.id}
-                    className={`relative overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 ${
-                      plan.popular ? 'ring-2 ring-pink-500 ring-opacity-50' : ''
-                    } ${plan.premium ? 'ring-2 ring-purple-500 ring-opacity-50' : ''}`}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {plans.map((plan) => {
+            const IconComponent = plan.icon;
+            return (
+              <Card 
+                key={plan.id}
+                className={`relative overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 ${
+                  plan.popular ? 'ring-2 ring-pink-500 ring-opacity-50' : ''
+                } ${plan.premium ? 'ring-2 ring-purple-500 ring-opacity-50' : ''}`}
+              >
+                {plan.popular && (
+                  <div className="absolute top-0 right-0 bg-pink-500 text-white px-3 py-1 text-xs font-semibold rounded-bl-lg">
+                    ПОПУЛЯРНЫЙ
+                  </div>
+                )}
+                {plan.premium && (
+                  <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 text-xs font-semibold rounded-bl-lg">
+                    ПРЕМИУМ
+                  </div>
+                )}
+                
+                <CardHeader className="text-center relative">
+                  <div className={`inline-flex p-4 rounded-full bg-gradient-to-r ${plan.color} mb-4 mx-auto`}>
+                    <IconComponent className="w-8 h-8 text-white" />
+                  </div>
+                  <CardTitle className="text-xl font-bold text-gray-900 mb-2">
+                    {plan.title}
+                  </CardTitle>
+                  <div className="text-4xl font-bold text-gray-900 mb-2">
+                    {plan.price.toLocaleString('ru-RU')} ₽
+                  </div>
+                  <div className="flex justify-center gap-4 text-sm text-gray-600">
+                    <span>🕐 {plan.duration}</span>
+                    <span>📸 {plan.photos}</span>
+                  </div>
+                  {plan.gift && (
+                    <Badge className="mt-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white border-0">
+                      {plan.gift}
+                    </Badge>
+                  )}
+                </CardHeader>
+                
+                <CardContent className="px-6 pb-6">
+                  <ul className="space-y-3 mb-6">
+                    {plan.features.map((feature, index) => (
+                      <li key={index} className="flex items-start gap-3">
+                        <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                        <span className="text-gray-700 text-sm leading-relaxed">
+                          {feature}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    onClick={scrollToBooking}
+                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-105`}
                   >
-                    {plan.popular && (
-                      <div className="absolute top-0 right-0 bg-pink-500 text-white px-3 py-1 text-xs font-semibold rounded-bl-lg">
-                        ПОПУЛЯРНЫЙ
-                      </div>
-                    )}
-                    {plan.premium && (
-                      <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 text-xs font-semibold rounded-bl-lg">
-                        ПРЕМИУМ
-                      </div>
-                    )}
-                    
-                    <CardHeader className="text-center relative">
-                      <div className={`inline-flex p-4 rounded-full bg-gradient-to-r ${plan.color} mb-4 mx-auto`}>
-                        <IconComponent className="w-8 h-8 text-white" />
-                      </div>
-                      
-                      <CardTitle className="text-xl font-bold text-gray-900 mb-2">
-                        {plan.title}
-                      </CardTitle>
-                      
-                      <div className="text-4xl font-bold text-gray-900 mb-2">
-                        {plan.price.toLocaleString('ru-RU')} ₽
-                      </div>
-                      
-                      <div className="flex justify-center gap-4 text-sm text-gray-600">
-                        <span>🕐 {plan.duration}</span>
-                        <span>📸 {plan.photos}</span>
-                      </div>
-
-                      {plan.gift && (
-                        <Badge className="mt-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white border-0">
-                          {plan.gift}
-                        </Badge>
-                      )}
-                    </CardHeader>
-                    
-                    <CardContent className="px-6 pb-6">
-                      <ul className="space-y-3 mb-6">
-                        {plan.features.map((feature, index) => (
-                          <li key={index} className="flex items-start gap-3">
-                            <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                            <span className="text-gray-700 text-sm leading-relaxed">
-                              {feature}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                      
-                      <Button
-                        onClick={scrollToBooking}
-                        className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-105`}
-                      >
-                        Забронировать
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+                    Забронировать
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
 
         <div className="text-center mt-16">
           <div className="bg-white/80 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-pink-100 max-w-2xl mx-auto">

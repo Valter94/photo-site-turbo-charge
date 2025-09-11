@@ -73,39 +73,34 @@ const AILocationFinder: React.FC<AILocationFinderProps> = ({ onLocationAdd }) =>
 
   const addLocationToDatabase = async (location: LocationSuggestion) => {
     try {
-      // Generate AI description
-      const { data: descData } = await supabase.functions.invoke('ai-location-images', {
-        body: {
-          action: 'generate_description',
-          query: location.name
-        }
-      });
+      // 1) Описание: пробуем через edge-функцию, иначе берем исходное
+      let description = location.description;
+      try {
+        const { data: descData } = await supabase.functions.invoke('ai-location-images', {
+          body: { action: 'generate_description', query: location.name }
+        });
+        if (descData?.description) description = descData.description;
+      } catch {}
 
-      const description = descData?.description || location.description;
+      // 2) Реальные фото: используем локальное сопоставление для Москвы
+      const localMap: Record<string, string> = {
+        'красная площадь': '/locations/red-square-new.jpg',
+        'вднх': '/locations/vdnkh-new.jpg',
+        'воробьевы горы': '/locations/vorobyovy-gory-new.jpg',
+        'коломенское': '/locations/kolomenskoye-new.jpg',
+        'царицыно': '/locations/tsaritsyno-new.jpg'
+      };
+      const nameLower = location.name.toLowerCase();
+      const mapped = Object.entries(localMap).find(([k]) => nameLower.includes(k));
+      const imageUrl = mapped ? mapped[1] : '/placeholder.svg';
 
-      // Generate image using the existing image generation
-      const imageResponse = await fetch('/api/generate-location-image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: `Beautiful photography location in Moscow: ${location.name}, ${location.description}, professional photography, golden hour lighting, cinematic composition`
-        })
-      });
-
-      let imageUrl = null;
-      if (imageResponse.ok) {
-        const imageData = await imageResponse.json();
-        imageUrl = imageData.image_url;
-      }
-
-      // Ensure category exists and get its id
+      // 3) Убеждаемся, что есть категория
       let categoryId: string | undefined;
       const { data: cats } = await supabase
         .from('location_categories')
         .select('id')
         .limit(1);
       categoryId = cats?.[0]?.id;
-
       if (!categoryId) {
         const { data: newCat, error: catErr } = await supabase
           .from('location_categories')
@@ -116,12 +111,12 @@ const AILocationFinder: React.FC<AILocationFinderProps> = ({ onLocationAdd }) =>
         categoryId = newCat.id;
       }
 
-      // Add to photoshoot_locations table
+      // 4) Добавляем локацию в БД с реальным фото
       const { data, error } = await supabase
         .from('photoshoot_locations')
         .insert({
           name: location.name,
-          description: description,
+          description,
           address: location.address,
           best_time: location.best_time,
           image_url: imageUrl,
@@ -130,28 +125,21 @@ const AILocationFinder: React.FC<AILocationFinderProps> = ({ onLocationAdd }) =>
         .select()
         .single();
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       toast({
-        title: "Локация добавлена",
+        title: 'Локация добавлена',
         description: `"${location.name}" успешно добавлена в базу данных`,
       });
 
-      if (onLocationAdd) {
-        onLocationAdd(data);
-      }
-
-      // Remove from suggestions
+      onLocationAdd?.(data);
       setSuggestions(prev => prev.filter(s => s.name !== location.name));
-
     } catch (error: any) {
       console.error('Error adding location:', error);
       toast({
-        title: "Ошибка добавления",
-        description: error.message || "Не удалось добавить локацию",
-        variant: "destructive"
+        title: 'Ошибка добавления',
+        description: error.message || 'Не удалось добавить локацию',
+        variant: 'destructive'
       });
     }
   };

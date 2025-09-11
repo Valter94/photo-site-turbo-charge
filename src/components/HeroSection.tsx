@@ -11,6 +11,21 @@ const HeroSection = () => {
   console.log('Settings loading:', isLoading);
   console.log('Settings error:', error);
 
+  const defaultPhoto = "/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png";
+  const [photoUrl, setPhotoUrl] = React.useState<string>(defaultPhoto);
+
+  React.useEffect(() => {
+    const target = settings?.photographer_photo;
+    if (target && typeof target === 'string' && target.trim()) {
+      const img = new Image();
+      img.onload = () => setPhotoUrl(target);
+      img.onerror = () => setPhotoUrl(defaultPhoto);
+      img.src = target;
+    } else {
+      setPhotoUrl(defaultPhoto);
+    }
+  }, [settings?.photographer_photo]);
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -51,7 +66,7 @@ const HeroSection = () => {
   // Определяем значения с учетом загрузки
   const photographerName = settings?.photographer_name || 'Фотограф Ирина';
   const photographerDescription = settings?.photographer_description || 'Каждая фотосессия для меня - это уникальная история любви, счастья и красоты. За 5+ лет работы я научилась видеть и запечатлевать то особенное, что делает именно ваш день незабываемым. Ваши эмоции, ваша любовь, ваша радость - это то, что вдохновляет меня создавать настоящие шедевры!';
-  const photographerPhoto = settings?.photographer_photo || "/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png";
+  const photographerPhoto = photoUrl;
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">

@@ -85,9 +85,11 @@ const UniversalSiteEditor = () => {
 
   const renderSettingInput = (setting: any, category: string) => {
     const settingKey = `${category}.${setting.setting_key}`;
-    const currentValue = localSettings[settingKey] !== undefined 
-      ? localSettings[settingKey] 
-      : (typeof setting.setting_value === 'string' ? JSON.parse(setting.setting_value) : setting.setting_value);
+    const rawValue = setting.setting_value;
+    const parsedValue = (typeof rawValue === 'string' 
+      ? (() => { try { return JSON.parse(rawValue); } catch { return rawValue; } })() 
+      : rawValue);
+    const currentValue = localSettings[settingKey] !== undefined ? localSettings[settingKey] : parsedValue;
     
     const hasUnsavedChanges = localSettings[settingKey] !== undefined;
 
@@ -291,7 +293,7 @@ const UniversalSiteEditor = () => {
                     <Label>Имя фотографа</Label>
                     <Input
                       value={siteSettings.photographer_name || ''}
-                      onChange={(e) => {/* Implement site settings update */}}
+                      onChange={(e) => handleUpdateSiteField('photographer_name', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -299,28 +301,28 @@ const UniversalSiteEditor = () => {
                     <Input
                       type="email"
                       value={siteSettings.contact_email || ''}
-                      onChange={(e) => {/* Implement site settings update */}}
+                      onChange={(e) => handleUpdateSiteField('contact_email', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Телефон</Label>
                     <Input
                       value={siteSettings.contact_phone || ''}
-                      onChange={(e) => {/* Implement site settings update */}}
+                      onChange={(e) => handleUpdateSiteField('contact_phone', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Адрес</Label>
                     <Input
                       value={siteSettings.contact_address || ''}
-                      onChange={(e) => {/* Implement site settings update */}}
+                      onChange={(e) => handleUpdateSiteField('contact_address', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2 md:col-span-2">
                     <Label>Описание фотографа</Label>
                     <Textarea
                       value={siteSettings.photographer_description || ''}
-                      onChange={(e) => {/* Implement site settings update */}}
+                      onChange={(e) => handleUpdateSiteField('photographer_description', e.target.value)}
                       rows={3}
                     />
                   </div>

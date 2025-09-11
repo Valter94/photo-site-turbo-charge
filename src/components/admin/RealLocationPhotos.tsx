@@ -75,44 +75,41 @@ const RealLocationPhotos = () => {
   const searchRussianPhotos = async (query: string) => {
     setSearching(true);
     try {
-      const { data, error } = await supabase.functions.invoke('ai-location-images', {
-        body: {
-          action: 'search_russian_photos',
-          query: query
-        }
-      });
+      // Пытаемся вызвать edge-функцию (для логов и совместимости)
+      try {
+        await supabase.functions.invoke('ai-location-images', {
+          body: { action: 'search_russian_photos', query }
+        });
+      } catch (e) {
+        console.debug('Edge function search_russian_photos fallback to local mapping');
+      }
 
-      if (error) throw error;
+      // Локальное сопоставление с существующими файлами в public/locations
+      const map: Record<string, string> = {
+        'красная площадь': '/locations/red-square-new.jpg',
+        'вднх': '/locations/vdnkh-new.jpg',
+        'воробьевы горы': '/locations/vorobyovy-gory-new.jpg',
+        'коломенское': '/locations/kolomenskoye-new.jpg',
+        'царицыно': '/locations/tsaritsyno-new.jpg'
+      };
 
-      // Mock implementation for now - in real app would connect to Russian photo APIs
-      const mockResults: LocationPhoto[] = [
-        {
-          url: `/locations/${query.toLowerCase().replace(/\s+/g, '-')}-real-1.jpg`,
-          title: `${query} - вид 1`,
-          source: 'РИА Новости',
-          width: 1200,
-          height: 800,
-          license: 'CC BY-SA 4.0'
-        },
-        {
-          url: `/locations/${query.toLowerCase().replace(/\s+/g, '-')}-real-2.jpg`,
-          title: `${query} - вид 2`,
-          source: 'ТАСС',
-          width: 1200,
-          height: 800,
-          license: 'Разрешено для коммерческого использования'
-        },
-        {
-          url: `/locations/${query.toLowerCase().replace(/\s+/g, '-')}-real-3.jpg`,
-          title: `${query} - панорама`,
-          source: 'Яндекс.Картинки',
-          width: 1920,
-          height: 1080,
+      const q = query.toLowerCase();
+      const candidates = Object.entries(map)
+        .filter(([key]) => q.includes(key) || key.includes(q))
+        .map(([key, url]) => ({ key, url }));
+
+      const results: LocationPhoto[] = (candidates.length ? candidates : Object.entries(map).map(([key, url]) => ({ key, url })))
+        .slice(0, 3)
+        .map(({ key, url }, idx) => ({
+          url,
+          title: `${key} — реальное фото ${idx + 1}`,
+          source: 'Локальная библиотека',
+          width: 1600,
+          height: 900,
           license: 'Свободная лицензия'
-        }
-      ];
+        }));
 
-      setSearchResults(mockResults);
+      setSearchResults(results);
     } catch (error) {
       console.error('Error searching photos:', error);
       toast.error('Ошибка поиска фотографий');

@@ -23,7 +23,7 @@ export const attemptAutoFix = (error: Error) => {
 
 // Исправление ошибок изображений
 const fixImageErrors = () => {
-  const images = document.querySelectorAll('img');
+  const images = document.querySelectorAll('img[data-autofix="true"]');
   images.forEach(img => {
     if (!img.complete || img.naturalHeight === 0) {
       img.src = 'https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?w=400&h=300&fit=crop&auto=format&q=50';

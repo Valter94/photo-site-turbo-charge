@@ -98,6 +98,24 @@ const AILocationFinder: React.FC<AILocationFinderProps> = ({ onLocationAdd }) =>
         imageUrl = imageData.image_url;
       }
 
+      // Ensure category exists and get its id
+      let categoryId: string | undefined;
+      const { data: cats } = await supabase
+        .from('location_categories')
+        .select('id')
+        .limit(1);
+      categoryId = cats?.[0]?.id;
+
+      if (!categoryId) {
+        const { data: newCat, error: catErr } = await supabase
+          .from('location_categories')
+          .insert({ name: 'Общее', description: 'Категория по умолчанию' })
+          .select('id')
+          .single();
+        if (catErr) throw catErr;
+        categoryId = newCat.id;
+      }
+
       // Add to photoshoot_locations table
       const { data, error } = await supabase
         .from('photoshoot_locations')
@@ -107,7 +125,7 @@ const AILocationFinder: React.FC<AILocationFinderProps> = ({ onLocationAdd }) =>
           address: location.address,
           best_time: location.best_time,
           image_url: imageUrl,
-          category_id: 'default-category-id' // You may need to handle categories
+          category_id: categoryId
         })
         .select()
         .single();

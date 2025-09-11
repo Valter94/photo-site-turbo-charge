@@ -146,7 +146,7 @@ const HeroSection = () => {
                   className="relative w-full h-full rounded-3xl object-cover border-4 border-white/30 shadow-2xl group-hover:scale-105 transition-all duration-500 hover-lift"
                   onError={(e) => {
                     console.log('Ошибка загрузки фото фотографа, используем запасное изображение');
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=500&fit=crop&auto=format&q=80';
+                    e.currentTarget.src = '/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png';
                   }}
                 />
                 <div className="absolute -top-4 -right-4 bg-pink-500 rounded-full p-3 animate-bounce shadow-xl">

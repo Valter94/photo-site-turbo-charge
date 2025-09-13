@@ -29,17 +29,21 @@ const UniversalSiteEditor = () => {
   const createBackup = useCreateConfigBackup();
 
   const handleUpdateSiteField = async (field: string, value: any) => {
-    if (!siteSettings) return;
-    const updated = { ...siteSettings, [field]: value };
     try {
-      const { error } = await supabase.functions.invoke('admin-site-settings-upsert', {
-        body: updated,
+      await updateSiteSettings.mutateAsync({
+        [field]: value
       });
-      if (error) throw error;
-    } catch (e) {
-      console.error('Failed to update site settings via edge function', e);
-      // Fallback to direct mutation if edge fails (may be blocked by RLS)
-      updateSiteSettings.mutate(updated);
+      toast({
+        title: "Настройки обновлены",
+        description: `Поле "${field}" успешно обновлено`,
+      });
+    } catch (error: any) {
+      console.error('Error updating site field:', error);
+      toast({
+        title: "Ошибка обновления",
+        description: error.message || "Не удалось обновить настройки",
+        variant: "destructive"
+      });
     }
   };
 

@@ -9,7 +9,8 @@ export const useSiteSettings = () => {
       const { data, error } = await supabase
         .from('site_settings')
         .select('*')
-        .single(); // Changed from maybeSingle to single since we only have one record
+        .limit(1)
+        .single();
       
       if (error) {
         console.error('Error fetching site settings:', error);
@@ -29,17 +30,41 @@ export const useUpdateSiteSettings = () => {
   
   return useMutation({
     mutationFn: async (settings: any) => {
-      const { data, error } = await supabase
+      // Сначала получаем существующую запись
+      const { data: existing } = await supabase
         .from('site_settings')
-        .upsert({
-          ...settings,
-          updated_at: new Date().toISOString()
-        })
-        .select()
+        .select('id')
+        .limit(1)
         .single();
       
-      if (error) throw error;
-      return data;
+      if (existing) {
+        // Обновляем существующую запись
+        const { data, error } = await supabase
+          .from('site_settings')
+          .update({
+            ...settings,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existing.id)
+          .select()
+          .single();
+        
+        if (error) throw error;
+        return data;
+      } else {
+        // Создаем новую запись
+        const { data, error } = await supabase
+          .from('site_settings')
+          .insert({
+            ...settings,
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+        
+        if (error) throw error;
+        return data;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['site_settings'] });

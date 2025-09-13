@@ -82,17 +82,9 @@ const AILocationFinder: React.FC<AILocationFinderProps> = ({ onLocationAdd }) =>
         if (descData?.description) description = descData.description;
       } catch {}
 
-      // 2) Реальные фото: используем локальное сопоставление для Москвы
-      const localMap: Record<string, string> = {
-        'красная площадь': '/locations/red-square-new.jpg',
-        'вднх': '/locations/vdnkh-new.jpg',
-        'воробьевы горы': '/locations/vorobyovy-gory-new.jpg',
-        'коломенское': '/locations/kolomenskoye-new.jpg',
-        'царицыно': '/locations/tsaritsyno-new.jpg'
-      };
-      const nameLower = location.name.toLowerCase();
-      const mapped = Object.entries(localMap).find(([k]) => nameLower.includes(k));
-      const imageUrl = mapped ? mapped[1] : '/placeholder.svg';
+      // 2) Реальные фото: используем реальные фотографии Москвы
+      const { getMoscowLocationPhoto } = await import('@/utils/moscowLocations');
+      const imageUrl = getMoscowLocationPhoto(location.name);
 
       // 3) Убеждаемся, что есть категория
       let categoryId: string | undefined;

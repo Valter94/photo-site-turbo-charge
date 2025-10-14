@@ -73,18 +73,26 @@ const AILocationFinder: React.FC<AILocationFinderProps> = ({ onLocationAdd }) =>
 
   const addLocationToDatabase = async (location: LocationSuggestion) => {
     try {
-      // 1) Описание: пробуем через edge-функцию, иначе берем исходное
+      console.log('📍 Adding location to database:', location);
+
+      // 1) Получаем реальное фото Москвы
+      const { getMoscowLocationPhoto } = await import('@/utils/moscowLocations');
+      const imageUrl = getMoscowLocationPhoto(location.name);
+      console.log('📸 Using Moscow photo:', imageUrl);
+
+      // 2) Описание: пробуем через AI, иначе берем исходное
       let description = location.description;
       try {
         const { data: descData } = await supabase.functions.invoke('ai-location-images', {
           body: { action: 'generate_description', query: location.name }
         });
-        if (descData?.description) description = descData.description;
-      } catch {}
-
-      // 2) Реальные фото: используем реальные фотографии Москвы
-      const { getMoscowLocationPhoto } = await import('@/utils/moscowLocations');
-      const imageUrl = getMoscowLocationPhoto(location.name);
+        if (descData?.description) {
+          description = descData.description;
+          console.log('✅ Generated AI description');
+        }
+      } catch {
+        console.log('ℹ️ Using original description');
+      }
 
       // 3) Убеждаемся, что есть категория
       let categoryId: string | undefined;
@@ -93,6 +101,7 @@ const AILocationFinder: React.FC<AILocationFinderProps> = ({ onLocationAdd }) =>
         .select('id')
         .limit(1);
       categoryId = cats?.[0]?.id;
+      
       if (!categoryId) {
         const { data: newCat, error: catErr } = await supabase
           .from('location_categories')
@@ -101,9 +110,10 @@ const AILocationFinder: React.FC<AILocationFinderProps> = ({ onLocationAdd }) =>
           .single();
         if (catErr) throw catErr;
         categoryId = newCat.id;
+        console.log('✅ Created default category');
       }
 
-      // 4) Добавляем локацию в БД с реальным фото
+      // 4) Добавляем локацию в БД с реальным московским фото
       const { data, error } = await supabase
         .from('photoshoot_locations')
         .insert({
@@ -119,15 +129,17 @@ const AILocationFinder: React.FC<AILocationFinderProps> = ({ onLocationAdd }) =>
 
       if (error) throw error;
 
+      console.log('✅ Location added successfully:', data);
+
       toast({
-        title: 'Локация добавлена',
-        description: `"${location.name}" успешно добавлена в базу данных`,
+        title: 'Локация добавлена!',
+        description: `"${location.name}" успешно добавлена с фото Москвы`,
       });
 
       onLocationAdd?.(data);
       setSuggestions(prev => prev.filter(s => s.name !== location.name));
     } catch (error: any) {
-      console.error('Error adding location:', error);
+      console.error('❌ Error adding location:', error);
       toast({
         title: 'Ошибка добавления',
         description: error.message || 'Не удалось добавить локацию',

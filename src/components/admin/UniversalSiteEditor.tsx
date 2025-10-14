@@ -29,16 +29,25 @@ const UniversalSiteEditor = () => {
   const createBackup = useCreateConfigBackup();
 
   const handleUpdateSiteField = async (field: string, value: any) => {
+    console.log(`📝 Updating site field: ${field} with value:`, value);
+    
     try {
-      await updateSiteSettings.mutateAsync({
-        [field]: value
-      });
+      const updatePayload = {
+        ...(siteSettings || {}),
+        [field]: value,
+      };
+      
+      console.log('📤 Sending update payload:', updatePayload);
+      
+      await updateSiteSettings.mutateAsync(updatePayload);
+      
+      console.log('✅ Site field updated successfully');
       toast({
-        title: "Настройки обновлены",
+        title: "Сохранено!",
         description: `Поле "${field}" успешно обновлено`,
       });
     } catch (error: any) {
-      console.error('Error updating site field:', error);
+      console.error('❌ Error updating site field:', error);
       toast({
         title: "Ошибка обновления",
         description: error.message || "Не удалось обновить настройки",

@@ -52,10 +52,46 @@ serve(async (req) => {
   }
 })
 
-async function searchLocationImages(query: string, apiKey: string) {
-  console.log(`Searching images for: ${query}`)
+// Карта московских локаций (копия из moscowLocations.ts для edge-функции)
+const moscowLocationPhotos: Record<string, string> = {
+  'красная площадь': 'https://images.unsplash.com/photo-1513326738677-b964603b136d?w=800&h=600&fit=crop&q=80&auto=format',
+  'кремль': 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=800&h=600&fit=crop&q=80&auto=format',
+  'храм христа спасителя': 'https://images.unsplash.com/photo-1520637836862-4d197d17c35a?w=800&h=600&fit=crop&q=80&auto=format',
+  'воробьевы горы': 'https://images.unsplash.com/photo-1520637836862-4d197d17c35a?w=800&h=600&fit=crop&q=80&auto=format',
+  'коломенское': 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=800&h=600&fit=crop&q=80&auto=format',
+  'царицыно': 'https://images.unsplash.com/photo-1512495376558-41c7bb9d35ce?w=800&h=600&fit=crop&q=80&auto=format',
+  'вднх': 'https://images.unsplash.com/photo-1520637836862-4d197d17c35a?w=800&h=600&fit=crop&q=80&auto=format',
+  'парк горького': 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop&q=80&auto=format',
+  'старый арбат': 'https://images.unsplash.com/photo-1513326738677-b964603b136d?w=800&h=600&fit=crop&q=80&auto=format',
+  'патриаршие пруды': 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop&q=80&auto=format',
+  'парк зарядье': 'https://images.unsplash.com/photo-1513326738677-b964603b136d?w=800&h=600&fit=crop&q=80&auto=format',
+  'москва-сити': 'https://images.unsplash.com/photo-1520637836862-4d197d17c35a?w=800&h=600&fit=crop&q=80&auto=format'
+};
+
+function getMoscowLocationPhoto(locationName: string): string {
+  const nameLower = locationName.toLowerCase();
   
-  // Use OpenAI to generate search terms and find image URLs
+  // Exact match
+  if (moscowLocationPhotos[nameLower]) {
+    return moscowLocationPhotos[nameLower];
+  }
+  
+  // Partial match
+  const foundKey = Object.keys(moscowLocationPhotos).find(key => 
+    nameLower.includes(key) || key.includes(nameLower)
+  );
+  
+  if (foundKey) {
+    return moscowLocationPhotos[foundKey];
+  }
+  
+  // Default Moscow image
+  return 'https://images.unsplash.com/photo-1520637836862-4d197d17c35a?w=800&h=600&fit=crop&q=80&auto=format';
+}
+
+async function searchLocationImages(query: string, apiKey: string) {
+  console.log(`🔍 Searching images for: ${query}`)
+  
   const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -67,30 +103,32 @@ async function searchLocationImages(query: string, apiKey: string) {
       messages: [
         {
           role: 'system',
-          content: `Ты помощник фотографа, который помогает найти красивые места для фотосессий в Москве. 
-          Предложи 5 конкретных, реальных локаций для фотосессий на тему "${query}".
+          content: `Ты помощник фотографа в Москве. Предложи 5 конкретных локаций ТОЛЬКО В МОСКВЕ И МОСКОВСКОЙ ОБЛАСТИ для фотосессий.
+          
+          ВАЖНО: Все локации должны быть РЕАЛЬНЫМИ местами Москвы или Московской области!
+          
           Для каждой локации укажи:
-          1. Название места
+          1. Название места на русском языке
           2. Краткое описание (почему хорошо для фотосессий)
           3. Лучшее время для съемки
           4. Адрес или район в Москве
           
-          Отвечай в формате JSON:
+          Отвечай СТРОГО в формате JSON:
           {
             "locations": [
               {
-                "name": "название",
+                "name": "название на русском",
                 "description": "описание",
                 "best_time": "время",
-                "address": "адрес",
-                "image_search_query": "поисковый запрос для изображения"
+                "address": "адрес в Москве",
+                "image_search_query": "moscow location name"
               }
             ]
           }`
         },
         {
           role: 'user',
-          content: `Найди локации для фотосессий: ${query}`
+          content: `Найди локации для фотосессий в Москве: ${query}`
         }
       ],
       temperature: 0.7,
@@ -103,10 +141,20 @@ async function searchLocationImages(query: string, apiKey: string) {
 
   try {
     const parsed = JSON.parse(aiContent)
-    console.log('AI suggested locations:', parsed)
+    console.log('✅ AI suggested locations:', parsed)
+    
+    // Заменяем image_search_query на реальные московские фото
+    if (parsed.locations && Array.isArray(parsed.locations)) {
+      parsed.locations = parsed.locations.map((loc: any) => ({
+        ...loc,
+        image_url: getMoscowLocationPhoto(loc.name)
+      }))
+      console.log('📸 Added Moscow photos to locations')
+    }
+    
     return { success: true, data: parsed }
   } catch (e) {
-    console.error('Failed to parse AI response:', aiContent)
+    console.error('❌ Failed to parse AI response:', aiContent)
     return { 
       success: false, 
       error: 'Failed to parse AI response',

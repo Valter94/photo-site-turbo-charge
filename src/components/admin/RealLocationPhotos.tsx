@@ -74,43 +74,53 @@ const RealLocationPhotos = () => {
   const searchRussianPhotos = async (query: string) => {
     setSearching(true);
     try {
-      // Используем реальные фотографии Москвы из нашей базы
-      const { getMoscowLocationPhoto, popularMoscowLocations } = await import('@/utils/moscowLocations');
+      console.log('🔍 Searching Moscow photos for:', query);
       
-      // Получаем несколько вариантов фото для выбора
-      const basePhoto = getMoscowLocationPhoto(query);
+      const { moscowLocationPhotos, getMoscowLocationPhoto } = await import('@/utils/moscowLocations');
+      const mainPhotoUrl = getMoscowLocationPhoto(query);
       
-      const results: LocationPhoto[] = [
-        {
-          url: basePhoto,
-          title: `${query} — основной вид`,
+      // Найдем похожие локации из списка московских мест
+      const queryLower = query.toLowerCase();
+      const relatedLocations = Object.keys(moscowLocationPhotos)
+        .filter(key => {
+          const similarity = 
+            queryLower.includes(key) || 
+            key.includes(queryLower) ||
+            // Похожие категории
+            (queryLower.includes('парк') && key.includes('парк')) ||
+            (queryLower.includes('площад') && key.includes('площад')) ||
+            (queryLower.includes('монастыр') && key.includes('монастыр')) ||
+            (queryLower.includes('набереж') && key.includes('набереж'))
+          return similarity;
+        })
+        .slice(0, 5); // Берем до 5 похожих локаций
+      
+      const results: LocationPhoto[] = relatedLocations.map((locationKey) => ({
+        url: moscowLocationPhotos[locationKey],
+        title: `${locationKey.charAt(0).toUpperCase() + locationKey.slice(1)} - Москва`,
+        source: 'Unsplash Moscow Collection',
+        width: 800,
+        height: 600,
+        license: 'Unsplash License'
+      }));
+      
+      // Если не нашли похожих, добавляем основное фото
+      if (results.length === 0) {
+        results.push({
+          url: mainPhotoUrl,
+          title: `${query} - Москва`,
           source: 'Unsplash Moscow Collection',
-          width: 1600,
-          height: 900,
+          width: 800,
+          height: 600,
           license: 'Unsplash License'
-        },
-        {
-          url: basePhoto + '&crop=entropy',
-          title: `${query} — альтернативный ракурс`,
-          source: 'Unsplash Moscow Collection',
-          width: 1600,
-          height: 900,
-          license: 'Unsplash License'
-        },
-        {
-          url: basePhoto + '&crop=center',
-          title: `${query} — панорамный вид`,
-          source: 'Unsplash Moscow Collection',
-          width: 1600,
-          height: 900,
-          license: 'Unsplash License'
-        }
-      ];
-
+        });
+      }
+      
+      console.log(`✅ Found ${results.length} Moscow photos`);
       setSearchResults(results);
-      toast.success(`Найдено ${results.length} фотографий для "${query}"`);
+      toast.success(`Найдено ${results.length} фотографий Москвы для "${query}"`);
     } catch (error) {
-      console.error('Error searching photos:', error);
+      console.error('❌ Error searching photos:', error);
       toast.error('Ошибка поиска фотографий');
     } finally {
       setSearching(false);

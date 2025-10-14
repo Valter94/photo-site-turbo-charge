@@ -30,44 +30,32 @@ export const useUpdateSiteSettings = () => {
   
   return useMutation({
     mutationFn: async (settings: any) => {
-      // Сначала получаем существующую запись
-      const { data: existing } = await supabase
-        .from('site_settings')
-        .select('id')
-        .limit(1)
-        .single();
+      console.log('📝 Updating site settings via edge function:', settings);
       
-      if (existing) {
-        // Обновляем существующую запись
-        const { data, error } = await supabase
-          .from('site_settings')
-          .update({
-            ...settings,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existing.id)
-          .select()
-          .single();
-        
-        if (error) throw error;
-        return data;
-      } else {
-        // Создаем новую запись
-        const { data, error } = await supabase
-          .from('site_settings')
-          .insert({
-            ...settings,
-            updated_at: new Date().toISOString()
-          })
-          .select()
-          .single();
-        
-        if (error) throw error;
-        return data;
+      // Always use the edge function for updates
+      const { data, error } = await supabase.functions.invoke('admin-site-settings-upsert', {
+        body: settings
+      });
+      
+      if (error) {
+        console.error('❌ Edge function error:', error);
+        throw new Error(error.message || 'Failed to update site settings');
       }
+      
+      if (!data?.success) {
+        console.error('❌ Edge function returned error:', data);
+        throw new Error(data?.error || 'Failed to update site settings');
+      }
+      
+      console.log('✅ Site settings updated successfully:', data.data);
+      return data.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('✅ Mutation successful, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['site_settings'] });
+    },
+    onError: (error: Error) => {
+      console.error('❌ Mutation error:', error.message);
     }
   });
 };

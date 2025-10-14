@@ -11,18 +11,32 @@ const HeroSection = () => {
   console.log('Settings loading:', isLoading);
   console.log('Settings error:', error);
 
-  const defaultPhoto = "/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png";
-  const [photoUrl, setPhotoUrl] = React.useState<string>(defaultPhoto);
+  // Фиксированное фото Ирины - константа для стабильности
+  const IRINA_PHOTO_URL = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&auto=format';
+  const fallbackPhoto = "/lovable-uploads/48022099-9629-4273-8469-31a37157d96c.png";
+  const [photoUrl, setPhotoUrl] = React.useState<string>(IRINA_PHOTO_URL);
 
   React.useEffect(() => {
+    console.log('🖼️ HeroSection: photographer_photo from settings:', settings?.photographer_photo);
+    
     const target = settings?.photographer_photo;
+    
+    // Если есть настройки с фото, пытаемся его использовать
     if (target && typeof target === 'string' && target.trim()) {
       const img = new Image();
-      img.onload = () => setPhotoUrl(target);
-      img.onerror = () => setPhotoUrl(defaultPhoto);
+      img.onload = () => {
+        console.log('✅ Photographer photo loaded successfully');
+        setPhotoUrl(target);
+      };
+      img.onerror = () => {
+        console.warn('⚠️ Failed to load photographer photo, using Irina default');
+        setPhotoUrl(IRINA_PHOTO_URL);
+      };
       img.src = target;
     } else {
-      setPhotoUrl(defaultPhoto);
+      // Если нет настроек, используем фиксированное фото Ирины
+      console.log('ℹ️ No photographer photo in settings, using Irina default');
+      setPhotoUrl(IRINA_PHOTO_URL);
     }
   }, [settings?.photographer_photo]);
 
